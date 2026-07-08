@@ -45,6 +45,12 @@ export function makeRider(spec){
   saddle.position.set(-0.38,1.17,0); bike.add(saddle);
   const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.24,5), lambert(0xffd166));
   bottle.position.set(0.05,0.74,0); bottle.rotation.z=0.15; bike.add(bottle);
+  if(spec.oxygen){                  // canned oxygen for the altitude
+    const can = new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,0.34,6), lambert(0xd8d2c5));
+    can.position.set(-0.15,0.8,0); can.rotation.z=0.2; bike.add(can);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.08,6), lambert(0x5db3c9));
+    cap.position.set(-0.19,1,0); bike.add(cap);
+  }
 
   const bars = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.62), lambert(0x1a1423));
   bars.position.set(0.62,1.05,0); bike.add(bars);
@@ -75,6 +81,21 @@ export function makeRider(spec){
   if(spec.trunks){                  // swim trunks on a bare torso
     const trunks=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.22,0.44), lambert(helmetC));
     trunks.position.y=-0.28; torsoGrp.add(trunks);
+  }
+  if(spec.floral){                  // flowers on the dress
+    [[-0.12,0.15],[0.1,0.02],[-0.02,-0.2]].forEach(([x,y],i)=>{
+      const fl=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.08,0.05),
+        lambert([0xffd166,0xf5e9d0,0xe84855][i]));
+      fl.position.set(x,y,0.22); torsoGrp.add(fl);
+    });
+  }
+  if(spec.tailFeathers){            // magpie tail fanned over the rear wheel
+    [-0.14,0,0.14].forEach((z,i)=>{
+      const f=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.05,0.1),
+        lambert(i===1?0x1a1423:0x2b2b33));
+      f.position.set(-0.32,0.18,z); f.rotation.z=0.5; f.rotation.y=z*0.6;
+      torsoGrp.add(f);
+    });
   }
   if(spec.bag==='messenger'){
     const bag = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.52,0.44), lambert(0x4a5a3f));
@@ -155,6 +176,121 @@ export function makeRider(spec){
     [1.72,1.81].forEach(y=>{
       const bar = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.045,0.4), lambert(0xd8d2c5));
       bar.position.set(0.55,y,0); bike.add(bar);
+    });
+  } else if(spec.head==='bird'){
+    /* MAGPIE 2.0: black-and-white bird head with a real beak */
+    const headM = lambert(0x1a1423);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.32,0.34), headM);
+    head.position.set(0.32,1.76,0); bike.add(head);
+    [-0.12,0.12].forEach(z=>{
+      const cheek = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.16,0.06), lambert(0xf5e9d0));
+      cheek.position.set(0.38,1.72,z); bike.add(cheek);
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.06,0.02), lambert(0xffd166));
+      eye.position.set(0.42,1.8,z*1.2); bike.add(eye);
+    });
+    const beak = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.1,0.12), lambert(0x2b2b33));
+    beak.position.set(0.56,1.72,0); bike.add(beak);
+  } else if(spec.head==='pitviper'){
+    /* PIT VIPER GUY: mullet + gigantic rainbow-chrome wraparounds */
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.34,0.36), skin);
+    head.position.set(0.32,1.73,0); bike.add(head);
+    const mullet = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.44,0.34), lambert(0x6e4b2a));
+    mullet.position.set(0.12,1.62,0); bike.add(mullet);
+    [[0.02,0x5db3c9],[0.08,0xf25caf],[0.14,0xffd166]].forEach(([dy,c])=>{
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(0.13,0.06,0.46), lambert(c));
+      strip.position.set(0.5,1.7+dy,0); bike.add(strip);
+    });
+  } else if(spec.head==='chile'){
+    /* GREEN CHILE: the whole head is a roasted pepper */
+    const gm = lambert(0x5d8f4a);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.32,0.34,0.3), gm);
+    head.position.set(0.3,1.76,0); bike.add(head);
+    const mid = new THREE.Mesh(new THREE.BoxGeometry(0.26,0.22,0.24), gm);
+    mid.position.set(0.5,1.68,0); mid.rotation.z=-0.4; bike.add(mid);
+    const tip = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.14,0.16), lambert(0x3e6b35));
+    tip.position.set(0.64,1.56,0); tip.rotation.z=-0.7; bike.add(tip);
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.07,0.16,5), lambert(0x6e4b2a));
+    stem.position.set(0.24,1.98,0); stem.rotation.z=0.3; bike.add(stem);
+    [-0.09,0.09].forEach(z=>{
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.06,0.05), lambert(0x1a1423));
+      eye.position.set(0.47,1.8,z); bike.add(eye);
+    });
+  } else if(spec.head==='prospector'){
+    /* PROSPECTOR: wild gray beard + battered hat */
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.34,0.36), skin);
+    head.position.set(0.32,1.73,0); bike.add(head);
+    const beard = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.34,0.38), lambert(0x8a8275));
+    beard.position.set(0.44,1.56,0); bike.add(beard);
+    const brim = new THREE.Mesh(new THREE.BoxGeometry(0.54,0.05,0.54), lambert(0x6e4b2a));
+    brim.position.set(0.3,1.92,0); bike.add(brim);
+    const crown = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.2,0.3), lambert(0x5a4030));
+    crown.position.set(0.3,2.04,0); bike.add(crown);
+    [-0.08,0.08].forEach(z=>{
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.06,0.05), lambert(0x1a1423));
+      eye.position.set(0.51,1.78,z); bike.add(eye);
+    });
+  } else if(spec.head==='bighorn'){
+    /* BIGHORN: curled horns, lowered ram energy */
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.34,0.36), lambert(0xc9a06a));
+    head.position.set(0.34,1.72,0); bike.add(head);
+    const hornM = lambert(0xa8907a);
+    [-0.22,0.22].forEach(z=>{
+      const h1=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.2,0.1), hornM);
+      h1.position.set(0.28,1.86,z); bike.add(h1);
+      const h2=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.12,0.1), hornM);
+      h2.position.set(0.2,1.72,z*1.15); bike.add(h2);
+      const h3=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.08), hornM);
+      h3.position.set(0.26,1.6,z*1.25); bike.add(h3);
+    });
+    [-0.1,0.1].forEach(z=>{
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.06,0.06), lambert(0x1a1423));
+      eye.position.set(0.54,1.76,z); bike.add(eye);
+    });
+    const muzzle = new THREE.Mesh(new THREE.BoxGeometry(0.14,0.16,0.2), lambert(0xb8a088));
+    muzzle.position.set(0.52,1.64,0); bike.add(muzzle);
+  } else if(spec.head==='wanda'){
+    /* WASH PARK WANDA: giant sun hat, gray bun, been here since '74 */
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.32,0.34), skin);
+    head.position.set(0.32,1.72,0); bike.add(head);
+    const bun = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.16,0.16), lambert(0xd8d2c5));
+    bun.position.set(0.14,1.86,0); bike.add(bun);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.44,0.44,0.05,10), lambert(0xf5e9d0));
+    brim.position.set(0.3,1.9,0); bike.add(brim);
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.22,0.16,8), lambert(0xf5e9d0));
+    crown.position.set(0.3,2.0,0); bike.add(crown);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.215,0.225,0.06,8), lambert(0xf25caf));
+    band.position.set(0.3,1.95,0); bike.add(band);
+    [-0.08,0.08].forEach(z=>{
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.06,0.05), lambert(0x1a1423));
+      eye.position.set(0.5,1.76,z); bike.add(eye);
+    });
+  } else if(spec.head==='goose'){
+    /* HONKER: an actual Canada goose, on an actual bicycle */
+    const neck = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.55,0.16), lambert(0x2b2b33));
+    neck.position.set(0.34,1.9,0); bike.add(neck);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.22,0.22), lambert(0x2b2b33));
+    head.position.set(0.42,2.22,0); bike.add(head);
+    const chin = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.12,0.24), lambert(0xf5e9d0));
+    chin.position.set(0.38,2.14,0); bike.add(chin);
+    const beak = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.08,0.12), lambert(0xe8912d));
+    beak.position.set(0.6,2.2,0); bike.add(beak);
+    [-0.1,0.1].forEach(z=>{
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.05,0.02), lambert(0xffd166));
+      eye.position.set(0.5,2.26,z*1.1); bike.add(eye);
+    });
+  } else if(spec.head==='transplant'){
+    /* JUST MOVED HERE: sunburn, zinc nose, brand-new bucket hat */
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.34,0.36), skin);
+    head.position.set(0.32,1.73,0); bike.add(head);
+    const zinc = new THREE.Mesh(new THREE.BoxGeometry(0.06,0.1,0.1), lambert(0xf5f0e6));
+    zinc.position.set(0.51,1.71,0); bike.add(zinc);
+    const brim = new THREE.Mesh(new THREE.BoxGeometry(0.48,0.06,0.48), lambert(0xd9cfc0));
+    brim.position.set(0.32,1.9,0); bike.add(brim);
+    const crown = new THREE.Mesh(new THREE.BoxGeometry(0.32,0.16,0.32), lambert(0xd9cfc0));
+    crown.position.set(0.32,2.0,0); bike.add(crown);
+    [-0.08,0.08].forEach(z=>{
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.07,0.05), lambert(0x1a1423));
+      eye.position.set(0.51,1.78,z); bike.add(eye);
     });
   } else {
     const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.34,0.36), skin);
