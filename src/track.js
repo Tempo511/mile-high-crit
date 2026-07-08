@@ -8,6 +8,25 @@ import { makeRng } from './rng.js';
 
 const NS = 600;   // spline samples for nearest-point queries & minimap
 
+/* a fun item crate: glowing translucent shell + bright edges + a floating
+   gem inside (the gem is returned as userData.gem for counter-spin) */
+function makeItemBox(){
+  const g = new THREE.Group();
+  const shell = new THREE.Mesh(new THREE.BoxGeometry(1.4,1.4,1.4),
+    new THREE.MeshLambertMaterial({color:0xffd166, transparent:true, opacity:0.4,
+      flatShading:true, emissive:0x7a4f00, depthWrite:false}));
+  g.add(shell);
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(1.42,1.42,1.42)),
+    new THREE.LineBasicMaterial({color:0xfff6d8}));
+  g.add(edges);
+  const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.42,0),
+    new THREE.MeshBasicMaterial({color:0xff9a5c}));
+  g.add(gem);
+  g.userData.gem = gem;
+  return g;
+}
+
 export class Track {
   constructor(scene, data){
     this.data = data;
@@ -160,19 +179,17 @@ export class Track {
 
   #buildBoxes(scene, data){
     if(!data.itemBoxes) return;
-    const boxG = new THREE.BoxGeometry(1.3,1.3,1.3);
     for(const t of data.itemBoxes.at){
       const p = this.curve.getPointAt(t), tan = this.curve.getTangentAt(t);
       const n = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),tan).normalize();
       for(const off of data.itemBoxes.offsets){
-        const m = new THREE.Mesh(boxG, new THREE.MeshLambertMaterial(
-          {color:0xffd166, transparent:true, opacity:0.92, flatShading:true}));
+        const m = makeItemBox();
         m.position.copy(p).addScaledVector(n, off); m.position.y=1.1;
         scene.add(m);
         const shadow = blobShadow(0.75, 0.2);
         shadow.position.set(m.position.x, 0.03, m.position.z);
         scene.add(shadow);
-        this.boxes.push({m, shadow, x:m.position.x, z:m.position.z, cd:0});
+        this.boxes.push({m, gem:m.userData.gem, shadow, x:m.position.x, z:m.position.z, cd:0});
       }
     }
   }

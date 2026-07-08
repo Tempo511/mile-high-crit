@@ -139,8 +139,12 @@ export function updateBoxes(game, dt, now){
   const player = game.racers.find(r=>r.driver==='player');
   for(const b of game.world.boxes){
     if(b.cd>0){ b.cd-=dt; b.m.visible=b.shadow.visible=b.cd<=0; }
-    b.m.rotation.y += dt*2.2; b.m.rotation.x += dt*1.1;
-    b.m.position.y = 1.1+Math.sin(now/400+b.x)*0.15;
+    b.m.rotation.y += dt*1.6;
+    b.m.position.y = 1.1+Math.sin(now/400+b.x)*0.18;
+    if(b.gem){                                  // gem counter-spins and pulses
+      b.gem.rotation.y -= dt*3.2; b.gem.rotation.x += dt*1.4;
+      const s = 1+Math.sin(now/220+b.x)*0.18; b.gem.scale.setScalar(s);
+    }
     if(b.cd<=0){
       if(player && !player.item && (b.x-player.x)**2+(b.z-player.z)**2<2.6){
         giveItem(player); b.cd=3; b.m.visible=b.shadow.visible=false;
