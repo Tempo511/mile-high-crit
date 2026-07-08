@@ -14,6 +14,21 @@ export function lambert(color, extra={}){
   return new THREE.MeshLambertMaterial(Object.assign({color, flatShading:true}, extra));
 }
 
+/* a wide cloth banner texture with centered text (nearest-filtered) */
+export function bannerTex(text, bg='#c75146', fg='#ffd166'){
+  const w=512, h=96;
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  const g=c.getContext('2d');
+  g.fillStyle=bg; g.fillRect(0,0,w,h);
+  g.strokeStyle=fg; g.lineWidth=7; g.strokeRect(7,7,w-14,h-14);
+  g.fillStyle=fg; g.font='bold 54px "Courier New", monospace';
+  g.textAlign='center'; g.textBaseline='middle';
+  g.fillText(text, w/2, h/2+4);
+  const t=new THREE.CanvasTexture(c);
+  t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestFilter;
+  return t;
+}
+
 /* soft dark ellipse that visually glues an object to the ground */
 const shadowGeo = new THREE.CircleGeometry(1, 12);
 export function blobShadow(r, opacity=0.25, y=0.03){

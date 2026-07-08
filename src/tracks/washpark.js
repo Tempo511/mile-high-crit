@@ -82,6 +82,12 @@ export default {
       [-2,0,94],[-30,0,70],[-48,0,42],[-44,0,8],[-24,0,-12],
       [0,0,-24],[30,0,-30],[22,0,-50],[0,0,-72]
     ]},
+    { type:'banners', at:[
+      { t:0.015, text:'MILE HIGH CRIT', bg:'#4b2d5e', fg:'#ffd166', side:1 },
+      { t:0.30,  text:'GO GO GO!',      bg:'#c75146', fg:'#f5e9d0', side:-1 },
+      { t:0.56,  text:'WASH PARK GP',   bg:'#2e5a8f', fg:'#ffd166', side:1 },
+      { t:0.72,  text:'HONK FOR BIKES', bg:'#3e6b35', fg:'#f5e9d0', side:1 }
+    ]},
     { type:'roadBridge', t:0.50 },
     { type:'roadBridge', t:0.895 },
     { type:'roadBridge', t:0.965 },

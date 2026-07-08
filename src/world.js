@@ -112,6 +112,7 @@ export function buildWorld(scene, track){
     clouds: track.dynamic.clouds,
     pads: track.dynamic.pads,
     cars: track.dynamic.cars,
+    fans: track.dynamic.fans,
     boxes: track.boxes,
     projectiles: [],
     attackGeese: [],
@@ -277,6 +278,10 @@ export function updateAmbient(game, dt, now){
       const ph = Math.sin(now/180 - i*1.1);
       c.userData.mat.emissiveIntensity = 0.4 + 0.8*(0.5+0.5*ph);
     });
+  }
+  for(const f of game.world.fans){    // cheering crowd bobs and sways
+    f.m.position.y = f.baseY + Math.abs(Math.sin(now/210 + f.phase))*f.amp;
+    f.m.rotation.y = f.baseRot + Math.sin(now/300 + f.phase)*0.12;
   }
   for(const car of game.world.cars){
     car.pos += car.dir*car.speed*dt;

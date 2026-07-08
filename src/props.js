@@ -5,7 +5,7 @@
      def — the prop entry from the track file.
    Placement randomness uses ctx.rng (seeded) so colliders match across clients. */
 import * as THREE from 'three';
-import { lambert, pixTex, blobShadow, waterTex, sandTex, asphaltTex } from './gfx.js';
+import { lambert, pixTex, blobShadow, bannerTex, waterTex, sandTex, asphaltTex } from './gfx.js';
 
 const B = {};
 
@@ -58,17 +58,26 @@ B.boathouse = (ctx, def) => {
   const roof = new THREE.Mesh(new THREE.ConeGeometry(19.5,2.6,4), lambert(0x8a8275));
   roof.position.y=9.1; roof.rotation.y=Math.PI/4; roof.scale.z=0.42; g.add(roof);
 
-  /* race-day crowd: fans on the upper veranda (both faces) + the lower deck */
+  /* race-day crowd: fans on the upper veranda (both faces) + the lower deck.
+     Each is pushed to dynamic.fans so world.js can bob/sway them. */
   const fanShirts=[0xe84855,0xffd166,0x2e86ab,0xf25caf,0x5db3c9,0xf5e9d0,0xff9a5c,0x9b59b6];
   const addFan=(x,y,z,faceOut,cheer)=>{
     const p=makePerson(ctx.rng, fanShirts[Math.floor(ctx.rng()*fanShirts.length)],
       cheer?'cheer':'stand');
     p.position.set(x,y,z); p.rotation.y = faceOut;
     g.add(p);
+    ctx.dynamic.fans.push({m:p, baseY:y, baseRot:faceOut, phase:ctx.rng()*6.28,
+      amp: cheer?0.35:0.12});
   };
   for(let x=-11.5;x<=11.5;x+=2.6) addFan(x, 4.35,  2.9, 0,        ctx.rng()<0.55);  // veranda front
   for(let x=-10;  x<=10;  x+=3.4) addFan(x, 4.35, -2.9, Math.PI,  ctx.rng()<0.4);   // veranda back
   for(let x=-12;  x<=12;  x+=3.0) addFan(x, 0.62,  4.4, 0,        ctx.rng()<0.5);    // deck at the rail
+
+  // MILE HIGH CRIT banner strung across the veranda front
+  const banner=new THREE.Mesh(new THREE.PlaneGeometry(23,1.9),
+    new THREE.MeshLambertMaterial({map:bannerTex('MILE HIGH CRIT'), side:THREE.DoubleSide,
+      emissive:0x3a1410}));
+  banner.position.set(0,6.4,3.35); g.add(banner);
 
   g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
   ctx.exclude(def.x,def.z,16); ctx.solid(def.x,def.z,9);
@@ -513,6 +522,30 @@ B.cityDitch = (ctx, def) => {
     const puff=new THREE.Mesh(new THREE.IcosahedronGeometry(1.8+ctx.rng()*1.2,0), lambert(0x9aa96a));
     puff.position.y=2.6; t.add(puff);
     t.position.copy(q); ctx.scene.add(t); placed++;
+  }
+};
+
+/* trackside signage: banner panels on posts, set just off the road */
+B.banners = (ctx, def) => {
+  const up = new THREE.Vector3(0,1,0);
+  for(const b of def.at){
+    const p = ctx.trackPoint(b.t), tan = ctx.trackTangent(b.t);
+    const n = new THREE.Vector3().crossVectors(up,tan).normalize();
+    const side = b.side || 1;
+    const bx = p.x + n.x*(ctx.roadHalf+2.6)*side;
+    const bz = p.z + n.z*(ctx.roadHalf+2.6)*side;
+    const g = new THREE.Group();
+    [-3,3].forEach(px=>{
+      const post=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.13,3.2,5), lambert(0x6e4b2a));
+      post.position.set(px,1.6,0); g.add(post);
+    });
+    const panel=new THREE.Mesh(new THREE.PlaneGeometry(6.4,1.7),
+      new THREE.MeshLambertMaterial({map:bannerTex(b.text, b.bg, b.fg),
+        side:THREE.DoubleSide, emissive:0x2a1410}));
+    panel.position.y=2.7; g.add(panel);
+    g.position.set(bx,0,bz);
+    g.lookAt(p.x, 2.7, p.z);          // face the racing line
+    ctx.scene.add(g);
   }
 };
 
