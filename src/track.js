@@ -1,0 +1,176 @@
+/* Track: builds a raceable world from a track data file (src/tracks/*).
+   Owns the spline, road mesh, pickups, colliders, and spatial queries.
+   No game state, no DOM, no per-frame logic. */
+import * as THREE from 'three';
+import { lambert, pixTex, grassTex, roadTex } from './gfx.js';
+import { PROP_BUILDERS } from './props.js';
+import { makeRng } from './rng.js';
+
+const NS = 600;   // spline samples for nearest-point queries & minimap
+
+export class Track {
+  constructor(scene, data){
+    this.data = data;
+    this.roadHalf = data.roadWidth/2;
+
+    this.curve = new THREE.CatmullRomCurve3(
+      data.spline.map(p => new THREE.Vector3(...p)),
+      data.format !== 'stage', 'catmullrom', 0.5);
+    this.length = this.curve.getLength();
+
+    this.NS = NS;
+    this.samples = [];
+    for(let i=0;i<NS;i++) this.samples.push(this.curve.getPointAt(i/NS));
+
+    this.solids = [];      // {x,z,r} — bump collisions
+    this.exclusions = [];  // {x,z,r} — keep-out zones for tree placement
+    this.waters = data.waters || [];
+    this.pads = [];        // boost pads {x,z,r}
+    this.boxes = [];       // item boxes {m,x,z,cd}
+    this.dynamic = { boats: [], clouds: [], paths: [] };
+
+    const rng = makeRng(data.seed || 1);
+    const ctx = {
+      scene, rng,
+      solid: (x,z,r)=>this.solids.push({x,z,r}),
+      exclude: (x,z,r)=>this.exclusions.push({x,z,r}),
+      clearOfRoad: (p,margin)=>
+        this.samples.every(s => (s.x-p.x)**2 + (s.z-p.z)**2 > (this.roadHalf+margin)**2),
+      clearOfExclusions: (p,margin)=>
+        this.exclusions.every(e => (e.x-p.x)**2 + (e.z-p.z)**2 > (e.r+margin)**2),
+      trackPoint: t=>this.curve.getPointAt(t),
+      trackTangent: t=>this.curve.getTangentAt(t),
+      roadHalf: this.roadHalf,
+      dynamic: this.dynamic
+    };
+
+    this.#buildGround(scene, data);
+    this.#buildRoad(scene);
+    this.#buildBanner(scene);
+    this.#buildPads(scene, data);
+    this.#buildBoxes(scene, data);
+    for(const def of data.props || []) PROP_BUILDERS[def.type](ctx, def);
+
+    this.#fitMinimap();
+  }
+
+  pointAt(t){ return this.curve.getPointAt(t); }
+  tangentAt(t){ return this.curve.getTangentAt(t); }
+
+  /* nearest sample index to (x,z), searching around `from` first */
+  nearestIdx(x, z, from){
+    let best=1e18, bi=from;
+    for(let d=-50; d<=50; d++){
+      const i=(from+d+NS)%NS, s=this.samples[i];
+      const dd=(s.x-x)**2+(s.z-z)**2;
+      if(dd<best){ best=dd; bi=i; }
+    }
+    if(best>1600){
+      for(let i=0;i<NS;i++){ const s=this.samples[i];
+        const dd=(s.x-x)**2+(s.z-z)**2;
+        if(dd<best){ best=dd; bi=i; } }
+    }
+    return [bi, Math.sqrt(best)];
+  }
+
+  /* radians of bend in the next 14 units past `dist` — used by AI cornering */
+  curvatureAt(dist){
+    const t1=((dist%this.length)+this.length)%this.length/this.length;
+    const t2=((dist+14)%this.length)/this.length;
+    const a=this.curve.getTangentAt(t1), b=this.curve.getTangentAt(t2);
+    return Math.acos(Math.max(-1,Math.min(1,a.dot(b))));
+  }
+
+  /* minimap projection fitted to this track's bounds */
+  miniXY(x, z){
+    return [this.miniOX + x*this.miniS, this.miniOY + z*this.miniS];
+  }
+
+  #fitMinimap(){
+    let minX=1e9,maxX=-1e9,minZ=1e9,maxZ=-1e9;
+    for(const s of this.samples){
+      minX=Math.min(minX,s.x); maxX=Math.max(maxX,s.x);
+      minZ=Math.min(minZ,s.z); maxZ=Math.max(maxZ,s.z);
+    }
+    const W=96, H=128, pad=10;
+    this.miniS = Math.min((W-pad*2)/(maxX-minX), (H-pad*2)/(maxZ-minZ));
+    this.miniOX = W/2 - (minX+maxX)/2*this.miniS;
+    this.miniOY = H/2 - (minZ+maxZ)/2*this.miniS;
+  }
+
+  #buildGround(scene, data){
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600,1600),
+      new THREE.MeshLambertMaterial({map:grassTex}));
+    ground.rotation.x = -Math.PI/2; ground.position.y = -0.05;
+    scene.add(ground);
+  }
+
+  #buildRoad(scene){
+    const SEG = 460, pos=[], uv=[], idx=[];
+    const up = new THREE.Vector3(0,1,0);
+    for(let i=0;i<=SEG;i++){
+      const t=i/SEG, p=this.curve.getPointAt(t), tan=this.curve.getTangentAt(t);
+      const n = new THREE.Vector3().crossVectors(up,tan).normalize();
+      const l = p.clone().addScaledVector(n, this.roadHalf);
+      const r = p.clone().addScaledVector(n,-this.roadHalf);
+      pos.push(l.x,0.02,l.z, r.x,0.02,r.z);
+      uv.push(0, t*this.length/6, 1, t*this.length/6);
+      if(i<SEG){ const a=i*2; idx.push(a,a+1,a+2, a+1,a+3,a+2); }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2));
+    g.setIndex(idx); g.computeVertexNormals();
+    scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({map:roadTex})));
+  }
+
+  #buildBanner(scene){
+    const p = this.curve.getPointAt(0), tan = this.curve.getTangentAt(0);
+    const n = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),tan).normalize();
+    const postG = new THREE.CylinderGeometry(0.22,0.22,5,5);
+    [-1,1].forEach(s=>{ const m=new THREE.Mesh(postG, lambert(0xd94f30));
+      m.position.copy(p).addScaledVector(n, s*(this.roadHalf+0.8)); m.position.y=2.5; scene.add(m); });
+    const bTex = pixTex(64,(g,px)=>{ g.fillStyle='#1a1423'; g.fillRect(0,0,px,px);
+      for(let x=0;x<8;x++)for(let y=0;y<2;y++){ g.fillStyle=(x+y)%2?'#f5e9d0':'#1a1423';
+        g.fillRect(x*8, y*8, 8, 8);} }, 2, 1);
+    const b = new THREE.Mesh(new THREE.PlaneGeometry(this.data.roadWidth+3, 1.4),
+      new THREE.MeshLambertMaterial({map:bTex, side:THREE.DoubleSide}));
+    b.position.copy(p); b.position.y = 4.4;
+    b.lookAt(p.clone().add(tan)); scene.add(b);
+  }
+
+  #buildPads(scene, data){
+    const padTex = pixTex(32,(g,px)=>{
+      g.fillStyle='#e8912d'; g.fillRect(0,0,px,px);
+      g.fillStyle='#ffd166';
+      g.beginPath(); g.moveTo(4,24); g.lineTo(16,10); g.lineTo(28,24); g.lineTo(22,24);
+      g.lineTo(16,17); g.lineTo(10,24); g.closePath(); g.fill();
+    });
+    for(const t of data.boostPads || []){
+      const p = this.curve.getPointAt(t), tan = this.curve.getTangentAt(t);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 5),
+        new THREE.MeshLambertMaterial({map:padTex}));
+      m.rotation.x = -Math.PI/2;
+      m.position.set(p.x, 0.04, p.z);
+      m.rotation.z = -Math.atan2(tan.x, tan.z);
+      scene.add(m);
+      this.pads.push({x:p.x, z:p.z, r:3});
+    }
+  }
+
+  #buildBoxes(scene, data){
+    if(!data.itemBoxes) return;
+    const boxG = new THREE.BoxGeometry(1.3,1.3,1.3);
+    for(const t of data.itemBoxes.at){
+      const p = this.curve.getPointAt(t), tan = this.curve.getTangentAt(t);
+      const n = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),tan).normalize();
+      for(const off of data.itemBoxes.offsets){
+        const m = new THREE.Mesh(boxG, new THREE.MeshLambertMaterial(
+          {color:0xffd166, transparent:true, opacity:0.92, flatShading:true}));
+        m.position.copy(p).addScaledVector(n, off); m.position.y=1.1;
+        scene.add(m);
+        this.boxes.push({m, x:m.position.x, z:m.position.z, cd:0});
+      }
+    }
+  }
+}
