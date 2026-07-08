@@ -1,0 +1,21 @@
+{
+  "name": "mile-high-crit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MILE HIGH CRIT — a retro bike racing game set in Denver's Washington Park",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "0.128.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}

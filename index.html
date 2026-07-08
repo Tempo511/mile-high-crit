@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MILE HIGH CRIT — Wash Park GP</title>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div class="hud" id="speedo">0<small> MPH</small></div>
+<div class="hud" id="laps">LAP 1/3<br><span id="timer">0:00.0</span><br><span id="best"></span></div>
+<div class="hud" id="pos"></div>
+<div class="hud" id="itemSlot"></div>
+<canvas id="mini" width="96" height="128"></canvas>
+<div class="hud" id="toast"></div>
+<div class="hud" id="landmark"></div>
+
+<div class="pad" id="padL"></div>
+<div class="pad" id="padR"></div>
+<button class="btn" id="btnDrift">DRIFT</button>
+<button class="btn" id="btnItem">☕</button>
+
+<div id="title">
+  <h1>MILE HIGH CRIT</h1>
+  <div class="sub">WASH PARK GP &middot; 7 RACERS &middot; 3 LAPS</div>
+  <div class="ctl">
+    <span class="kbdonly"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> steer &middot; <kbd>SPACE</kbd> drift/brake &middot; <kbd>E</kbd> use item</span>
+    <span class="touchonly">HOLD SIDES TO STEER &middot; DRIFT BUTTON &middot; ITEM BUTTON</span>
+    <br>grab the gold crates &middot; ☕ espresso boost &middot; 🫓 sopapilla toss &middot; 🪿 attack goose
+  </div>
+  <button id="startBtn">ROLL OUT</button>
+  <div class="foot">race build: 6 rivals &middot; items &middot; positions &middot; may the best legs win</div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
