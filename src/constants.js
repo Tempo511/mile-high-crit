@@ -4,7 +4,7 @@ export const INTERNAL_H = 320;          // internal render height (retro upscale
 export const RIDER_SCALE = 1.18;        // kart-game cheat: riders oversized for readability
 
 /* player physics */
-export const MAX_SPEED = 19, BOOST_SPEED = 32, OFFROAD_MAX = 8,
+export const MAX_SPEED = 19, BOOST_SPEED = 32, OFFROAD_MAX = 8, OFFROAD_SPRINT = 13,
              ACCEL = 10, BRAKE = 26,
              TURN = 2.7, GRIP_LOSS = 0.62, SCRUB = 5.5,
              DRIFT_TURN = 1.9, DRIFT_STEER = 1.35, DRIFT_SLIP = 0.30,

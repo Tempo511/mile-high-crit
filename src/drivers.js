@@ -1,7 +1,7 @@
 /* Drivers: the things that advance a racer's state each tick.
    Same state shape in, same state shape out — only the brain differs. */
 import * as THREE from 'three';
-import { MAX_SPEED, BOOST_SPEED, OFFROAD_MAX, ACCEL, BRAKE,
+import { MAX_SPEED, BOOST_SPEED, OFFROAD_MAX, OFFROAD_SPRINT, ACCEL, BRAKE,
          TURN, GRIP_LOSS, SCRUB, DRIFT_TURN, DRIFT_STEER, DRIFT_SLIP,
          MINI, SUPER, ULTRA,
          SPRINT_SPEED, ENERGY_DRAIN, ENERGY_REGEN, DRAFT_REGEN, DRAFT_PULL,
@@ -65,8 +65,7 @@ export function playerDriver(r, inputs, game, dt){
 
   /* the LEGS meter: sprint burns it, drafting banks it, empty = bonk */
   const boosting = r.boostT>0; r.boostT=Math.max(0,r.boostT-dt);
-  r.sprinting = inputs.sprint && r.energy>0 && r.bonkT<=0 && r.spin<=0
-                && !offroad && !braking;
+  r.sprinting = inputs.sprint && r.energy>0 && r.bonkT<=0 && r.spin<=0 && !braking;
   if(r.sprinting){
     r.energy=Math.max(0, r.energy-ENERGY_DRAIN*dt);
     if(r.energy<=0){ r.bonkT=BONK_TIME; r.sprinting=false;
@@ -77,8 +76,9 @@ export function playerDriver(r, inputs, game, dt){
   if(r.bonkT>0) r.bonkT-=dt;
 
   let target = boosting ? BOOST_SPEED : (offroad ? OFFROAD_MAX : MAX_SPEED);
-  if(!boosting && !offroad){
-    if(r.sprinting) target = SPRINT_SPEED;
+  if(!boosting){
+    // legs work everywhere — on grass they power you through, still slower than road
+    if(r.sprinting) target = offroad ? OFFROAD_SPRINT : SPRINT_SPEED;
     if(r.drafting)  target += DRAFT_PULL;
     if(r.bonkT>0)   target = Math.min(target, BONK_SPEED);
   }
