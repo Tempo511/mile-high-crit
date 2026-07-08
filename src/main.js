@@ -106,7 +106,8 @@ function frame(now){
     step(game, input.get(), dt, now);
     audio.ambient(dt);
   } else if(game.race.phase==='done'){
-    for(const r of game.racers) if(r.driver==='ai') aiDriver(r, game, dt);
+    // everyone (incl. the finished player) coasts on; the camera keeps following
+    for(const r of game.racers) aiDriver(r, game, dt);
     updateAmbient(game, dt, now);
   }
   for(const e of game.events) audio.handle(e);

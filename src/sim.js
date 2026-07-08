@@ -100,6 +100,8 @@ export function step(game, inputs, dt, now){
       race.finishOrder.push(player.id);
       const place=race.finishOrder.indexOf(player.id)+1;
       race.place=place;
+      /* seed dist so the coast-forward path picks up from the finish line */
+      player.dist = progressOf(track, player);
       events.push({type:'finish', place, total: now-race.t0});
     } else {
       player.lap++;
