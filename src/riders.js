@@ -59,8 +59,8 @@ export function makeRider(spec){
 
   /* jersey: kit color + contrast chest stripe.
      Torso dimensions are tunable (tw/th/td/lean/ty) for sizing experiments. */
-  /* default proportions: blend of the SHORT + LOW PRO lab winners */
-  const TW=spec.tw??0.48, TH=spec.th??0.54, TD=spec.td??0.4;
+  /* default proportions: the LOW PRO lab winner — crouched racer posture */
+  const TW=spec.tw??0.46, TH=spec.th??0.5, TD=spec.td??0.38;
   const torsoGrp = new THREE.Group();
   const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(TW,TH,TD), lambert(torsoC));
   torsoGrp.add(torsoMesh);
@@ -110,8 +110,8 @@ export function makeRider(spec){
     const strap = new THREE.Mesh(new THREE.BoxGeometry(0.52,0.1,0.43), lambert(0xf5e9d0));
     strap.position.set(0.03,0.22,0); strap.rotation.x=0.5; torsoGrp.add(strap);
   }
-  torsoGrp.position.set(-0.02, spec.ty??1.41, 0);
-  torsoGrp.rotation.z = spec.lean??0.62;
+  torsoGrp.position.set(-0.02, spec.ty??1.38, 0);
+  torsoGrp.rotation.z = spec.lean??0.7;
   bike.add(torsoGrp);
 
   /* arms reaching to the bars, hands on the ends */
