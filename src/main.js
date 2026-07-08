@@ -25,7 +25,12 @@ const player = createRacer({ ...PLAYER_CHARACTER, driver:'player' });
 player.x=startP.x; player.z=startP.z;
 player.heading=Math.atan2(startTan.x, startTan.z);
 
-const ais = ROSTER.map((c,i)=>{
+/* the roster is bigger than one race — draw 8 random rivals per race */
+const pool = [...ROSTER];
+for(let i=pool.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];
+}
+const ais = pool.slice(0,8).map((c,i)=>{
   const r = createRacer({ ...c, driver:'ai', itemCd:6+Math.random()*6 });
   r.dist = 4+i*3;
   positionOnSpline(r, track);

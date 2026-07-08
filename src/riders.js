@@ -57,11 +57,14 @@ export function makeRider(spec){
   const plate = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.26,0.24), lambert(0xf5e9d0));
   plate.position.set(0.72,0.82,0); bike.add(plate);
 
-  /* jersey: kit color + contrast chest stripe */
+  /* jersey: kit color + contrast chest stripe.
+     Torso dimensions are tunable (tw/th/td/lean/ty) for sizing experiments. */
+  /* default proportions: blend of the SHORT + LOW PRO lab winners */
+  const TW=spec.tw??0.48, TH=spec.th??0.54, TD=spec.td??0.4;
   const torsoGrp = new THREE.Group();
-  const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.72,0.42), lambert(torsoC));
+  const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(TW,TH,TD), lambert(torsoC));
   torsoGrp.add(torsoMesh);
-  const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.52,0.18,0.44), lambert(helmetC));
+  const stripe = new THREE.Mesh(new THREE.BoxGeometry(TW+0.02,0.18,TD+0.02), lambert(helmetC));
   stripe.position.y=0.1; torsoGrp.add(stripe);
   if(spec.fur){                     // yeti shag: layered offset slabs
     [0.28,0.02,-0.24].forEach((y,i)=>{
@@ -69,6 +72,10 @@ export function makeRider(spec){
         lambert(i%2?0xe8e2d5:0xf5f0e6));
       shag.position.y=y; shag.rotation.y=i%2?0.14:-0.12; torsoGrp.add(shag);
     });
+  }
+  if(spec.hump){                    // hunched monster shoulders
+    const hump=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.3,0.56), lambert(0xe8e2d5));
+    hump.position.set(-0.18,0.4,0); torsoGrp.add(hump);
   }
   if(spec.pads){                    // football shoulder pads (navy over orange)
     const pads=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.22,0.64), lambert(helmetC));
@@ -103,15 +110,22 @@ export function makeRider(spec){
     const strap = new THREE.Mesh(new THREE.BoxGeometry(0.52,0.1,0.43), lambert(0xf5e9d0));
     strap.position.set(0.03,0.22,0); strap.rotation.x=0.5; torsoGrp.add(strap);
   }
-  torsoGrp.position.set(-0.02,1.35,0); torsoGrp.rotation.z=0.5; bike.add(torsoGrp);
+  torsoGrp.position.set(-0.02, spec.ty??1.41, 0);
+  torsoGrp.rotation.z = spec.lean??0.62;
+  bike.add(torsoGrp);
 
   /* arms reaching to the bars, hands on the ends */
   [-0.18,0.18].forEach(z=>{
     const arm = new THREE.Mesh(new THREE.BoxGeometry(0.72,0.09,0.09),
       spec.sleeveless ? skin : lambert(torsoC));
     arm.position.set(0.34,1.3,z); arm.rotation.z=-0.72; bike.add(arm);
-    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.1,0.1), skin);
+    const hand = new THREE.Mesh(new THREE.BoxGeometry(spec.claws?0.15:0.12,
+      spec.claws?0.13:0.1, spec.claws?0.13:0.1), skin);
     hand.position.set(0.62,1.06,z*1.4); bike.add(hand);
+    if(spec.claws){
+      const claw = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.05,0.12), lambert(0x3f4a55));
+      claw.position.set(0.7,1.02,z*1.4); bike.add(claw);
+    }
   });
 
   if(spec.head==='horse'){
@@ -134,18 +148,28 @@ export function makeRider(spec){
     });
     hg.position.set(0.34,1.82,0); bike.add(hg);
   } else if(spec.head==='yeti'){
-    /* THE YETI: furry head, heavy brow, ski goggles */
+    /* THE YETI: proper monster — dark face, glowing ice eyes, fanged
+       underbite, brow ridge, wild crown tuft */
     const fur = lambert(0xf5f0e6);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.38,0.4), fur);
-    head.position.set(0.32,1.76,0); bike.add(head);
-    const brow = new THREE.Mesh(new THREE.BoxGeometry(0.44,0.1,0.44), fur);
-    brow.position.set(0.34,1.96,0); bike.add(brow);
-    const band = new THREE.Mesh(new THREE.BoxGeometry(0.06,0.12,0.42), lambert(0x2b4a8f));
-    band.position.set(0.5,1.8,0); bike.add(band);
-    [-0.1,0.1].forEach(z=>{
-      const lens = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.13,0.15), lambert(0x5db3c9));
-      lens.position.set(0.52,1.8,z); bike.add(lens);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.46,0.44,0.46), fur);
+    head.position.set(0.3,1.78,0); bike.add(head);
+    const face = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.28,0.32), lambert(0x5a6b7a));
+    face.position.set(0.53,1.78,0); bike.add(face);
+    const brow = new THREE.Mesh(new THREE.BoxGeometry(0.14,0.12,0.44), fur);
+    brow.position.set(0.53,1.95,0); bike.add(brow);
+    [-0.09,0.09].forEach(z=>{
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.03,0.07,0.07),
+        lambert(0x9fe8ff, {emissive:0x55bbee}));
+      eye.position.set(0.58,1.85,z); bike.add(eye);
     });
+    const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.14,0.4), fur);
+    jaw.position.set(0.52,1.6,0); bike.add(jaw);
+    [-0.11,0.11].forEach(z=>{
+      const fang = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.12,0.05), lambert(0xf5e9d0));
+      fang.position.set(0.58,1.7,z); bike.add(fang);
+    });
+    const tuft = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.16,0.26), fur);
+    tuft.position.set(0.24,2.06,0); tuft.rotation.z=0.25; bike.add(tuft);
   } else if(spec.head==='diver'){
     /* CASA BONITA CLIFF DIVER: bare head, black hair, red headband, real eyes */
     const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.34,0.36), skin);

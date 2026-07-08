@@ -5,17 +5,13 @@ import * as THREE from 'three';
 import { makeRider } from './riders.js';
 import { ROSTER, PLAYER_CHARACTER } from './characters.js';
 
+/* new concepts audition here before being promoted into characters.js */
+const YOU = { torso:PLAYER_CHARACTER.torso, helmet:PLAYER_CHARACTER.helmet };
 const EXPERIMENTS = [
-  { name:'MAGPIE 2.0',      torso:0x1a1423, helmet:0xf5e9d0, look:{head:'bird', tailFeathers:true} },
-  { name:'PIT VIPER GUY',   torso:0xb0402f, helmet:0xf25caf, look:{head:'pitviper', sleeveless:true} },
-  { name:'GREEN CHILE',     torso:0x5d8f4a, helmet:0x3e6b35, look:{head:'chile'} },
-  { name:'PROSPECTOR',      torso:0x8a3d2a, helmet:0x6e4b2a, look:{head:'prospector'} },
-  { name:'BIGHORN',         torso:0xc9a06a, helmet:0x8a6a48, look:{head:'bighorn'} },
-  { name:'WASH PARK WANDA', torso:0xf25caf, helmet:0xf5e9d0, look:{head:'wanda', floral:true} },
-  { name:'HONKER',          torso:0xd9d2c5, helmet:0xe8912d,
-    look:{head:'goose', fur:true, sleeveless:true, skinTone:0xd9d2c5} },
-  { name:'JUST MOVED HERE', torso:0xf5e9d0, helmet:0x5db3c9,
-    look:{head:'transplant', skinTone:0xe86a55, oxygen:true} },
+  { name:'NEW DEFAULT',    ...YOU, look:{} },
+  { name:'OLD BOXY',       ...YOU, look:{ tw:0.5, th:0.72, td:0.42, lean:0.5, ty:1.35 } },
+  { name:'TORSO: SHORT',   ...YOU, look:{ tw:0.5, th:0.55, td:0.42, lean:0.5, ty:1.43 } },
+  { name:'TORSO: LOW PRO', ...YOU, look:{ th:0.5, ty:1.38, lean:0.7, tw:0.46, td:0.38 } },
 ];
 
 const LINEUP = [
