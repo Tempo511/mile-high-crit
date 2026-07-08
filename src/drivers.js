@@ -84,8 +84,7 @@ export function playerDriver(r, inputs, game, dt){
   }
   if(r.drifting) target *= 0.95;
   if(braking){
-    if(r.speed>0.5) r.speed=Math.max(0,r.speed-BRAKE*dt);
-    else r.speed=Math.max(-4, r.speed-8*dt);
+    r.speed=Math.max(0, r.speed-BRAKE*dt);   // bikes don't reverse
   } else if(r.spin<=0){
     r.speed += Math.max(-ACCEL*1.6*dt, Math.min(ACCEL*dt, target-r.speed));
   }
