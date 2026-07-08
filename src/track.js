@@ -59,7 +59,7 @@ export class Track {
     this.waters = data.waters || [];
     this.pads = [];        // boost pads {x,z,r}
     this.boxes = [];       // item boxes {m,x,z,cd}
-    this.dynamic = { boats: [], clouds: [], paths: [], pads: [] };
+    this.dynamic = { boats: [], clouds: [], paths: [], pads: [], cars: [] };
 
     const rng = makeRng(data.seed || 1);
     const ctx = {

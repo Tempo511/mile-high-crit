@@ -111,6 +111,7 @@ export function buildWorld(scene, track){
     boats: track.dynamic.boats,
     clouds: track.dynamic.clouds,
     pads: track.dynamic.pads,
+    cars: track.dynamic.cars,
     boxes: track.boxes,
     projectiles: [],
     attackGeese: [],
@@ -276,6 +277,13 @@ export function updateAmbient(game, dt, now){
       const ph = Math.sin(now/180 - i*1.1);
       c.userData.mat.emissiveIntensity = 0.4 + 0.8*(0.5+0.5*ph);
     });
+  }
+  for(const car of game.world.cars){
+    car.pos += car.dir*car.speed*dt;
+    if(car.pos>car.max) car.pos=car.min;
+    else if(car.pos<car.min) car.pos=car.max;
+    if(car.axis==='z') car.m.position.set(car.fixed, 0, car.pos);
+    else car.m.position.set(car.pos, 0, car.fixed);
   }
   updatePeds(game, dt, now);
   for(const gz of game.world.lakeGeese){

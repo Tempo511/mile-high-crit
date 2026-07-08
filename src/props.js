@@ -785,21 +785,44 @@ B.clouds = (ctx, def) => {
    grid stretching to the fog line, so the horizon reads as "city" instead
    of empty lawn. Instanced (a few draw calls total), no colliders — it all
    lies beyond the playable bounds. */
+/* a little low-poly car for neighborhood traffic (faces local +X) */
+export function makeCar(rng){
+  const colors=[0xe84855,0x2e86ab,0xf5e9d0,0xffd166,0x4a5a6a,0x9b6b53,0x1a1423,0xd98c5f];
+  const c=colors[Math.floor(rng()*colors.length)];
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.9,0.5,0.9), lambert(c)); body.position.y=0.45; g.add(body);
+  const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.0,0.45,0.82), lambert(c)); cabin.position.set(-0.1,0.85,0); g.add(cabin);
+  const glass=new THREE.Mesh(new THREE.BoxGeometry(0.62,0.32,0.84), lambert(0x2a3a44)); glass.position.set(-0.1,0.87,0); g.add(glass);
+  const wgeo=new THREE.CylinderGeometry(0.22,0.22,0.16,6);
+  [[0.6,0.46],[0.6,-0.46],[-0.6,0.46],[-0.6,-0.46]].forEach(([x,z])=>{
+    const w=new THREE.Mesh(wgeo, lambert(0x1a1423)); w.rotation.x=Math.PI/2; w.position.set(x,0.22,z); g.add(w);
+  });
+  g.add(blobShadow(0.95,0.22));
+  return g;
+}
+
 B.sprawl = (ctx, def) => {
-  for(const sx of def.streetsX)
+  const streetsX=def.streetsX||[], streetsZ=def.streetsZ||[], crossZ=def.crossZ||[];
+  for(const sx of streetsX)
     buildRibbon(ctx, {points:[[sx,0,def.zMin],[sx,0,def.zMax]], width:5, closed:false}, asphaltTex, 0.010);
-  for(const sz of def.streetsZ)
+  for(const sz of streetsZ)
     buildRibbon(ctx, {points:[[def.xMin,0,sz],[def.xMax,0,sz]], width:5, closed:false}, asphaltTex, 0.010);
+  for(const cz of crossZ){   // east/west cross streets that skip over the park
+    buildRibbon(ctx, {points:[[def.xMin,0,cz],[-def.clearX,0,cz]], width:5, closed:false}, asphaltTex, 0.010);
+    buildRibbon(ctx, {points:[[def.clearX,0,cz],[def.xMax,0,cz]], width:5, closed:false}, asphaltTex, 0.010);
+  }
 
   const nearStreet = (x,z) =>
-    def.streetsX.some(sx=>Math.abs(x-sx)<6) || def.streetsZ.some(sz=>Math.abs(z-sz)<6);
+    streetsX.some(sx=>Math.abs(x-sx)<6) ||
+    streetsZ.some(sz=>Math.abs(z-sz)<6) ||
+    (Math.abs(x)>=def.clearX && crossZ.some(cz=>Math.abs(z-cz)<6));
   const inClearing = (x,z) => Math.abs(x)<def.clearX && Math.abs(z)<def.clearZ;
 
   const bricks=[0xb85c48,0xd98c5f,0xe0b487,0xa66a4f,0xc9a06a,0x9b6b53,0xd8d2c5];
   const roofsC=[0x5a4a3a,0x4a3c38,0x3f4a55];
   const greens=[0x4c7a3d,0x5d8f4a,0x6ba05a];
   const dummy=new THREE.Object3D(), col=new THREE.Color();
-  const MAXH=900, MAXT=400;
+  const MAXH=2400, MAXT=900;
 
   const bodies=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),
     new THREE.MeshLambertMaterial({flatShading:true}), MAXH);
@@ -811,11 +834,11 @@ B.sprawl = (ctx, def) => {
   let hi=0, ti=0;
   for(let gx=def.xMin; gx<=def.xMax; gx+=def.gridX){
     for(let gz=def.zMin; gz<=def.zMax; gz+=def.gridZ){
-      const x=gx+(ctx.rng()-0.5)*8, z=gz+(ctx.rng()-0.5)*10;
+      const x=gx+(ctx.rng()-0.5)*6, z=gz+(ctx.rng()-0.5)*7;
       if(inClearing(x,z) || nearStreet(x,z)) continue;
       const r=ctx.rng();
-      if(r<0.22){                                   // vacant lot → maybe a tree
-        if(ctx.rng()<0.6 && ti<MAXT){
+      if(r<0.10){                                   // occasional vacant lot → tree
+        if(ti<MAXT){
           const s=2.2+ctx.rng()*1.6;
           dummy.position.set(x,3.2,z); dummy.scale.setScalar(s);
           dummy.rotation.set(0,ctx.rng()*6,0); dummy.updateMatrix();
@@ -825,8 +848,8 @@ B.sprawl = (ctx, def) => {
         continue;
       }
       if(hi>=MAXH) continue;
-      const midrise = r>0.94;
-      const w=7+ctx.rng()*4, h=midrise?10+ctx.rng()*8:3.5+ctx.rng()*3, d=7+ctx.rng()*3;
+      const midrise = r>0.95;
+      const w=6.5+ctx.rng()*4, h=midrise?10+ctx.rng()*8:3.5+ctx.rng()*3, d=6.5+ctx.rng()*3;
       dummy.position.set(x,h/2,z); dummy.scale.set(w,h,d);
       dummy.rotation.set(0,0,0); dummy.updateMatrix();
       bodies.setMatrixAt(hi,dummy.matrix);
@@ -845,6 +868,29 @@ B.sprawl = (ctx, def) => {
   }
   bodies.count=hi; roofs.count=hi; canopy.count=ti;
   [bodies,roofs,canopy].forEach(m=>{ m.frustumCulled=false; ctx.scene.add(m); });
+
+  /* traffic: two-way cars on the through-streets (drive on the right) */
+  const carsPer = def.carsPerStreet||2;
+  for(const sx of streetsX){
+    for(let k=0;k<carsPer;k++){
+      const dir = k%2 ? 1 : -1;
+      const m = makeCar(ctx.rng); m.rotation.y = dir>0 ? -Math.PI/2 : Math.PI/2;
+      ctx.scene.add(m);
+      ctx.dynamic.cars.push({ m, axis:'z', fixed:sx+(dir>0?1.4:-1.4),
+        pos:def.zMin+ctx.rng()*(def.zMax-def.zMin), dir, speed:9+ctx.rng()*8,
+        min:def.zMin, max:def.zMax });
+    }
+  }
+  for(const sz of streetsZ){
+    for(let k=0;k<carsPer;k++){
+      const dir = k%2 ? 1 : -1;
+      const m = makeCar(ctx.rng); m.rotation.y = dir>0 ? 0 : Math.PI;
+      ctx.scene.add(m);
+      ctx.dynamic.cars.push({ m, axis:'x', fixed:sz+(dir>0?1.4:-1.4),
+        pos:def.xMin+ctx.rng()*(def.xMax-def.xMin), dir, speed:9+ctx.rng()*8,
+        min:def.xMin, max:def.xMax });
+    }
+  }
 };
 
 B.skylineDenver = (ctx, def) => {

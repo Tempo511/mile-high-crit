@@ -163,10 +163,11 @@ export default {
     /* the neighborhood, stretching to the fog line in every direction */
     { type:'sprawl',
       xMin:-360, xMax:380, zMin:-385, zMax:400,
-      clearX:124, clearZ:246,
-      streetsX:[-330,-270,-210,-150, 140, 200, 260, 320],
-      streetsZ:[-320,-260, 250, 310, 370],
-      gridX:26, gridZ:30 },
+      clearX:126, clearZ:250,
+      streetsX:[-340,-290,-240,-195,-140, 140,195,240,290,340],
+      streetsZ:[-360,-315,-280, 280,315,360,395],
+      crossZ:[-200,-120,-40,40,120,200],
+      gridX:17, gridZ:19, carsPerStreet:2 },
     { type:'mountains', x:-430, z:-300 },
     { type:'trees',     count:130, parkX:100, parkZ:300, outerX:220, outerZ:430,
       avoidX:[[86,118]], avoidZ:[[-242,-186],[186,220]] }
