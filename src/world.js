@@ -54,7 +54,7 @@ export function buildWorld(scene, track){
 
   /* joggers looping the gravel path, both directions */
   const joggers = [];
-  const loop = track.dynamic.paths[0];
+  const loop = track.dynamic.paths.find(p=>p.jog) || track.dynamic.paths[0];
   if(loop && track.data.joggers){
     const rng = makeRng((track.data.seed||1)+7);
     const shirts=[0xe84855,0xffd166,0x2e86ab,0xf25caf,0x5db3c9,0xf5e9d0];

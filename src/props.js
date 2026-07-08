@@ -14,9 +14,60 @@ B.water = (ctx, def) => {
     new THREE.MeshLambertMaterial({map: waterTex}));
   m.rotation.x = -Math.PI/2;
   if(def.scale) m.scale.set(def.scale[0], def.scale[1], 1);
-  m.position.set(def.x, 0.02, def.z);
-  ctx.scene.add(m);
+  const g = new THREE.Group();
+  g.add(m);
+  g.position.set(def.x, 0.02, def.z);
+  if(def.rot) g.rotation.y = def.rot;    // tilt the ellipse in the ground plane
+  ctx.scene.add(g);
   if(def.exclude) ctx.exclude(def.x, def.z, def.exclude);
+};
+
+/* a raised tree-covered island (Grasmere's iconic one) — a low grassy
+   mound with a sand ring, trees clustered at the crown so canopies stay
+   over land rather than poking out of the water */
+B.island = (ctx, def) => {
+  const r = def.r || 5;
+  const g = new THREE.Group();
+  const beach = new THREE.Mesh(new THREE.CylinderGeometry(r+1.4, r+2, 0.4, 16),
+    new THREE.MeshLambertMaterial({map:sandTex}));
+  beach.position.y=0.2; g.add(beach);
+  const land = new THREE.Mesh(new THREE.CylinderGeometry(r*0.85, r+0.4, 0.7, 16),
+    lambert(0x6a9c55));
+  land.position.y=0.55; g.add(land);
+  const crownY = 0.9;
+  for(let i=0;i<(def.trees||3);i++){
+    const t = ctx.rng()<0.5 ? pineTree(ctx.rng) : roundTree(ctx.rng, 0x4c7a3d);
+    t.scale.setScalar(0.55);
+    const a=ctx.rng()*6.28, rr=ctx.rng()*r*0.4;   // clustered near the crown
+    t.position.set(Math.cos(a)*rr, crownY, Math.sin(a)*rr);
+    g.add(t);
+  }
+  for(let i=0;i<4;i++){
+    const bush=new THREE.Mesh(new THREE.IcosahedronGeometry(0.5,0), BUSH_M);
+    const a=ctx.rng()*6.28, rr=r*0.55+ctx.rng()*r*0.25;
+    bush.position.set(Math.cos(a)*rr, crownY, Math.sin(a)*rr); g.add(bush);
+  }
+  g.position.set(def.x,0,def.z); ctx.scene.add(g);
+};
+
+/* scattered mixed-species trees in a region (tree density where the park
+   is actually wooded) */
+B.grove = (ctx, def) => {
+  const greens=[0x4c7a3d,0x5d8f4a,0x6ba05a,0x87a94a];
+  let placed=0, guard=0;
+  while(placed<def.count && guard++<def.count*10){
+    const p = new THREE.Vector3(def.x+(ctx.rng()-0.5)*def.spreadX, 0,
+                                def.z+(ctx.rng()-0.5)*def.spreadZ);
+    if(!ctx.clearOfRoad(p, def.margin||5) || !ctx.clearOfExclusions(p, 2)) continue;
+    const roll=ctx.rng();
+    const t = roll<0.42 ? pineTree(ctx.rng)
+            : roll<0.58 ? aspenClump(ctx.rng)
+            : roll<0.74 ? cottonwood(ctx.rng, greens[placed%4])
+            : roundTree(ctx.rng, greens[placed%4]);
+    t.position.copy(p); t.rotation.y=ctx.rng()*6; ctx.scene.add(t);
+    ctx.solid(p.x, p.z, 1.0);
+    placed++;
+  }
 };
 
 B.lilypads = (ctx, def) => {
@@ -421,9 +472,10 @@ function buildRibbon(ctx, def, tex, y){
   return { curve, len };
 }
 
-/* the gravel jogging loop — its spline is exposed for the joggers */
+/* gravel path; the main jogging loop (jog:true) is exposed for the joggers */
 B.path = (ctx, def) => {
   const ribbon = buildRibbon(ctx, def, sandTex, 0.013);
+  ribbon.jog = !!def.jog;
   ctx.dynamic.paths.push(ribbon);
 };
 
@@ -557,7 +609,7 @@ B.cityDitch = (ctx, def) => {
     const p = curve.getPointAt(ctx.rng());
     const side = ctx.rng()<0.5 ? -1 : 1;
     const q = new THREE.Vector3(p.x+side*(3+ctx.rng()*3), 0, p.z+(ctx.rng()-0.5)*4);
-    if(!ctx.clearOfRoad(q,3)) continue;
+    if(!ctx.clearOfRoad(q,3) || !ctx.clearOfExclusions(q,2)) continue;   // never in a lake
     const t = new THREE.Group();
     const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.45,2,5), lambert(0x7a6a52));
     trunk.position.y=1; t.add(trunk);

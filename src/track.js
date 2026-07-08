@@ -162,12 +162,15 @@ export class Track {
     const postG = new THREE.CylinderGeometry(0.22,0.22,5,5);
     [-1,1].forEach(s=>{ const m=new THREE.Mesh(postG, lambert(0xd94f30));
       m.position.copy(p).addScaledVector(n, s*(this.roadHalf+0.8)); m.position.y=2.5; scene.add(m); });
-    const bTex = pixTex(64,(g,px)=>{ g.fillStyle='#1a1423'; g.fillRect(0,0,px,px);
-      for(let x=0;x<8;x++)for(let y=0;y<2;y++){ g.fillStyle=(x+y)%2?'#f5e9d0':'#1a1423';
-        g.fillRect(x*8, y*8, 8, 8);} }, 2, 1);
-    const b = new THREE.Mesh(new THREE.PlaneGeometry(this.data.roadWidth+3, 1.4),
+    /* full checkerboard filling the whole texture (2 rows × 8 cols) */
+    const bTex = pixTex(64,(g,px)=>{
+      for(let x=0;x<8;x++)for(let y=0;y<2;y++){
+        g.fillStyle=(x+y)%2?'#f5e9d0':'#1a1423';
+        g.fillRect(x*8, y*32, 8, 32);
+      } }, 2, 1);
+    const b = new THREE.Mesh(new THREE.PlaneGeometry(this.data.roadWidth+3, 2.0),
       new THREE.MeshLambertMaterial({map:bTex, side:THREE.DoubleSide}));
-    b.position.copy(p); b.position.y = 4.4;
+    b.position.copy(p); b.position.y = 4.2;
     b.lookAt(p.clone().add(tan)); scene.add(b);
   }
 
