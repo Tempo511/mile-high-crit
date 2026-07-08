@@ -18,5 +18,7 @@ export const SPRINT_SPEED = 24.5,
              DRAFT_PULL   = 2,        // free target-speed bonus while drafting
              BONK_TIME    = 2.4, BONK_SPEED = 15;
 
+export const AI_SKILL = 1.08;           // global AI speed multiplier — the difficulty dial
+
 export const ITEMS = { coffee:'☕', sopapilla:'🫓', goose:'🪿' };
 export const PLACES = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];

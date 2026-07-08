@@ -5,7 +5,7 @@ import { MAX_SPEED, BOOST_SPEED, OFFROAD_MAX, ACCEL, BRAKE,
          TURN, GRIP_LOSS, SCRUB, DRIFT_TURN, DRIFT_STEER, DRIFT_SLIP,
          MINI, SUPER, ULTRA,
          SPRINT_SPEED, ENERGY_DRAIN, ENERGY_REGEN, DRAFT_REGEN, DRAFT_PULL,
-         BONK_TIME, BONK_SPEED } from './constants.js';
+         BONK_TIME, BONK_SPEED, AI_SKILL } from './constants.js';
 import { progressOf } from './racers.js';
 import { throwSopapilla } from './items.js';
 
@@ -129,18 +129,18 @@ export function aiDriver(r, game, dt){
   const ahead = r.corner?.ahead ?? 6;      // how early they read the corner
   const grip  = r.corner?.grip  ?? 0.55;   // how hard corners slow them
   const bend = track.curvatureAt(r.dist+ahead);
-  let target = r.base * (1 - Math.min(grip, bend*grip));
+  let target = r.base * AI_SKILL * (1 - Math.min(grip, bend*grip));
   const gap = progressOf(track, player) - progressOf(track, r);
-  if(gap>25) target*=1.22; else if(gap<-35) target*=0.94;
+  if(gap>18) target*=1.30; else if(gap<-50) target*=0.98;   // hunt hard, barely coast
   if(r.boostT>0){ target=BOOST_SPEED; r.boostT-=dt; }
   if(r.spin>0){ target=2; r.spin-=dt; }
-  r.speed += Math.max(-14*dt, Math.min(9*dt, target-r.speed));
+  r.speed += Math.max(-14*dt, Math.min(11*dt, target-r.speed));  // quicker off the corners
   r.dist += r.speed*dt;
 
   // items: espresso when far behind, sopapilla when tailing someone
   r.itemCd-=dt;
   if(r.itemCd<=0 && r.spin<=0){
-    r.itemCd=5+Math.random()*5;
+    r.itemCd=4+Math.random()*4;
     if(gap>r.boostThreshold){ r.boostT=1.1; }
     else {
       const myP=progressOf(track, r);
