@@ -7,7 +7,7 @@ import { MAX_SPEED, BOOST_SPEED, OFFROAD_MAX, ACCEL, BRAKE,
          SPRINT_SPEED, ENERGY_DRAIN, ENERGY_REGEN, DRAFT_REGEN, DRAFT_PULL,
          BONK_TIME, BONK_SPEED, AI_SKILL } from './constants.js';
 import { progressOf } from './racers.js';
-import { throwSopapilla } from './items.js';
+import { throwChile } from './items.js';
 
 function endDrift(r, events){
   if(r.driftCharge>=ULTRA){ r.boostT=1.7; events.push({type:'toast', msg:'ULTRA BOOST!', ms:900}); }
@@ -149,7 +149,7 @@ export function aiDriver(r, game, dt){
         const g2=progressOf(track,o)-myP;
         return g2>2 && g2<20;
       });
-      if(someoneAhead) throwSopapilla(game, r);
+      if(someoneAhead) throwChile(game, r);
     }
   }
   positionOnSpline(r, track);

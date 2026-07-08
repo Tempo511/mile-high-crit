@@ -2,7 +2,7 @@
    world interactions in the same order as the original monolith so
    gameplay is unchanged. DOM-free — presentation reads state + events. */
 import { playerDriver, aiDriver } from './drivers.js';
-import { useItem, updateProjectiles, updateAttackGeese, spinRacer } from './items.js';
+import { useItem, updateProjectiles, updateAttackGeese, updateShields, updateSlicks, spinRacer } from './items.js';
 import { updateBoxes, updateGeese, updateAmbient, burstFeathers } from './world.js';
 import { progressOf } from './racers.js';
 import { PLACES } from './constants.js';
@@ -75,6 +75,8 @@ export function step(game, inputs, dt, now){
   /* projectiles & attack geese */
   updateProjectiles(game, dt);
   updateAttackGeese(game, dt, now);
+  updateShields(game, dt, now);
+  updateSlicks(game, dt);
 
   /* feather bursts requested by events (decoupled from items.js) */
   for(const e of events) if(e.type==='feathers') burstFeathers(game.world, e.x, e.z);

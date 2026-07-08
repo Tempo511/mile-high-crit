@@ -112,7 +112,9 @@ export function buildWorld(scene, track){
     clouds: track.dynamic.clouds,
     boxes: track.boxes,
     projectiles: [],
-    attackGeese: []
+    attackGeese: [],
+    shields: [],
+    slicks: []
   };
 }
 
@@ -147,7 +149,7 @@ export function updateBoxes(game, dt, now){
     }
     if(b.cd<=0){
       if(player && !player.item && (b.x-player.x)**2+(b.z-player.z)**2<2.6){
-        giveItem(player); b.cd=3; b.m.visible=b.shadow.visible=false;
+        giveItem(player, game); b.cd=3; b.m.visible=b.shadow.visible=false;
         burstSparkles(game.world, b.x, b.z);
         game.events.push({type:'pickup'});
       }
