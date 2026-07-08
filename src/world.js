@@ -110,6 +110,7 @@ export function buildWorld(scene, track){
     geese, feathers, sparkles, joggers, lakeGeese, peds,
     boats: track.dynamic.boats,
     clouds: track.dynamic.clouds,
+    pads: track.dynamic.pads,
     boxes: track.boxes,
     projectiles: [],
     attackGeese: [],
@@ -268,6 +269,13 @@ export function updateAmbient(game, dt, now){
   for(const c of game.world.clouds){
     c.position.x += dt*1.4;
     if(c.position.x > 420) c.position.x = -420;
+  }
+  for(const pd of game.world.pads){
+    // a bright band chases front-to-back so the arrows read as "go this way"
+    pd.chevs.forEach((c,i)=>{
+      const ph = Math.sin(now/180 - i*1.1);
+      c.userData.mat.emissiveIntensity = 0.4 + 0.8*(0.5+0.5*ph);
+    });
   }
   updatePeds(game, dt, now);
   for(const gz of game.world.lakeGeese){

@@ -8,6 +8,19 @@ import { makeRng } from './rng.js';
 
 const NS = 600;   // spline samples for nearest-point queries & minimap
 
+/* one boost chevron whose apex points +Z (built to face travel direction);
+   both arms share a material so it can be pulsed via userData.mat */
+function makeChevron(){
+  const mat = new THREE.MeshLambertMaterial({color:0xffd166, emissive:0xffd166,
+    emissiveIntensity:0.5, flatShading:true});
+  const g = new THREE.Group();
+  const geo = new THREE.BoxGeometry(1.7,0.14,0.55);
+  const l = new THREE.Mesh(geo, mat); l.position.set(-0.55,0,0.15); l.rotation.y = 3*Math.PI/4; g.add(l);
+  const r = new THREE.Mesh(geo, mat); r.position.set( 0.55,0,0.15); r.rotation.y =   Math.PI/4; g.add(r);
+  g.userData.mat = mat;
+  return g;
+}
+
 /* a fun item crate: glowing translucent shell + bright edges + a floating
    gem inside (the gem is returned as userData.gem for counter-spin) */
 function makeItemBox(){
@@ -46,7 +59,7 @@ export class Track {
     this.waters = data.waters || [];
     this.pads = [];        // boost pads {x,z,r}
     this.boxes = [];       // item boxes {m,x,z,cd}
-    this.dynamic = { boats: [], clouds: [], paths: [] };
+    this.dynamic = { boats: [], clouds: [], paths: [], pads: [] };
 
     const rng = makeRng(data.seed || 1);
     const ctx = {
@@ -159,21 +172,30 @@ export class Track {
   }
 
   #buildPads(scene, data){
-    const padTex = pixTex(32,(g,px)=>{
-      g.fillStyle='#e8912d'; g.fillRect(0,0,px,px);
-      g.fillStyle='#ffd166';
-      g.beginPath(); g.moveTo(4,24); g.lineTo(16,10); g.lineTo(28,24); g.lineTo(22,24);
-      g.lineTo(16,17); g.lineTo(10,24); g.closePath(); g.fill();
-    });
     for(const t of data.boostPads || []){
       const p = this.curve.getPointAt(t), tan = this.curve.getTangentAt(t);
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 5),
-        new THREE.MeshLambertMaterial({map:padTex}));
-      m.rotation.x = -Math.PI/2;
-      m.position.set(p.x, 0.04, p.z);
-      m.rotation.z = -Math.atan2(tan.x, tan.z);
-      scene.add(m);
+      const g = new THREE.Group();
+      g.position.set(p.x, 0.05, p.z);
+      g.rotation.y = Math.atan2(tan.x, tan.z);   // local +Z = travel direction
+      // glowing base strip
+      const base = new THREE.Mesh(new THREE.PlaneGeometry(4.4,6.4),
+        new THREE.MeshLambertMaterial({color:0xc2621a, emissive:0x8a3d0a,
+          transparent:true, opacity:0.9}));
+      base.rotation.x = -Math.PI/2; g.add(base);
+      const edge = new THREE.Mesh(new THREE.PlaneGeometry(4.7,6.7),
+        new THREE.MeshLambertMaterial({color:0xffd166, emissive:0x8a5a00,
+          transparent:true, opacity:0.5}));
+      edge.rotation.x = -Math.PI/2; edge.position.y=-0.01; g.add(edge);
+      // three flowing chevrons pointing forward
+      const chevs = [];
+      for(let i=0;i<3;i++){
+        const c = makeChevron();
+        c.position.set(0, 0.04, -1.9 + i*1.7);
+        g.add(c); chevs.push(c);
+      }
+      scene.add(g);
       this.pads.push({x:p.x, z:p.z, r:3});
+      this.dynamic.pads.push({ chevs });
     }
   }
 
