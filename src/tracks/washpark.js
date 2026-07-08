@@ -160,6 +160,13 @@ export default {
     ]},
     { type:'clouds', count:10, spreadX:500, spreadZ:560, yMin:60, yMax:95 },
     { type:'skylineDenver',   z:-420 },
+    /* the neighborhood, stretching to the fog line in every direction */
+    { type:'sprawl',
+      xMin:-360, xMax:380, zMin:-385, zMax:400,
+      clearX:124, clearZ:246,
+      streetsX:[-330,-270,-210,-150, 140, 200, 260, 320],
+      streetsZ:[-320,-260, 250, 310, 370],
+      gridX:26, gridZ:30 },
     { type:'mountains', x:-430, z:-300 },
     { type:'trees',     count:130, parkX:100, parkZ:300, outerX:220, outerZ:430,
       avoidX:[[86,118]], avoidZ:[[-242,-186],[186,220]] }

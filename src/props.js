@@ -685,6 +685,72 @@ B.clouds = (ctx, def) => {
   }
 };
 
+/* Neighborhood sprawl: hundreds of simple houses + tree canopy + a street
+   grid stretching to the fog line, so the horizon reads as "city" instead
+   of empty lawn. Instanced (a few draw calls total), no colliders — it all
+   lies beyond the playable bounds. */
+B.sprawl = (ctx, def) => {
+  for(const sx of def.streetsX)
+    buildRibbon(ctx, {points:[[sx,0,def.zMin],[sx,0,def.zMax]], width:5, closed:false}, asphaltTex, 0.010);
+  for(const sz of def.streetsZ)
+    buildRibbon(ctx, {points:[[def.xMin,0,sz],[def.xMax,0,sz]], width:5, closed:false}, asphaltTex, 0.010);
+
+  const nearStreet = (x,z) =>
+    def.streetsX.some(sx=>Math.abs(x-sx)<6) || def.streetsZ.some(sz=>Math.abs(z-sz)<6);
+  const inClearing = (x,z) => Math.abs(x)<def.clearX && Math.abs(z)<def.clearZ;
+
+  const bricks=[0xb85c48,0xd98c5f,0xe0b487,0xa66a4f,0xc9a06a,0x9b6b53,0xd8d2c5];
+  const roofsC=[0x5a4a3a,0x4a3c38,0x3f4a55];
+  const greens=[0x4c7a3d,0x5d8f4a,0x6ba05a];
+  const dummy=new THREE.Object3D(), col=new THREE.Color();
+  const MAXH=900, MAXT=400;
+
+  const bodies=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshLambertMaterial({flatShading:true}), MAXH);
+  const roofs=new THREE.InstancedMesh(new THREE.ConeGeometry(0.74,1,4),
+    new THREE.MeshLambertMaterial({flatShading:true}), MAXH);
+  const canopy=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),
+    new THREE.MeshLambertMaterial({flatShading:true}), MAXT);
+
+  let hi=0, ti=0;
+  for(let gx=def.xMin; gx<=def.xMax; gx+=def.gridX){
+    for(let gz=def.zMin; gz<=def.zMax; gz+=def.gridZ){
+      const x=gx+(ctx.rng()-0.5)*8, z=gz+(ctx.rng()-0.5)*10;
+      if(inClearing(x,z) || nearStreet(x,z)) continue;
+      const r=ctx.rng();
+      if(r<0.22){                                   // vacant lot → maybe a tree
+        if(ctx.rng()<0.6 && ti<MAXT){
+          const s=2.2+ctx.rng()*1.6;
+          dummy.position.set(x,3.2,z); dummy.scale.setScalar(s);
+          dummy.rotation.set(0,ctx.rng()*6,0); dummy.updateMatrix();
+          canopy.setMatrixAt(ti,dummy.matrix);
+          canopy.setColorAt(ti,col.setHex(greens[ti%3])); ti++;
+        }
+        continue;
+      }
+      if(hi>=MAXH) continue;
+      const midrise = r>0.94;
+      const w=7+ctx.rng()*4, h=midrise?10+ctx.rng()*8:3.5+ctx.rng()*3, d=7+ctx.rng()*3;
+      dummy.position.set(x,h/2,z); dummy.scale.set(w,h,d);
+      dummy.rotation.set(0,0,0); dummy.updateMatrix();
+      bodies.setMatrixAt(hi,dummy.matrix);
+      bodies.setColorAt(hi,col.setHex(midrise?0xb8b0a4:bricks[hi%bricks.length]));
+      if(!midrise){
+        dummy.position.set(x,h+1.1,z); dummy.scale.set(Math.max(w,d),2.2,Math.max(w,d));
+        dummy.rotation.set(0,Math.PI/4,0); dummy.updateMatrix();
+        roofs.setMatrixAt(hi,dummy.matrix);
+        roofs.setColorAt(hi,col.setHex(roofsC[hi%3]));
+      } else {
+        dummy.position.set(x,-5,z); dummy.scale.setScalar(0.001); dummy.updateMatrix();
+        roofs.setMatrixAt(hi,dummy.matrix);   // hide roof slot under ground
+      }
+      hi++;
+    }
+  }
+  bodies.count=hi; roofs.count=hi; canopy.count=ti;
+  [bodies,roofs,canopy].forEach(m=>{ m.frustumCulled=false; ctx.scene.add(m); });
+};
+
 B.skylineDenver = (ctx, def) => {
   const z0 = def.z;
   const tones=[0x9b8ec4,0x8c7fb5,0xa99cd1,0x7d70a6];
