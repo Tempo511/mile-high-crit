@@ -1,6 +1,7 @@
 /* Pure data & tuning. No imports, no DOM. */
 
-export const INTERNAL_H = 240;          // internal render height (retro upscale)
+export const INTERNAL_H = 320;          // internal render height (retro upscale)
+export const RIDER_SCALE = 1.18;        // kart-game cheat: riders oversized for readability
 
 /* player physics */
 export const MAX_SPEED = 19, BOOST_SPEED = 32, OFFROAD_MAX = 8,

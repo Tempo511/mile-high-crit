@@ -1,7 +1,7 @@
 /* Renderer: scene/camera setup + drawing racer state each frame.
    Strictly read-only over game state — all mutation lives in the sim. */
 import * as THREE from 'three';
-import { INTERNAL_H, BOOST_SPEED, MINI, SUPER, ULTRA } from './constants.js';
+import { INTERNAL_H, RIDER_SCALE, BOOST_SPEED, MINI, SUPER, ULTRA } from './constants.js';
 import { makeRider } from './riders.js';
 
 export function createRenderer(trackData){
@@ -30,6 +30,11 @@ export function createRenderer(trackData){
   const sun = new THREE.DirectionalLight(sunDef[0], sunDef[1]);
   sun.position.set(-140, 150, 40);
   scene.add(sun);
+  /* cool fill from the opposite side — the Rider Lab trick that gives
+     characters edge definition instead of flat single-source shading */
+  const fill = new THREE.DirectionalLight(0x9b8ec4, 0.3);
+  fill.position.set(120, 60, -80);
+  scene.add(fill);
 
   return { renderer, scene, camera };
 }
@@ -39,6 +44,7 @@ export function createRacerMeshes(scene, racers){
   const meshes = new Map();
   for(const r of racers){
     const m = makeRider({torso:r.colors.torso, helmet:r.colors.helmet, ...(r.look||{})});
+    m.scale.setScalar(RIDER_SCALE);   // visual only — collision radii unchanged
     scene.add(m);
     meshes.set(r.id, m);
   }
