@@ -190,6 +190,12 @@ B.cottage = (ctx, def) => {
   ctx.exclude(fx,fz,4); ctx.solid(fx,fz,3);
 };
 
+/* shared materials for architectural details (keeps material count down) */
+const GLASS = lambert(0xa8ccd4);
+const DOOR_M = lambert(0x3a2a20);
+const FOUNDATION_M = lambert(0x8a8275);
+const BUSH_M = lambert(0x4c7a3d);
+
 /* modest brick bungalows, front doors toward ry */
 function buildHouse(ctx, x, z, ry){
   const bricks=[0xb85c48,0xd98c5f,0xe0b487,0xa66a4f,0xc9a06a,0x9b6b53];
@@ -197,8 +203,20 @@ function buildHouse(ctx, x, z, ry){
   const w2=6+ctx.rng()*3, h=4+ctx.rng()*3, d=6+ctx.rng()*2;
   const body = new THREE.Mesh(new THREE.BoxGeometry(w2,h,d), lambert(bricks[Math.floor(ctx.rng()*6)]));
   body.position.y=h/2; g.add(body);
+  const found = new THREE.Mesh(new THREE.BoxGeometry(w2+0.25,0.5,d+0.25), FOUNDATION_M);
+  found.position.y=0.25; g.add(found);
   const roof = new THREE.Mesh(new THREE.ConeGeometry(Math.max(w2,d)*0.74, 2.4, 4), lambert(0x5a4a3a));
   roof.position.y=h+1.2; roof.rotation.y=Math.PI/4; g.add(roof);
+  const door = new THREE.Mesh(new THREE.BoxGeometry(0.9,1.7,0.1), DOOR_M);
+  door.position.set(0,0.95,d/2+0.03); g.add(door);
+  [-w2*0.28, w2*0.28].forEach(wx=>{
+    const win = new THREE.Mesh(new THREE.BoxGeometry(1,1,0.08), GLASS);
+    win.position.set(wx,h*0.55,d/2+0.03); g.add(win);
+  });
+  if(ctx.rng()<0.5){
+    const chim = new THREE.Mesh(new THREE.BoxGeometry(0.7,1.8,0.7), FOUNDATION_M);
+    chim.position.set(w2*0.3,h+0.9,-d*0.2); g.add(chim);
+  }
   g.position.set(x,0,z); g.rotation.y=ry; ctx.scene.add(g); ctx.solid(x,z,5);
 }
 
@@ -237,8 +255,23 @@ B.mansionRow = (ctx, def) => {
     }
     const pRoof = new THREE.Mesh(new THREE.BoxGeometry(w2*0.95,0.3,2.5), lambert(roofC));
     pRoof.position.set(0,3.0,d/2+1.15); g.add(pRoof);
-    const door = new THREE.Mesh(new THREE.BoxGeometry(0.95,1.9,0.15), lambert(0x3a2a20));
+    const door = new THREE.Mesh(new THREE.BoxGeometry(0.95,1.9,0.15), DOOR_M);
     door.position.set(0,1.2,d/2+0.05); g.add(door);
+    /* windows up & down, eave trim, foundation, bushes, front walk */
+    [[-w2*0.28,2.1],[w2*0.28,2.1],[-w2*0.28,h-1.6],[w2*0.28,h-1.6]].forEach(([wx,wy])=>{
+      const win = new THREE.Mesh(new THREE.BoxGeometry(1,1.25,0.1), GLASS);
+      win.position.set(wx,wy,d/2+0.04); g.add(win);
+    });
+    const trimB = new THREE.Mesh(new THREE.BoxGeometry(w2+0.4,0.28,d+0.4), trim);
+    trimB.position.y=h+0.05; g.add(trimB);
+    const found = new THREE.Mesh(new THREE.BoxGeometry(w2+0.3,0.55,d+0.3), FOUNDATION_M);
+    found.position.y=0.27; g.add(found);
+    [-w2*0.4, w2*0.4].forEach(bx=>{
+      const bush = new THREE.Mesh(new THREE.IcosahedronGeometry(0.6,0), BUSH_M);
+      bush.position.set(bx,0.45,d/2+0.8); g.add(bush);
+    });
+    const walk = new THREE.Mesh(new THREE.PlaneGeometry(1.2,3.2), FOUNDATION_M);
+    walk.rotation.x=-Math.PI/2; walk.position.set(0,0.028,d/2+3.6); g.add(walk);
     g.position.set(x,0,z); g.rotation.y=ry; ctx.scene.add(g);
     ctx.solid(x,z,5.5);
   };
@@ -337,27 +370,48 @@ B.street = (ctx, def) => { buildRibbon(ctx, def, asphaltTex, 0.011); };
 B.keepClear = (ctx, def) => { ctx.exclude(def.x, def.z, def.r); };
 
 /* low-poly park-goer. pose: 'stand' | 'sit'. Front faces local +z. */
+const HAIR_COLORS=[0x4a3320,0x1a1423,0xd9b458,0x8a8275,0x6e4b2a];
 export function makePerson(rng, shirt, pose='stand', skinC){
   const g = new THREE.Group();
   const skins=[0xd9a066,0xa06a42,0x8a5533,0xe8b88a];
   const skin = skinC ?? skins[Math.floor(rng()*skins.length)];
+  const skinM = lambert(skin);
   const pants = rng()<0.5 ? 0x1a1423 : 0x4a5a6a;
+  const hairC = HAIR_COLORS[Math.floor(rng()*HAIR_COLORS.length)];
   if(pose==='sit'){
     const legs = new THREE.Mesh(new THREE.BoxGeometry(0.44,0.18,0.55), lambert(pants));
     legs.position.set(0,0.09,0.28); g.add(legs);
     const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44,0.55,0.3), lambert(shirt));
     torso.position.y=0.48; g.add(torso);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,0.3), lambert(skin));
+    [-0.26,0.26].forEach(x=>{                       // arms resting forward
+      const arm=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.42,0.1), lambert(shirt));
+      arm.position.set(x,0.55,0.14); arm.rotation.x=-0.9; g.add(arm);
+    });
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,0.3), skinM);
     head.position.y=0.92; g.add(head);
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.32,0.12,0.32), lambert(hairC));
+    hair.position.y=1.12; g.add(hair);
   } else {
     const legG = new THREE.BoxGeometry(0.16,0.6,0.16);
     const legL = new THREE.Mesh(legG, lambert(pants)); legL.position.set(-0.11,0.3,0);
     const legR = new THREE.Mesh(legG, lambert(pants)); legR.position.set( 0.11,0.3,0);
     g.add(legL); g.add(legR);
+    [-0.11,0.11].forEach(x=>{                       // shoes
+      const shoe=new THREE.Mesh(new THREE.BoxGeometry(0.17,0.08,0.26), lambert(0x2b2b33));
+      shoe.position.set(x,0.04,0.05); g.add(shoe);
+    });
     const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44,0.6,0.28), lambert(shirt));
     torso.position.y=0.9; g.add(torso);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,0.3), lambert(skin));
+    [-0.28,0.28].forEach(x=>{                       // arms at the sides
+      const arm=new THREE.Mesh(new THREE.BoxGeometry(0.11,0.52,0.11), lambert(shirt));
+      arm.position.set(x,0.92,0); g.add(arm);
+      const hand=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1), skinM);
+      hand.position.set(x,0.6,0); g.add(hand);
+    });
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,0.3), skinM);
     head.position.y=1.36; g.add(head);
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.32,0.12,0.32), lambert(hairC));
+    hair.position.y=1.56; g.add(hair);
     g.userData.legs=[legL,legR];
   }
   g.add(blobShadow(0.42, 0.22));
@@ -471,38 +525,56 @@ B.perennialGarden = (ctx, def) => {
 };
 
 /* ---- tree species ---- */
+/* canopy puff with a slightly shaded twin for depth */
+function canopy(rng, s, tint, detail=1){
+  const grp=new THREE.Group();
+  const main=new THREE.Mesh(new THREE.IcosahedronGeometry(s,detail), lambert(tint));
+  grp.add(main);
+  const dark=new THREE.Color(tint).multiplyScalar(0.85).getHex();
+  const lobe=new THREE.Mesh(new THREE.IcosahedronGeometry(s*0.62,detail), lambert(dark));
+  lobe.position.set(s*0.55,-s*0.15,(rng()-0.5)*s*0.7); grp.add(lobe);
+  const light=new THREE.Color(tint).multiplyScalar(1.12).getHex();
+  const lobe2=new THREE.Mesh(new THREE.IcosahedronGeometry(s*0.5,detail), lambert(light));
+  lobe2.position.set(-s*0.5,s*0.25,(rng()-0.5)*s*0.6); grp.add(lobe2);
+  return grp;
+}
+
 function pineTree(rng){
   const t=new THREE.Group();
   const tones=[0x2e5a3a,0x3a6b45,0x35604a];
-  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.55,2.4,5), lambert(0x5a4030));
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.6,2.4,7), lambert(0x5a4030));
   trunk.position.y=1.2; t.add(trunk);
   const h=5+rng()*4, tone=tones[Math.floor(rng()*3)];
-  for(let j=0;j<3;j++){
-    const cone=new THREE.Mesh(new THREE.ConeGeometry((2.6-j*0.7)*(1+h/14), h/2.6, 6), lambert(tone));
-    cone.position.y=2.2+j*(h/3.2); t.add(cone);
+  const dark=new THREE.Color(tone).multiplyScalar(0.85).getHex();
+  for(let j=0;j<4;j++){
+    const cone=new THREE.Mesh(new THREE.ConeGeometry((2.7-j*0.55)*(1+h/14), h/3.2, 8),
+      lambert(j%2 ? dark : tone));
+    cone.position.y=2+j*(h/4.2); t.add(cone);
   }
   t.add(blobShadow(2.4, 0.16, 0.018));
   return t;
 }
 function roundTree(rng, tint){
   const t=new THREE.Group();
-  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.8,3.6,5), lambert(0x6e4b2a));
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.85,3.6,7), lambert(0x6e4b2a));
   trunk.position.y=1.8; t.add(trunk);
+  const branch=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.24,1.6,5), lambert(0x6e4b2a));
+  branch.position.set(0.6,3.1,0.2); branch.rotation.z=-0.7; t.add(branch);
   const s=2.6+rng()*3;
-  const puff=new THREE.Mesh(new THREE.IcosahedronGeometry(s,0), lambert(tint));
-  puff.position.y=3.6+s*0.7; t.add(puff);
+  const c=canopy(rng, s, tint);
+  c.position.y=3.6+s*0.7; t.add(c);
   t.add(blobShadow(s*0.8, 0.16, 0.018));
   return t;
 }
 function cottonwood(rng, tint){
   const t=new THREE.Group();
-  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.95,5.4,5), lambert(0x5f4632));
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.55,1,5.4,7), lambert(0x5f4632));
   trunk.position.y=2.7; t.add(trunk);
   const s=3.2+rng()*1.8;
-  const puff=new THREE.Mesh(new THREE.IcosahedronGeometry(s,0), lambert(tint));
-  puff.position.y=6+s*0.5; t.add(puff);
-  const puff2=new THREE.Mesh(new THREE.IcosahedronGeometry(s*0.6,0), lambert(tint));
-  puff2.position.set(1.4,7.4+s*0.5,0.6); t.add(puff2);
+  const c=canopy(rng, s, tint);
+  c.position.y=6+s*0.5; t.add(c);
+  const c2=canopy(rng, s*0.55, tint);
+  c2.position.set(1.6,7.6+s*0.5,0.7); t.add(c2);
   t.add(blobShadow(s*0.85, 0.16, 0.018));
   return t;
 }
@@ -510,11 +582,14 @@ function aspenClump(rng){
   const t=new THREE.Group();
   const n=2+Math.floor(rng()*2);
   for(let i=0;i<n;i++){
-    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.2,4.4,5), lambert(0xd8d2c5));
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.19,4.4,6), lambert(0xd8d2c5));
     trunk.position.set((rng()-0.5)*1.6, 2.2, (rng()-0.5)*1.6);
     trunk.rotation.z=(rng()-0.5)*0.16;
     t.add(trunk);
-    const puff=new THREE.Mesh(new THREE.IcosahedronGeometry(1.3+rng()*0.7,0), lambert(0x9fca6a));
+    const knot=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.1,0.05), lambert(0x4a4a44));
+    knot.position.set(trunk.position.x+0.08, 1.4+rng()*1.6, trunk.position.z+0.09);
+    t.add(knot);
+    const puff=new THREE.Mesh(new THREE.IcosahedronGeometry(1.3+rng()*0.7,1), lambert(0x9fca6a));
     puff.position.set(trunk.position.x, 4.6+rng()*0.8, trunk.position.z);
     t.add(puff);
   }

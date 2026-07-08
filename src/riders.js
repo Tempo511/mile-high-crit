@@ -135,6 +135,12 @@ export function gooseMesh(scale=1){
   const neck = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.8,0.22), lambert(0x2b2b33)); neck.position.set(0.5,1.2,0); g.add(neck);
   const head = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.3,0.28), lambert(0x2b2b33)); head.position.set(0.62,1.65,0); g.add(head);
   const beak = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.12,0.16), lambert(0xe8912d)); beak.position.set(0.9,1.62,0); g.add(beak);
+  [-0.36,0.36].forEach(z=>{
+    const wing = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.4,0.1), lambert(0xc9c0b0));
+    wing.position.set(-0.06,0.72,z); wing.rotation.x = z>0?0.12:-0.12; g.add(wing);
+  });
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.16,0.3), lambert(0xc9c0b0));
+  tail.position.set(-0.62,0.78,0); tail.rotation.z=0.35; g.add(tail);
   g.add(blobShadow(0.55, 0.22));
   g.scale.setScalar(scale);
   return g;
