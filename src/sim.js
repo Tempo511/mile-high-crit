@@ -20,7 +20,7 @@ export function step(game, inputs, dt, now){
 
   /* player physics (+ item use) */
   if(inputs.useItem) useItem(game, player);
-  const idx = playerDriver(player, inputs, track, dt, events);
+  const idx = playerDriver(player, inputs, game, dt);
 
   /* item boxes */
   updateBoxes(game, dt, now);

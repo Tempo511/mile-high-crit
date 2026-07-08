@@ -2,7 +2,7 @@
    Owns the spline, road mesh, pickups, colliders, and spatial queries.
    No game state, no DOM, no per-frame logic. */
 import * as THREE from 'three';
-import { lambert, pixTex, grassTex, roadTex } from './gfx.js';
+import { lambert, pixTex, blobShadow, grassTex, roadTex } from './gfx.js';
 import { PROP_BUILDERS } from './props.js';
 import { makeRng } from './rng.js';
 
@@ -169,7 +169,10 @@ export class Track {
           {color:0xffd166, transparent:true, opacity:0.92, flatShading:true}));
         m.position.copy(p).addScaledVector(n, off); m.position.y=1.1;
         scene.add(m);
-        this.boxes.push({m, x:m.position.x, z:m.position.z, cd:0});
+        const shadow = blobShadow(0.75, 0.2);
+        shadow.position.set(m.position.x, 0.03, m.position.z);
+        scene.add(shadow);
+        this.boxes.push({m, shadow, x:m.position.x, z:m.position.z, cd:0});
       }
     }
   }

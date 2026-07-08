@@ -44,6 +44,14 @@ export function buildWorld(scene, track){
     feathers.push({m:f, vx:0, vy:0, vz:0, life:0});
   }
 
+  const sparkles = [];
+  for(let i=0;i<12;i++){
+    const s = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.18,0.18),
+      new THREE.MeshBasicMaterial({color:0xffd166, transparent:true}));
+    s.visible=false; scene.add(s);
+    sparkles.push({m:s, vx:0, vy:0, vz:0, life:0});
+  }
+
   /* joggers looping the gravel path, both directions */
   const joggers = [];
   const loop = track.dynamic.paths[0];
@@ -99,13 +107,22 @@ export function buildWorld(scene, track){
   }
 
   return {
-    geese, feathers, joggers, lakeGeese, peds,
+    geese, feathers, sparkles, joggers, lakeGeese, peds,
     boats: track.dynamic.boats,
     clouds: track.dynamic.clouds,
     boxes: track.boxes,
     projectiles: [],
     attackGeese: []
   };
+}
+
+export function burstSparkles(world, x, z){
+  world.sparkles.forEach(s=>{
+    s.m.visible=true; s.life=0.45+Math.random()*0.3;
+    s.m.position.set(x,1.1,z);
+    s.vx=(Math.random()-0.5)*6; s.vy=2.5+Math.random()*3.5; s.vz=(Math.random()-0.5)*6;
+    s.m.material.opacity=1;
+  });
 }
 
 export function burstFeathers(world, x, z){
@@ -121,18 +138,20 @@ export function burstFeathers(world, x, z){
 export function updateBoxes(game, dt, now){
   const player = game.racers.find(r=>r.driver==='player');
   for(const b of game.world.boxes){
-    if(b.cd>0){ b.cd-=dt; b.m.visible=b.cd<=0; }
+    if(b.cd>0){ b.cd-=dt; b.m.visible=b.shadow.visible=b.cd<=0; }
     b.m.rotation.y += dt*2.2; b.m.rotation.x += dt*1.1;
     b.m.position.y = 1.1+Math.sin(now/400+b.x)*0.15;
     if(b.cd<=0){
       if(player && !player.item && (b.x-player.x)**2+(b.z-player.z)**2<2.6){
-        giveItem(player); b.cd=3; b.m.visible=false;
+        giveItem(player); b.cd=3; b.m.visible=b.shadow.visible=false;
+        burstSparkles(game.world, b.x, b.z);
+        game.events.push({type:'pickup'});
       }
       // AIs consume boxes too (their actual item use runs on a timer in aiDriver)
       for(const r of game.racers){
         if(r.driver!=='ai') continue;
         if(b.cd<=0 && (b.x-r.x)**2+(b.z-r.z)**2<2.6 && Math.random()<0.5){
-          b.cd=3; b.m.visible=false;
+          b.cd=3; b.m.visible=b.shadow.visible=false;
         }
       }
     }
@@ -225,6 +244,15 @@ export function updateAmbient(game, dt, now){
       f.vy-=9*dt; f.m.rotation.x+=dt*6; f.m.rotation.z+=dt*4;
       f.m.material.opacity=Math.max(0,f.life);
       if(f.life<=0) f.m.visible=false;
+    }
+  }
+  for(const s of game.world.sparkles){
+    if(s.life>0){
+      s.life-=dt;
+      s.m.position.x+=s.vx*dt; s.m.position.y+=s.vy*dt; s.m.position.z+=s.vz*dt;
+      s.vy-=7*dt; s.m.rotation.y+=dt*9; s.m.rotation.x+=dt*7;
+      s.m.material.opacity=Math.max(0,s.life*2);
+      if(s.life<=0) s.m.visible=false;
     }
   }
   for(const b of game.world.boats){

@@ -5,7 +5,7 @@
      def — the prop entry from the track file.
    Placement randomness uses ctx.rng (seeded) so colliders match across clients. */
 import * as THREE from 'three';
-import { lambert, pixTex, waterTex, sandTex, asphaltTex } from './gfx.js';
+import { lambert, pixTex, blobShadow, waterTex, sandTex, asphaltTex } from './gfx.js';
 
 const B = {};
 
@@ -360,6 +360,7 @@ export function makePerson(rng, shirt, pose='stand', skinC){
     head.position.y=1.36; g.add(head);
     g.userData.legs=[legL,legR];
   }
+  g.add(blobShadow(0.42, 0.22));
   return g;
 }
 
@@ -480,6 +481,7 @@ function pineTree(rng){
     const cone=new THREE.Mesh(new THREE.ConeGeometry((2.6-j*0.7)*(1+h/14), h/2.6, 6), lambert(tone));
     cone.position.y=2.2+j*(h/3.2); t.add(cone);
   }
+  t.add(blobShadow(2.4, 0.16, 0.018));
   return t;
 }
 function roundTree(rng, tint){
@@ -489,6 +491,7 @@ function roundTree(rng, tint){
   const s=2.6+rng()*3;
   const puff=new THREE.Mesh(new THREE.IcosahedronGeometry(s,0), lambert(tint));
   puff.position.y=3.6+s*0.7; t.add(puff);
+  t.add(blobShadow(s*0.8, 0.16, 0.018));
   return t;
 }
 function cottonwood(rng, tint){
@@ -500,6 +503,7 @@ function cottonwood(rng, tint){
   puff.position.y=6+s*0.5; t.add(puff);
   const puff2=new THREE.Mesh(new THREE.IcosahedronGeometry(s*0.6,0), lambert(tint));
   puff2.position.set(1.4,7.4+s*0.5,0.6); t.add(puff2);
+  t.add(blobShadow(s*0.85, 0.16, 0.018));
   return t;
 }
 function aspenClump(rng){
@@ -514,6 +518,7 @@ function aspenClump(rng){
     puff.position.set(trunk.position.x, 4.6+rng()*0.8, trunk.position.z);
     t.add(puff);
   }
+  t.add(blobShadow(1.9, 0.14, 0.018));
   return t;
 }
 
@@ -663,6 +668,7 @@ export function makeDog(rng){
   [[0.25,0.1],[0.25,-0.1],[-0.25,0.1],[-0.25,-0.1]].forEach(([x,z])=>{
     const leg=new THREE.Mesh(new THREE.BoxGeometry(0.09,0.28,0.09), lambert(c));
     leg.position.set(x,0.14,z); g.add(leg); });
+  g.add(blobShadow(0.4, 0.2));
   return g;
 }
 

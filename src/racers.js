@@ -20,6 +20,7 @@ export function createRacer(opts){
 
     // shared race state
     item:null, boostT:0, spin:0,
+    energy:1, bonkT:0, drafting:false, sprinting:false,
 
     // player-driver fields
     steer:0, drifting:false, driftDir:0, driftCharge:0,

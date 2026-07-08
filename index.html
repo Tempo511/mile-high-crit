@@ -7,8 +7,11 @@
 </head>
 <body>
 <canvas id="game"></canvas>
+<div id="vignette"></div>
+<div id="flash"></div>
 
 <div class="hud" id="speedo">0<small> MPH</small></div>
+<div class="hud" id="energyWrap"><div id="energyFill"></div><span id="energyLabel">LEGS</span></div>
 <div class="hud" id="laps">LAP 1/3<br><span id="timer">0:00.0</span><br><span id="best"></span></div>
 <div class="hud" id="pos"></div>
 <div class="hud" id="itemSlot"></div>
@@ -20,13 +23,21 @@
 <div class="pad" id="padR"></div>
 <button class="btn" id="btnDrift">DRIFT</button>
 <button class="btn" id="btnItem">☕</button>
+<button class="btn" id="btnSprint">GAS</button>
+
+<div id="results">
+  <h2 id="resTitle">FINISH!</h2>
+  <div id="resList"></div>
+  <button id="againBtn">RACE AGAIN</button>
+</div>
 
 <div id="title">
   <h1>MILE HIGH CRIT</h1>
   <div class="sub">WASH PARK GP &middot; 7 RACERS &middot; 3 LAPS</div>
   <div class="ctl">
-    <span class="kbdonly"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> steer &middot; <kbd>SPACE</kbd> drift/brake &middot; <kbd>E</kbd> use item</span>
-    <span class="touchonly">HOLD SIDES TO STEER &middot; DRIFT BUTTON &middot; ITEM BUTTON</span>
+    <span class="kbdonly"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> steer &middot; <kbd>SPACE</kbd> gas (burns legs) &middot; <kbd>SHIFT</kbd>/<kbd>&darr;</kbd> drift/brake &middot; <kbd>E</kbd> item</span>
+    <span class="touchonly">HOLD SIDES TO STEER &middot; GAS / DRIFT / ITEM BUTTONS</span>
+    <br>draft riders to refill your legs &middot; hold <span class="kbdonly"><kbd>SPACE</kbd></span><span class="touchonly">GAS</span> on the "1" for a launch
     <br>grab the gold crates &middot; ☕ espresso boost &middot; 🫓 sopapilla toss &middot; 🪿 attack goose
   </div>
   <button id="startBtn">ROLL OUT</button>

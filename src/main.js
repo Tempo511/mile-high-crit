@@ -12,6 +12,7 @@ import { positionOnSpline, aiDriver } from './drivers.js';
 import { buildWorld, updateAmbient } from './world.js';
 import { createInput } from './input.js';
 import { createHud } from './hud.js';
+import { createAudio } from './audio.js';
 import { step } from './sim.js';
 
 const trackData = washpark;
@@ -49,16 +50,32 @@ view.meshes = createRacerMeshes(view.scene, game.racers);
 
 const input = createInput();
 const hud = createHud(track);
+const audio = createAudio();
 
-/* ---------- race start ---------- */
+/* ---------- race start (with timed launch: hold drift on the "1") ---------- */
+let countStart=0, earlyHold=0;
 document.getElementById('startBtn').addEventListener('click', ()=>{
+  audio.unlock();                             // AudioContext needs a user gesture
   document.getElementById('title').style.display='none';
   game.race.phase='count';
-  hud.toast('3', 700);
-  setTimeout(()=>hud.toast('2',700), 800);
-  setTimeout(()=>hud.toast('1',700), 1600);
-  setTimeout(()=>{ hud.toast('GO!',900); game.race.phase='race';
-    game.race.t0=performance.now(); game.race.lapStart=game.race.t0; }, 2400);
+  countStart=performance.now(); earlyHold=0;
+  hud.toast('3', 700); audio.play('count');
+  setTimeout(()=>{ hud.toast('2',700); audio.play('count'); }, 800);
+  setTimeout(()=>{ hud.toast('1',700); audio.play('count'); }, 1600);
+  setTimeout(()=>{
+    game.race.phase='race';
+    game.race.t0=performance.now(); game.race.lapStart=game.race.t0;
+    audio.play('go');
+    if(earlyHold>0.25){
+      player.bonkT=1.4;                       // wobbly legs off the line
+      hud.toast('JUMPED THE GUN!',1000); audio.play('bonk');
+    } else if(input.get().sprint){
+      player.boostT=1.3;
+      hud.toast('PERFECT START!',1000); audio.play('boost');
+    } else {
+      hud.toast('GO!',900);
+    }
+  }, 2400);
 });
 
 /* ---------- loop ---------- */
@@ -67,12 +84,18 @@ function frame(now){
   requestAnimationFrame(frame);
   const dt=Math.min((now-prev)/1000,0.05); prev=now;
   game.events.length=0;
+  if(game.race.phase==='count'){
+    // holding the gas before the "1" shows counts as jumping the gun
+    if(now-countStart<1600 && input.get().sprint) earlyHold+=dt;
+  }
   if(game.race.phase==='race'){
     step(game, input.get(), dt, now);
+    audio.ambient(dt);
   } else if(game.race.phase==='done'){
     for(const r of game.racers) if(r.driver==='ai') aiDriver(r, game, dt);
     updateAmbient(game, dt, now);
   }
+  for(const e of game.events) audio.handle(e);
   draw(game, view, dt, now);
   hud.update(game, now);
 }

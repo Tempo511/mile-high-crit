@@ -1,8 +1,20 @@
 /* HUD: DOM overlays + minimap. Reads game state, consumes sim events.
    The only module (besides input) that touches the DOM. */
 import { ITEMS, PLACES } from './constants.js';
+import { progressOf } from './racers.js';
 
 const $=id=>document.getElementById(id);
+
+/* full-screen pulse (lap = white, boost = gold, finish = big white) */
+function flash(color, intensity){
+  const el=$('flash');
+  el.style.transition='none';
+  el.style.background=color;
+  el.style.opacity=intensity;
+  el.offsetHeight;                       // force reflow so the fade restarts
+  el.style.transition='opacity .5s';
+  el.style.opacity=0;
+}
 
 export function toast(msg, ms=1400){
   const t=$('toast'); t.textContent=msg; t.style.opacity=1;
@@ -61,17 +73,31 @@ export function createHud(track){
     const player = game.racers.find(r=>r.driver==='player');
 
     for(const e of events){
-      if(e.type==='toast') toast(e.msg, e.ms);
-      else if(e.type==='lap')
+      if(e.type==='toast'){
+        toast(e.msg, e.ms);
+        if(e.msg==='BOOST!'||e.msg==='SUPER BOOST!'||e.msg==='ULTRA BOOST!')
+          flash('#ffd166', 0.18);
+      }
+      else if(e.type==='lap'){
         toast((e.final?'FINAL LAP · ':'LAP '+e.lap+' · ')+fmtS(e.lapTime)+'s');
-      else if(e.type==='finish')
-        toast('FINISH! '+PLACES[e.place-1]+' · '+fmt(e.total), 60000);
+        flash('#fff', 0.3);
+      }
+      else if(e.type==='finish'){
+        toast('FINISH! '+PLACES[e.place-1], 2500);
+        flash('#fff', 0.5);
+        setTimeout(()=>showResults(game, e), 1500);
+      }
     }
 
     if(race.phase==='race'){
       checkCallouts(player.prog);
       $('pos').textContent = PLACES[race.playerPlace-1] || '';
       $('speedo').innerHTML=Math.round(Math.abs(player.speed)*2.05)+'<small> MPH</small>';
+      $('energyFill').style.width=(player.energy*100)+'%';
+      $('energyWrap').className = player.bonkT>0 ? 'hud bonk'
+        : player.drafting ? 'hud draft' : 'hud';
+      $('energyLabel').textContent = player.bonkT>0 ? 'BONK!'
+        : player.drafting ? 'DRAFT ≋' : 'LEGS';
       $('laps').innerHTML='LAP '+player.lap+'/'+race.laps
         +'<br><span id="timer">'+fmt(now-race.t0)+'</span>'
         +'<br><span id="best">'+(race.best<Infinity?('BEST '+fmtS(race.best)+'s'):'')+'</span>';
@@ -79,6 +105,24 @@ export function createHud(track){
     }
     drawMini(game);
   }
+
+  function showResults(game, e){
+    const { race, racers } = game;
+    const done = race.finishOrder.map(id=>racers.find(r=>r.id===id));
+    const rest = racers.filter(r=>!race.finishOrder.includes(r.id))
+      .sort((a,b)=>progressOf(track,b)-progressOf(track,a));
+    const rows = [...done, ...rest].map((r,i)=>{
+      const you = r.driver==='player';
+      const time = you ? ' · '+fmt(e.total) : '';
+      return `<div class="${you?'you':''}">${PLACES[i]}&nbsp;&nbsp;${r.name}${time}</div>`;
+    }).join('');
+    $('resTitle').textContent = e.place===1 ? 'YOU WON! 🏆'
+      : 'FINISH! '+PLACES[e.place-1];
+    $('resList').innerHTML = rows +
+      (race.best<Infinity ? `<div>&nbsp;</div><div>BEST LAP · ${fmtS(race.best)}s</div>` : '');
+    $('results').style.display='flex';
+  }
+  $('againBtn').addEventListener('click', ()=>location.reload());
 
   return { update, toast };
 }

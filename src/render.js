@@ -1,7 +1,7 @@
 /* Renderer: scene/camera setup + drawing racer state each frame.
    Strictly read-only over game state — all mutation lives in the sim. */
 import * as THREE from 'three';
-import { INTERNAL_H, BOOST_SPEED, MINI, SUPER } from './constants.js';
+import { INTERNAL_H, BOOST_SPEED, MINI, SUPER, ULTRA } from './constants.js';
 import { makeRider } from './riders.js';
 
 export function createRenderer(trackData){
@@ -45,9 +45,88 @@ export function createRacerMeshes(scene, racers){
   return meshes;
 }
 
+/* speed-lines while sprinting; rising energy motes while drafting */
+function ensureFx(view){
+  if(view.streaks) return;
+  view.streaks=[];
+  const sg=new THREE.BoxGeometry(0.07,0.07,2.4);
+  for(let i=0;i<7;i++){
+    const m=new THREE.Mesh(sg, new THREE.MeshBasicMaterial(
+      {color:0xfff1c9, transparent:true, opacity:0.6}));
+    m.visible=false; view.scene.add(m);
+    view.streaks.push({m, ahead:4+i*1.7, lat:(i%2?1:-1)*(1+(i%3)*0.7), y:0.6+(i%4)*0.4});
+  }
+  view.motes=[];
+  const mg=new THREE.BoxGeometry(0.1,0.1,0.1);
+  for(let i=0;i<6;i++){
+    const m=new THREE.Mesh(mg, new THREE.MeshBasicMaterial(
+      {color:0x5db3c9, transparent:true, opacity:0.9}));
+    m.visible=false; view.scene.add(m);
+    view.motes.push({m, lx:(i%2?1:-1)*(0.3+(i%3)*0.3), lf:-0.5+(i%4)*0.4, y:0.3+i*0.35});
+  }
+  view.dust=[];
+  const dg=new THREE.BoxGeometry(0.2,0.2,0.2);
+  for(let i=0;i<8;i++){
+    const m=new THREE.Mesh(dg, new THREE.MeshBasicMaterial(
+      {color:0xb8ab98, transparent:true, opacity:0.6}));
+    m.visible=false; view.scene.add(m);
+    view.dust.push({m, life:0, x:0, y:0, z:0});
+  }
+}
+
 export function draw(game, view, dt, now){
   const { renderer, scene, camera, meshes } = view;
   const player = game.racers.find(r=>r.driver==='player');
+  ensureFx(view);
+
+  const pfx=Math.sin(player.heading), pfz=Math.cos(player.heading);
+  /* gas: streaks whipping past */
+  for(const s of view.streaks){
+    if(!player.sprinting){ s.m.visible=false; continue; }
+    s.ahead -= (player.speed+16)*dt;
+    if(s.ahead<-5){
+      s.ahead=6+Math.random()*7;
+      s.lat=(Math.random()<0.5?-1:1)*(1+Math.random()*2);
+      s.y=0.5+Math.random()*1.6;
+    }
+    s.m.visible=true;
+    s.m.position.set(player.x+pfx*s.ahead - pfz*s.lat, s.y,
+                     player.z+pfz*s.ahead + pfx*s.lat);
+    s.m.rotation.y=player.heading;
+  }
+  /* drift: dust kicked off the rear wheel */
+  for(const d of view.dust){
+    d.life-=dt;
+    if(d.life<=0){
+      if(player.drifting && Math.abs(player.speed)>10){
+        d.life=0.3+Math.random()*0.2;
+        d.x=player.x - pfx*1.1 - pfz*(player.driftDir*0.5+(Math.random()-0.5)*0.5);
+        d.z=player.z - pfz*1.1 + pfx*(player.driftDir*0.5+(Math.random()-0.5)*0.5);
+        d.y=0.15;
+        d.m.scale.setScalar(0.8+Math.random()*0.5);
+      } else { d.m.visible=false; continue; }
+    }
+    d.y+=1.4*dt; d.m.scale.multiplyScalar(1+2.4*dt);
+    d.m.visible=true;
+    d.m.material.opacity=Math.max(0, d.life*1.8);
+    d.m.position.set(d.x, d.y, d.z);
+  }
+
+  /* draft: cyan motes gathering up the rider */
+  for(const mo of view.motes){
+    if(!player.drafting){ mo.m.visible=false; continue; }
+    mo.y += 1.5*dt;
+    if(mo.y>2.3){
+      mo.y=0.2;
+      mo.lx=(Math.random()<0.5?-1:1)*(0.25+Math.random()*0.7);
+      mo.lf=-0.6+Math.random()*1.4;
+    }
+    mo.m.visible=true;
+    mo.m.material.opacity=Math.max(0.15, 1-mo.y*0.4);
+    mo.m.position.set(player.x+pfx*mo.lf - pfz*mo.lx, mo.y,
+                      player.z+pfz*mo.lf + pfx*mo.lx);
+    mo.m.rotation.y=now/300+mo.lx;
+  }
 
   for(const r of game.racers){
     const m = meshes.get(r.id);
@@ -74,10 +153,10 @@ export function draw(game, view, dt, now){
       const targetYaw = r.drifting ? r.driftDir*0.45 : 0;
       bike.rotation.y += (targetYaw - bike.rotation.y)*Math.min(1,dt*8);
 
-      const tier = r.driftCharge>=SUPER?2 : r.driftCharge>=MINI?1 : 0;
+      const tier = r.driftCharge>=ULTRA?3 : r.driftCharge>=SUPER?2 : r.driftCharge>=MINI?1 : 0;
       m.userData.sparks.forEach(s=>{
         s.visible = r.drifting && tier>0 && (Math.floor(now/60)%2===0);
-        s.material.color.setHex(tier===2?0xff9a5c:0x5db3c9);
+        s.material.color.setHex(tier===3?0xf25caf : tier===2?0xff9a5c : 0x5db3c9);
       });
     } else {
       bike.rotation.x = -Math.sin(r.dist*0.02+r.ph)*0.15;
@@ -96,7 +175,8 @@ export function draw(game, view, dt, now){
   }
   camera.lookAt(player.x+Math.sin(player.heading)*9, 1.4,
                 player.z+Math.cos(player.heading)*9);
-  const targetFov = boosting? 84 : 70;
+  camera.rotateZ(player.steer*0.045 + (player.drifting ? player.driftDir*0.05 : 0));
+  const targetFov = boosting? 84 : player.sprinting? 77 : 70;
   camera.fov += (targetFov-camera.fov)*Math.min(1,dt*6);
   camera.updateProjectionMatrix();
 

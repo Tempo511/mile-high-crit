@@ -14,6 +14,15 @@ export function lambert(color, extra={}){
   return new THREE.MeshLambertMaterial(Object.assign({color, flatShading:true}, extra));
 }
 
+/* soft dark ellipse that visually glues an object to the ground */
+const shadowGeo = new THREE.CircleGeometry(1, 12);
+export function blobShadow(r, opacity=0.25, y=0.03){
+  const m = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial(
+    {color:0x1a1423, transparent:true, opacity, depthWrite:false}));
+  m.rotation.x=-Math.PI/2; m.scale.set(r,r,1); m.position.y=y;
+  return m;
+}
+
 /* Texture speckle noise is per-client visual fluff — plain Math.random is fine. */
 export const grassTex = pixTex(32,(g,px)=>{
   g.fillStyle='#7fb069'; g.fillRect(0,0,px,px);

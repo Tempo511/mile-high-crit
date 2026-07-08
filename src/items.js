@@ -33,7 +33,8 @@ export function giveItem(r){
 export function useItem(game, r){
   if(!r.item || game.race.phase!=='race' || r.spin>0) return;
   const it=r.item; r.item=null;
-  if(it==='coffee'){ r.boostT=1.25; game.events.push({type:'toast', msg:'ESPRESSO!', ms:700}); }
+  if(it==='coffee'){ r.boostT=1.25; r.energy=1;   // caffeine refills the legs too
+    game.events.push({type:'toast', msg:'ESPRESSO!', ms:700}); }
   if(it==='sopapilla'){ throwSopapilla(game, r); }
   if(it==='goose'){
     const me=progressOf(game.track, r);

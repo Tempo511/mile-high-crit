@@ -5,7 +5,7 @@
    userData API: {legs, bike, sparks, wheels} — legs are groups whose
    position.y is animated by the render layer; wheels spin with speed. */
 import * as THREE from 'three';
-import { lambert } from './gfx.js';
+import { lambert, blobShadow } from './gfx.js';
 
 function wheel(x, disc){
   const g = new THREE.Group();
@@ -125,6 +125,7 @@ export function makeRider(spec){
 
   root.userData={legs, bike, sparks:[s1,s2], wheels:[wF,wB]};
   root.add(bike);
+  root.add(blobShadow(0.95, 0.28));
   return root;
 }
 
@@ -134,6 +135,7 @@ export function gooseMesh(scale=1){
   const neck = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.8,0.22), lambert(0x2b2b33)); neck.position.set(0.5,1.2,0); g.add(neck);
   const head = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.3,0.28), lambert(0x2b2b33)); head.position.set(0.62,1.65,0); g.add(head);
   const beak = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.12,0.16), lambert(0xe8912d)); beak.position.set(0.9,1.62,0); g.add(beak);
+  g.add(blobShadow(0.55, 0.22));
   g.scale.setScalar(scale);
   return g;
 }
