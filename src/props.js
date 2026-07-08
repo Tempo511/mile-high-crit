@@ -297,9 +297,51 @@ B.mansionRow = (ctx, def) => {
     g.position.set(x,0,z); g.rotation.y=ry; ctx.scene.add(g);
     ctx.solid(x,z,5.5);
   };
+  /* decorative landscaping between the lots (no collision — off the course) */
+  const greens=[0x4c7a3d,0x5d8f4a,0x6ba05a];
+  const plantTree=(x,z,sc)=>{
+    const roll=ctx.rng();
+    const t = roll<0.25 ? pineTree(ctx.rng)
+            : roll<0.42 ? aspenClump(ctx.rng)
+            : roundTree(ctx.rng, greens[Math.floor(ctx.rng()*3)]);
+    t.position.set(x,0,z); t.rotation.y=ctx.rng()*6;
+    if(sc) t.scale.setScalar(sc);
+    ctx.scene.add(t);
+  };
+  const plantHedge=(x,z,n)=>{               // short run of bushes along z
+    for(let i=0;i<n;i++){
+      const bush=new THREE.Mesh(new THREE.IcosahedronGeometry(0.5+ctx.rng()*0.25,0), BUSH_M);
+      bush.position.set(x+(ctx.rng()-0.5)*0.5, 0.45, z+(i-(n-1)/2)*1.15);
+      ctx.scene.add(bush);
+    }
+  };
+  const lamppost=(x,z)=>{
+    const g=new THREE.Group();
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.12,3.4,6), lambert(0x2b2b33));
+    pole.position.y=1.7; g.add(pole);
+    const arm=new THREE.Mesh(new THREE.BoxGeometry(0.6,0.1,0.1), lambert(0x2b2b33));
+    arm.position.set(0.2,3.4,0); g.add(arm);
+    const lamp=new THREE.Mesh(new THREE.BoxGeometry(0.36,0.4,0.36),
+      lambert(0xffe6a0, {emissive:0x8a6a20}));
+    lamp.position.set(0.42,3.35,0); g.add(lamp);
+    g.position.set(x,0,z); ctx.scene.add(g);
+  };
+
   for(let z=-def.zSpan; z<=def.zSpan; z+=def.step){
     mansion(-def.xEdge, z+(ctx.rng()-0.5)*4,  Math.PI/2);   // west side faces east
     mansion( def.xEdge, z+(ctx.rng()-0.5)*4, -Math.PI/2);   // east side faces west
+    const gapZ = z + def.step/2;
+    // parkway trees out front (toward the park) + a side-yard tree
+    plantTree(-def.xEdge+9 + (ctx.rng()-0.5)*3, z + (ctx.rng()-0.5)*4);
+    plantTree(-def.xEdge-2 + (ctx.rng()-0.5)*2, gapZ + (ctx.rng()-0.5)*3, 0.8);
+    plantTree( def.xEdge-9 + (ctx.rng()-0.5)*3, z + (ctx.rng()-0.5)*4);
+    plantTree( def.xEdge+2 + (ctx.rng()-0.5)*2, gapZ + (ctx.rng()-0.5)*3, 0.8);
+    // hedges along the property lines between houses
+    plantHedge(-def.xEdge+4, gapZ, 4);
+    plantHedge( def.xEdge-4, gapZ, 4);
+    // the occasional street lamp
+    if(ctx.rng()<0.35) lamppost(-def.xEdge+11, gapZ);
+    if(ctx.rng()<0.35) lamppost( def.xEdge-11, gapZ);
   }
 };
 
