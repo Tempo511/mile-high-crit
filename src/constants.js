@@ -18,4 +18,4 @@ export const SPRINT_SPEED = 24.5,
              BONK_TIME    = 2.4, BONK_SPEED = 15;
 
 export const ITEMS = { coffee:'☕', sopapilla:'🫓', goose:'🪿' };
-export const PLACES = ['1st','2nd','3rd','4th','5th','6th','7th','8th'];
+export const PLACES = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];

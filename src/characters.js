@@ -17,8 +17,16 @@ export const PLAYER_CHARACTER = {
 export const ROSTER = [
   /* mascot tier */
   { id:'magpie',   name:'MAGPIE',      torso:0x1a1423, helmet:0xf5e9d0, base:19.2, amp:1.6, ph:0.0 },
-  { id:'blucifer', name:'BLUCIFER JR', torso:0x2b4a8f, helmet:0xe84855, base:19.8, amp:1.1, ph:2.1 },
-  { id:'yeti',     name:'THE YETI',    torso:0xf5e9d0, helmet:0x5db3c9, base:20.3, amp:2.0, ph:4.2 },
+  { id:'blucifer', name:'BLUCIFER',    torso:0x2e5fd0, helmet:0x1a1423, base:19.8, amp:1.1, ph:2.1,
+    look:{ head:'horse' } },
+  { id:'yeti',     name:'THE YETI',    torso:0xf5f0e6, helmet:0x5db3c9, base:20.3, amp:2.0, ph:4.2,
+    look:{ head:'yeti', fur:true, sleeveless:true, skinTone:0xf5f0e6 } },
+  { id:'diver', name:'CLIFF DIVER',    torso:0xd9a066, helmet:0xe84855, base:19.6, amp:1.8, ph:0.8,
+    corner:{ grip:0.4 },                    // dives into corners without fear
+    look:{ head:'diver', trunks:true, sleeveless:true } },
+  { id:'bronco', name:'BRONCO',        torso:0xe8622d, helmet:0x2b4a8f, base:19.4, amp:1.3, ph:5.8,
+    boostThreshold:15,                      // fourth-quarter energy
+    look:{ head:'bronco', pads:true } },
 
   /* locals tier */
   { id:'stravadad', name:'STRAVA DAD', torso:0xd7f13d, helmet:0xff5c8a,
