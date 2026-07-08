@@ -369,6 +369,19 @@ B.street = (ctx, def) => { buildRibbon(ctx, def, asphaltTex, 0.011); };
 /* tree keep-out zone — how track data carves open meadows */
 B.keepClear = (ctx, def) => { ctx.exclude(def.x, def.z, def.r); };
 
+/* eyes (and usually a mouth) on the +z face of a head at height y */
+const EYE_M = lambert(0x1a1423);
+function addFace(g, rng, y, zFront){
+  [-0.08,0.08].forEach(x=>{
+    const eye=new THREE.Mesh(new THREE.BoxGeometry(0.055,0.07,0.02), EYE_M);
+    eye.position.set(x, y+0.03, zFront+0.01); g.add(eye);
+  });
+  if(rng()<0.6){
+    const mouth=new THREE.Mesh(new THREE.BoxGeometry(0.11,0.03,0.02), EYE_M);
+    mouth.position.set(0, y-0.09, zFront+0.01); g.add(mouth);
+  }
+}
+
 /* low-poly park-goer. pose: 'stand' | 'sit'. Front faces local +z. */
 const HAIR_COLORS=[0x4a3320,0x1a1423,0xd9b458,0x8a8275,0x6e4b2a];
 export function makePerson(rng, shirt, pose='stand', skinC){
@@ -387,10 +400,11 @@ export function makePerson(rng, shirt, pose='stand', skinC){
       const arm=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.42,0.1), lambert(shirt));
       arm.position.set(x,0.55,0.14); arm.rotation.x=-0.9; g.add(arm);
     });
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,0.3), skinM);
-    head.position.y=0.92; g.add(head);
-    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.32,0.12,0.32), lambert(hairC));
-    hair.position.y=1.12; g.add(hair);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.34,0.36), skinM);
+    head.position.y=0.94; g.add(head);
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.12,0.38), lambert(hairC));
+    hair.position.y=1.16; g.add(hair);
+    addFace(g, rng, 0.94, 0.19);
   } else {
     const legG = new THREE.BoxGeometry(0.16,0.6,0.16);
     const legL = new THREE.Mesh(legG, lambert(pants)); legL.position.set(-0.11,0.3,0);
@@ -408,10 +422,11 @@ export function makePerson(rng, shirt, pose='stand', skinC){
       const hand=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1), skinM);
       hand.position.set(x,0.6,0); g.add(hand);
     });
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,0.3), skinM);
-    head.position.y=1.36; g.add(head);
-    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.32,0.12,0.32), lambert(hairC));
-    hair.position.y=1.56; g.add(hair);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.36,0.38), skinM);
+    head.position.y=1.4; g.add(head);
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.12,0.4), lambert(hairC));
+    hair.position.y=1.63; g.add(hair);
+    addFace(g, rng, 1.42, 0.2);
     g.userData.legs=[legL,legR];
   }
   g.add(blobShadow(0.42, 0.22));
@@ -710,12 +725,12 @@ export function makePedestrian(rng, type){
     });
   }
   if(type.hair){
-    const h=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.52,0.2), lambert(0x6e4b2a));
-    h.position.set(0,1.26,-0.16); g.add(h);
+    const h=new THREE.Mesh(new THREE.BoxGeometry(0.38,0.55,0.2), lambert(0x6e4b2a));
+    h.position.set(0,1.28,-0.2); g.add(h);
   }
   if(type.headband){
-    const hb=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.07,0.34), lambert(0xe84855));
-    hb.position.set(0,1.47,0); g.add(hb);
+    const hb=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.07,0.4), lambert(0xe84855));
+    hb.position.set(0,1.54,0); g.add(hb);
   }
   if(type.umbrella){
     const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1.7,4), lambert(0x1a1423));

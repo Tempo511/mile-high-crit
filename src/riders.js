@@ -64,11 +64,13 @@ export function makeRider(spec){
       shag.position.y=y; shag.rotation.y=i%2?0.14:-0.12; torsoGrp.add(shag);
     });
   }
-  if(spec.pads){                    // football shoulder pads
-    const pads=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.22,0.64), lambert(torsoC));
+  if(spec.pads){                    // football shoulder pads (navy over orange)
+    const pads=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.22,0.64), lambert(helmetC));
     pads.position.y=0.3; torsoGrp.add(pads);
-    const padTrim=new THREE.Mesh(new THREE.BoxGeometry(0.82,0.07,0.66), lambert(helmetC));
+    const padTrim=new THREE.Mesh(new THREE.BoxGeometry(0.82,0.07,0.66), lambert(0xf5e9d0));
     padTrim.position.y=0.18; torsoGrp.add(padTrim);
+    const number=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.3,0.28), lambert(0xf5e9d0));
+    number.position.set(-0.28,0,0); torsoGrp.add(number);   // jersey number on the back
   }
   if(spec.trunks){                  // swim trunks on a bare torso
     const trunks=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.22,0.44), lambert(helmetC));
@@ -124,30 +126,43 @@ export function makeRider(spec){
       lens.position.set(0.52,1.8,z); bike.add(lens);
     });
   } else if(spec.head==='diver'){
-    /* CASA BONITA CLIFF DIVER: bare head, black hair, red headband */
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.32,0.34), skin);
-    head.position.set(0.32,1.72,0); bike.add(head);
-    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.12,0.36), lambert(0x1a1423));
-    hair.position.set(0.3,1.92,0); bike.add(hair);
-    const band = new THREE.Mesh(new THREE.BoxGeometry(0.37,0.08,0.37), lambert(helmetC));
-    band.position.set(0.31,1.85,0); bike.add(band);
+    /* CASA BONITA CLIFF DIVER: bare head, black hair, red headband, real eyes */
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.34,0.36), skin);
+    head.position.set(0.32,1.73,0); bike.add(head);
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.12,0.38), lambert(0x1a1423));
+    hair.position.set(0.3,1.94,0); bike.add(hair);
+    const band = new THREE.Mesh(new THREE.BoxGeometry(0.39,0.08,0.39), lambert(helmetC));
+    band.position.set(0.31,1.87,0); bike.add(band);
+    [-0.08,0.08].forEach(z=>{
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.07,0.055), lambert(0x1a1423));
+      eye.position.set(0.51,1.77,z); bike.add(eye);
+    });
+    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.03,0.12), lambert(0x1a1423));
+    mouth.position.set(0.51,1.63,0); bike.add(mouth);
   } else if(spec.head==='bronco'){
-    /* BRONCO: football helmet, center stripe, facemask */
-    const chin = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.14,0.2), skin);
-    chin.position.set(0.4,1.64,0); bike.add(chin);
-    const shell = new THREE.Mesh(new THREE.BoxGeometry(0.44,0.36,0.42), lambert(torsoC));
-    shell.position.set(0.3,1.84,0); bike.add(shell);
-    const stripeTop = new THREE.Mesh(new THREE.BoxGeometry(0.46,0.08,0.12), lambert(helmetC));
-    stripeTop.position.set(0.3,2.02,0); bike.add(stripeTop);
-    [1.72,1.8].forEach(y=>{
-      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.04,0.36), lambert(0x8a8275));
-      bar.position.set(0.54,y,0); bike.add(bar);
+    /* BRONCO: navy helmet + orange stripe over an orange jersey, facemask,
+       eye black under the visor line */
+    const chin = new THREE.Mesh(new THREE.BoxGeometry(0.24,0.16,0.24), skin);
+    chin.position.set(0.38,1.66,0); bike.add(chin);
+    [-0.07,0.07].forEach(z=>{
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.05,0.05), lambert(0x1a1423));
+      eye.position.set(0.51,1.7,z); bike.add(eye);
+    });
+    const shell = new THREE.Mesh(new THREE.BoxGeometry(0.46,0.38,0.46), lambert(helmetC));
+    shell.position.set(0.3,1.88,0); bike.add(shell);
+    const stripeTop = new THREE.Mesh(new THREE.BoxGeometry(0.48,0.08,0.13), lambert(torsoC));
+    stripeTop.position.set(0.3,2.08,0); bike.add(stripeTop);
+    [1.72,1.81].forEach(y=>{
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.045,0.4), lambert(0xd8d2c5));
+      bar.position.set(0.55,y,0); bike.add(bar);
     });
   } else {
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.32,0.34), skin);
-    head.position.set(0.32,1.72,0); bike.add(head);
-    const shades = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.09,0.3), lambert(0x1a1423));
-    shades.position.set(0.49,1.75,0); bike.add(shades);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.34,0.36), skin);
+    head.position.set(0.32,1.73,0); bike.add(head);
+    const shades = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.09,0.32), lambert(0x1a1423));
+    shades.position.set(0.5,1.77,0); bike.add(shades);
+    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.03,0.11), lambert(0x3a2a20));
+    mouth.position.set(0.51,1.63,0); bike.add(mouth);
     if(spec.beard){
       const beard = new THREE.Mesh(new THREE.BoxGeometry(0.14,0.16,0.3), lambert(0x6e4b2a));
       beard.position.set(0.47,1.6,0); bike.add(beard);
