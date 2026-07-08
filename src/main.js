@@ -13,56 +13,48 @@ import { buildWorld, updateAmbient } from './world.js';
 import { createInput } from './input.js';
 import { createHud } from './hud.js';
 import { createAudio } from './audio.js';
+import { createCharacterSelect } from './select.js';
 import { step } from './sim.js';
 
 const trackData = washpark;
 const view = createRenderer(trackData);
 const track = new Track(view.scene, trackData);
-
-/* ---------- racers ---------- */
-const startP = track.pointAt(0), startTan = track.tangentAt(0);
-const player = createRacer({ ...PLAYER_CHARACTER, driver:'player' });
-player.x=startP.x; player.z=startP.z;
-player.heading=Math.atan2(startTan.x, startTan.z);
-
-/* the roster is bigger than one race — draw 8 random rivals per race */
-const pool = [...ROSTER];
-for(let i=pool.length-1;i>0;i--){
-  const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];
-}
-const ais = pool.slice(0,8).map((c,i)=>{
-  const r = createRacer({ ...c, driver:'ai', itemCd:6+Math.random()*6 });
-  r.dist = 4+i*3;
-  positionOnSpline(r, track);
-  return r;
-});
-
-const game = {
-  scene: view.scene,
-  track,
-  racers: [player, ...ais],
-  world: null,
-  race: {
-    phase:'title',
-    laps: trackData.laps,
-    t0:0, lapStart:0, best:Infinity,
-    finishOrder:[], playerPlace:1, place:0
-  },
-  events: []
-};
-game.world = buildWorld(view.scene, track);
-view.meshes = createRacerMeshes(view.scene, game.racers);
-
+const world = buildWorld(view.scene, track);          // park backdrop for the menus
 const input = createInput();
-const hud = createHud(track);
 const audio = createAudio();
+const startP = track.pointAt(0), startTan = track.tangentAt(0);
 
-/* ---------- race start (with timed launch: hold drift on the "1") ---------- */
+let game=null, hud=null;                               // null while in the menus
 let countStart=0, earlyHold=0;
-document.getElementById('startBtn').addEventListener('click', ()=>{
-  audio.unlock();                             // AudioContext needs a user gesture
-  document.getElementById('title').style.display='none';
-  game.race.phase='count';
+
+/* ---------- start a race with the chosen character ---------- */
+function beginRace(chosen){
+  const player = createRacer({ ...chosen, driver:'player' });
+  player.x=startP.x; player.z=startP.z;
+  player.heading=Math.atan2(startTan.x, startTan.z);
+
+  /* 8 rivals drawn at random from the rest of the roster */
+  const pool = ROSTER.filter(c=>c.id!==chosen.id);
+  for(let i=pool.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];
+  }
+  const ais = pool.slice(0,8).map((c,i)=>{
+    const r = createRacer({ ...c, driver:'ai', itemCd:6+Math.random()*6 });
+    r.dist = 4+i*3; positionOnSpline(r, track);
+    return r;
+  });
+
+  game = {
+    scene: view.scene, track, racers:[player, ...ais], world,
+    race:{ phase:'count', laps:trackData.laps, t0:0, lapStart:0, best:Infinity,
+           finishOrder:[], playerPlace:1, place:0 },
+    events:[]
+  };
+  view.meshes = createRacerMeshes(view.scene, game.racers);
+  hud = createHud(track);
+  document.body.classList.add('racing');    // reveal the HUD
+
+  /* countdown with a timed launch: hold gas on the "1" */
   countStart=performance.now(); earlyHold=0;
   hud.toast('3', 700); audio.play('count');
   setTimeout(()=>{ hud.toast('2',700); audio.play('count'); }, 800);
@@ -72,25 +64,42 @@ document.getElementById('startBtn').addEventListener('click', ()=>{
     game.race.t0=performance.now(); game.race.lapStart=game.race.t0;
     audio.play('go');
     if(earlyHold>0.25){
-      player.bonkT=1.4;                       // wobbly legs off the line
-      hud.toast('JUMPED THE GUN!',1000); audio.play('bonk');
+      player.bonkT=1.4; hud.toast('JUMPED THE GUN!',1000); audio.play('bonk');
     } else if(input.get().sprint){
-      player.boostT=1.3;
-      hud.toast('PERFECT START!',1000); audio.play('boost');
+      player.boostT=1.3; hud.toast('PERFECT START!',1000); audio.play('boost');
     } else {
       hud.toast('GO!',900);
     }
   }, 2400);
+}
+
+/* ---------- menu flow: title → character select → race ---------- */
+const select = createCharacterSelect(beginRace);
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  audio.unlock();                             // AudioContext needs a user gesture
+  document.getElementById('title').style.display='none';
+  select.open();
 });
+
+/* slow scenic orbit over the park behind the menus */
+function flyover(now){
+  const a = now*0.00005;
+  view.camera.fov = 58;
+  view.camera.position.set(Math.sin(a)*155, 54, Math.cos(a)*155);
+  view.camera.lookAt(0, 6, 0);
+  view.camera.updateProjectionMatrix();
+  view.renderer.render(view.scene, view.camera);
+}
 
 /* ---------- loop ---------- */
 let prev=performance.now();
 function frame(now){
   requestAnimationFrame(frame);
   const dt=Math.min((now-prev)/1000,0.05); prev=now;
+  if(!game){ flyover(now); return; }
+
   game.events.length=0;
   if(game.race.phase==='count'){
-    // holding the gas before the "1" shows counts as jumping the gun
     if(now-countStart<1600 && input.get().sprint) earlyHold+=dt;
   }
   if(game.race.phase==='race'){

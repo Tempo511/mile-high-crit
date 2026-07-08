@@ -31,17 +31,53 @@
   <button id="againBtn">RACE AGAIN</button>
 </div>
 
+<div id="select">
+  <h2>PICK YOUR RIDER</h2>
+  <div id="selGrid"></div>
+  <button id="selGo">LINE UP &rarr;</button>
+</div>
+
 <div id="title">
-  <h1>MILE HIGH CRIT</h1>
-  <div class="sub">WASH PARK GP &middot; 9 RACERS &middot; 3 LAPS</div>
-  <div class="ctl">
-    <span class="kbdonly"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> steer &middot; <kbd>SPACE</kbd> gas (burns legs) &middot; <kbd>SHIFT</kbd>/<kbd>&darr;</kbd> drift/brake &middot; <kbd>E</kbd> item</span>
-    <span class="touchonly">HOLD SIDES TO STEER &middot; GAS / DRIFT / ITEM BUTTONS</span>
-    <br>draft riders to refill your legs &middot; hold <span class="kbdonly"><kbd>SPACE</kbd></span><span class="touchonly">GAS</span> on the "1" for a launch
-    <br>grab the gold crates &middot; ☕ espresso boost &middot; 🫓 sopapilla toss &middot; 🪿 attack goose
+  <svg id="skyline" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <!-- back range -->
+    <polygon fill="#6f5b8f" points="0,180 90,110 150,150 250,70 330,140 430,90 520,150 610,80 720,150 820,100 930,155 1030,95 1120,150 1200,110 1200,260 0,260"/>
+    <polygon fill="#f5e9d0" points="250,70 285,98 215,98"/>
+    <polygon fill="#f5e9d0" points="610,80 642,106 578,106"/>
+    <polygon fill="#f5e9d0" points="1030,95 1060,120 1000,120"/>
+    <!-- front range -->
+    <polygon fill="#4b2d5e" points="0,220 120,150 240,205 360,140 500,210 640,150 780,205 900,150 1040,205 1160,160 1200,195 1200,260 0,260"/>
+    <!-- downtown skyline -->
+    <g fill="#2a1f3a">
+      <rect x="470" y="150" width="34" height="90"/>
+      <rect x="512" y="120" width="40" height="120"/>
+      <rect x="560" y="140" width="30" height="100"/>
+      <!-- cash register building -->
+      <rect x="600" y="96" width="46" height="144"/>
+      <rect x="606" y="86" width="34" height="16"/>
+      <rect x="612" y="78" width="22" height="12"/>
+      <rect x="656" y="132" width="32" height="108"/>
+      <rect x="694" y="150" width="30" height="90"/>
+    </g>
+    <!-- capitol dome -->
+    <g>
+      <rect x="392" y="176" width="56" height="64" fill="#2a1f3a"/>
+      <path d="M392 176 a28 26 0 0 1 56 0 z" fill="#2a1f3a"/>
+      <circle cx="420" cy="150" r="7" fill="#ffd166"/>
+    </g>
+  </svg>
+
+  <div class="titleInner">
+    <div class="badge">EST. WASH PARK</div>
+    <h1>MILE HIGH<br><span>CRIT</span></h1>
+    <div class="sub">WASHINGTON PARK GRAND PRIX</div>
+    <div class="elev">◆ ELEV 5,280 FT ◆ DENVER, COLORADO ◆</div>
+    <button id="startBtn">ROLL OUT</button>
+    <div class="ctl">
+      <span class="kbdonly"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> steer &middot; <kbd>SPACE</kbd> gas &middot; <kbd>SHIFT</kbd>/<kbd>&darr;</kbd> drift &middot; <kbd>E</kbd> item</span>
+      <span class="touchonly">HOLD SIDES TO STEER &middot; GAS / DRIFT / ITEM BUTTONS</span>
+      <br>draft riders to refill your legs &middot; ☕ boost &middot; 🫓 sopapilla &middot; 🪿 goose
+    </div>
   </div>
-  <button id="startBtn">ROLL OUT</button>
-  <div class="foot">race build: 8 rivals &middot; items &middot; positions &middot; may the best legs win</div>
 </div>
 
 <script type="module" src="/src/main.js"></script>
