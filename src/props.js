@@ -57,6 +57,19 @@ B.boathouse = (ctx, def) => {
   frieze.position.y=7.55; g.add(frieze);
   const roof = new THREE.Mesh(new THREE.ConeGeometry(19.5,2.6,4), lambert(0x8a8275));
   roof.position.y=9.1; roof.rotation.y=Math.PI/4; roof.scale.z=0.42; g.add(roof);
+
+  /* race-day crowd: fans on the upper veranda (both faces) + the lower deck */
+  const fanShirts=[0xe84855,0xffd166,0x2e86ab,0xf25caf,0x5db3c9,0xf5e9d0,0xff9a5c,0x9b59b6];
+  const addFan=(x,y,z,faceOut,cheer)=>{
+    const p=makePerson(ctx.rng, fanShirts[Math.floor(ctx.rng()*fanShirts.length)],
+      cheer?'cheer':'stand');
+    p.position.set(x,y,z); p.rotation.y = faceOut;
+    g.add(p);
+  };
+  for(let x=-11.5;x<=11.5;x+=2.6) addFan(x, 4.35,  2.9, 0,        ctx.rng()<0.55);  // veranda front
+  for(let x=-10;  x<=10;  x+=3.4) addFan(x, 4.35, -2.9, Math.PI,  ctx.rng()<0.4);   // veranda back
+  for(let x=-12;  x<=12;  x+=3.0) addFan(x, 0.62,  4.4, 0,        ctx.rng()<0.5);    // deck at the rail
+
   g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
   ctx.exclude(def.x,def.z,16); ctx.solid(def.x,def.z,9);
 };
@@ -416,11 +429,18 @@ export function makePerson(rng, shirt, pose='stand', skinC){
     });
     const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44,0.6,0.28), lambert(shirt));
     torso.position.y=0.9; g.add(torso);
-    [-0.28,0.28].forEach(x=>{                       // arms at the sides
+    const cheer = pose==='cheer';
+    [-0.28,0.28].forEach(x=>{                       // arms (raised when cheering)
       const arm=new THREE.Mesh(new THREE.BoxGeometry(0.11,0.52,0.11), lambert(shirt));
-      arm.position.set(x,0.92,0); g.add(arm);
       const hand=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1), skinM);
-      hand.position.set(x,0.6,0); g.add(hand);
+      if(cheer){
+        arm.position.set(x*0.7,1.32,0); arm.rotation.z = x>0?-0.3:0.3;
+        hand.position.set(x*0.8,1.66,0);
+      } else {
+        arm.position.set(x,0.92,0);
+        hand.position.set(x,0.6,0);
+      }
+      g.add(arm); g.add(hand);
     });
     const head = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.36,0.38), skinM);
     head.position.y=1.4; g.add(head);
