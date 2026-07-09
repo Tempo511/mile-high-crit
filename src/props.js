@@ -1309,14 +1309,56 @@ B.skylineDenver = (ctx, def) => {
   dome.position.set(-55,0,z0+20); ctx.scene.add(dome);
 };
 
+/* The Front Range, in three depth layers with atmospheric color:
+   sage foothills up close, the main purple range with a snowline, a hazy
+   far ridge behind — and one giant snow-capped Mount Blue Sky massif. */
 B.mountains = (ctx, def) => {
-  for(let i=0;i<12;i++){
-    const h=55+ctx.rng()*70, w2=60+ctx.rng()*75;
-    const m=new THREE.Mesh(new THREE.ConeGeometry(w2,h,4), lambert(0x6f5b8f));
-    m.position.set(def.x-ctx.rng()*100, h/2-6, def.z+i*60+ctx.rng()*22);
-    m.rotation.y=ctx.rng(); ctx.scene.add(m);
-    if(h>92){ const cap=new THREE.Mesh(new THREE.ConeGeometry(w2*0.34,h*0.3,4), lambert(0xf5e9d0));
-      cap.position.copy(m.position); cap.position.y=h*0.86-6; cap.rotation.y=m.rotation.y; ctx.scene.add(cap);}
+  const peak = (x, z, w, h, color, segs) => {
+    const m = new THREE.Mesh(new THREE.ConeGeometry(w, h, segs||4), lambert(color));
+    m.position.set(x, h/2-6, z);
+    m.rotation.y = ctx.rng()*Math.PI;
+    m.scale.z = 0.8 + ctx.rng()*0.35;          // varied but not chaotic silhouettes
+    ctx.scene.add(m);
+    return m;
+  };
+  const snowcap = (m, w, h, big) => {
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(w*(big?0.45:0.32), h*(big?0.4:0.28),
+      m.geometry.parameters.radialSegments), lambert(0xf5f0e6));
+    cap.position.copy(m.position);
+    cap.position.y = h*(big?0.78:0.85)-6;
+    cap.rotation.y = m.rotation.y; cap.scale.z = m.scale.z;
+    ctx.scene.add(cap);
+  };
+
+  /* far ridge — tall, hazy, near the fog line (atmospheric backdrop) */
+  for(let i=0;i<9;i++){
+    const h=90+ctx.rng()*60, w=85+ctx.rng()*60;
+    const m=peak(def.x-70-ctx.rng()*40, def.z-40+i*86+ctx.rng()*24, w, h, 0x9188b8, 4);
+    if(h>115) snowcap(m, w, h, false);
+  }
+  /* main range — the classic purple wall with a snowline */
+  for(let i=0;i<11;i++){
+    const h=62+ctx.rng()*68, w=60+ctx.rng()*55;
+    const m=peak(def.x-ctx.rng()*50, def.z-20+i*68+ctx.rng()*20, w, h,
+      i%3 ? 0x6f5b8f : 0x655082, 4+(i%2));
+    if(h>85) snowcap(m, w, h, false);
+    if(ctx.rng()<0.25){                        // occasional shoulder fused to the ridge
+      peak(m.position.x+(ctx.rng()-0.5)*24, m.position.z+34+ctx.rng()*12, w*0.7, h*0.6,
+        0x6f5b8f, 4);
+    }
+  }
+  /* Mount Blue Sky — the giant snowy massif Denver actually sees WSW */
+  const big = peak(def.x-60, def.z+330, 130, 165, 0x60508a, 5);
+  snowcap(big, 130, 165, true);
+  const shoulder = peak(def.x-30, def.z+390, 90, 110, 0x6f5b8f, 4);
+  snowcap(shoulder, 90, 110, false);
+  /* sage foothills rolling in front of it all — sized/placed so their
+     bases stop where the neighborhood grid ends (no houses in the hills) */
+  for(let i=0;i<15;i++){
+    const h=18+ctx.rng()*24, w=42+ctx.rng()*18;
+    const m=peak(def.x+55+ctx.rng()*25, def.z-30+i*52+ctx.rng()*26, w, h,
+      i%2 ? 0x74705a : 0x6b6a4c, 5);
+    m.scale.y = 0.85;                          // rounded, rolling
   }
 };
 

@@ -12,7 +12,7 @@ export default {
 
   /* bluebird Colorado afternoon */
   sky: 0x6fb7ef,
-  fog: [70, 420],
+  fog: [70, 540],   // far enough to read the layered Front Range + skyline
   ambient: [0xfff2e0, 0.6],
   sun: [0xfff7e0, 0.9],
   bounds: { x: 130, z: 225 },   // hard world clamp for the player
@@ -86,9 +86,11 @@ export default {
       [-8,0,-132],[26,0,-122],[35,0,-100],[26,0,-78],[-8,0,-70],
       [-40,0,-77],[-47,0,-100],[-40,0,-123]
     ]},
+    /* Grasmere Lp — ring computed on the lake's actual tilted ellipse
+       (+~5u shore margin) so it hugs the water without dipping in */
     { type:'path', width:2.5, points:[
-      [-8,0,70],[14,0,80],[18,0,108],[10,0,138],[-8,0,148],
-      [-28,0,140],[-34,0,108],[-26,0,78]
+      [23,0,101],[21,0,133],[1,0,150],[-23,0,143],
+      [-39,0,115],[-37,0,83],[-17,0,66],[7,0,73]
     ]},
 
     /* City Ditch: inflow to Grasmere's south shore, then around to Smith
@@ -237,9 +239,9 @@ export default {
     { type:'skylineDenver',   z:-420 },
     /* the neighborhood, stretching to the fog line in every direction */
     { type:'sprawl',
-      xMin:-360, xMax:380, zMin:-385, zMax:400,
+      xMin:-290, xMax:380, zMin:-385, zMax:400,   // grid ends where the foothills rise
       clearX:126, clearZ:250,
-      streetsX:[-340,-290,-240,-195,-140, 140,195,240,290,340],
+      streetsX:[-290,-240,-195,-140, 140,195,240,290,340],
       streetsZ:[-360,-315,-280, 280,315,360,395],
       crossZ:[-200,-120,-40,40,120,200],
       gridX:17, gridZ:19, carsPerStreet:2 },
