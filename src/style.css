@@ -78,6 +78,22 @@
     padding:15px 52px;background:var(--goldenrod);color:var(--ink);
     border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer;}
   #startBtn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink);}
+  #btn2p{font-family:inherit;font-weight:bold;font-size:12px;letter-spacing:2px;
+    margin-top:14px;padding:9px 22px;background:transparent;color:var(--paper);
+    border:2px solid var(--paper);opacity:.85;cursor:pointer;}
+  #btn2p:active{transform:translateY(2px);}
+  #mpWait{position:fixed;inset:0;z-index:12;display:none;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;color:var(--paper);
+    background:radial-gradient(ellipse at 50% 30%, rgba(75,45,94,.94) 0%, rgba(26,20,35,.95) 75%);
+    letter-spacing:1px;}
+  #mpWait h2{color:var(--goldenrod);font-size:clamp(20px,5vw,32px);letter-spacing:4px;
+    margin:0 0 18px;text-shadow:3px 3px 0 var(--ink);}
+  #mpStatus{font-size:clamp(12px,2.6vw,16px);line-height:2;margin-bottom:24px;max-width:88vw;}
+  #mpStatus b{color:var(--goldenrod);}
+  #mpGo{display:none;font-family:inherit;font-weight:bold;font-size:18px;letter-spacing:3px;
+    padding:14px 44px;background:var(--goldenrod);color:var(--ink);
+    border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer;}
+  #mpGo:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink);}
   /* ---- character select ---- */
   #select{position:fixed;inset:0;z-index:11;display:none;flex-direction:column;
     align-items:center;justify-content:center;color:var(--paper);

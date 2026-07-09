@@ -39,8 +39,10 @@ export function createRacer(opts){
   };
 }
 
-/* total course progress in world units — comparable across all racers */
+/* total course progress in world units — comparable across all racers.
+   The local player derives it from lap+spline progress; AI and remote
+   racers carry it in dist (remotes receive it in their snapshots). */
 export function progressOf(track, r){
-  if(r.driver==='ai') return r.dist;
-  return (r.lap-1)*track.length + r.prog*track.length;
+  if(r.driver==='player') return (r.lap-1)*track.length + r.prog*track.length;
+  return r.dist;
 }

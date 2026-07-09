@@ -206,7 +206,8 @@ export function updateBoxes(game, dt, now){
       const s = 1+Math.sin(now/220+b.x)*0.18; b.gem.scale.setScalar(s);
     }
     if(b.cd<=0){
-      if(player && !player.item && (b.x-player.x)**2+(b.z-player.z)**2<2.6){
+      // items are off in multiplayer until they're synced (rung 1 = movement only)
+      if(!game.mp && player && !player.item && (b.x-player.x)**2+(b.z-player.z)**2<2.6){
         giveItem(player, game); b.cd=3; b.m.visible=b.shadow.visible=false;
         burstSparkles(game.world, b.x, b.z);
         game.events.push({type:'pickup'});
