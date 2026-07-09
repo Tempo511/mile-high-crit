@@ -45,10 +45,13 @@
     color:var(--ink);font-family:inherit;font-weight:bold;letter-spacing:1px;
     box-shadow:0 4px 0 var(--ink);display:none;}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);}
-  #btnDrift{right:14px;bottom:46px;width:82px;height:82px;background:var(--sunset);font-size:13px;}
-  #btnDriftL{left:14px;bottom:150px;width:78px;height:78px;background:var(--sunset);font-size:13px;}
-  #btnItem{right:108px;bottom:60px;width:64px;height:64px;background:var(--goldenrod);font-size:20px;}
-  #btnSprint{right:14px;bottom:140px;width:70px;height:70px;background:#8fbe78;font-size:14px;}
+  /* symmetric mobile controls: DRIFT + GAS mirrored on both sides so the
+     free (non-steering) thumb can always reach them; ITEM centered */
+  #btnDrift{right:32px;bottom:40px;width:82px;height:82px;background:var(--sunset);font-size:13px;}
+  #btnDriftL{left:32px;bottom:40px;width:82px;height:82px;background:var(--sunset);font-size:13px;}
+  #btnSprint{right:16px;bottom:132px;width:70px;height:70px;background:#8fbe78;font-size:14px;}
+  #btnSprintL{left:16px;bottom:132px;width:70px;height:70px;background:#8fbe78;font-size:14px;}
+  #btnItem{left:calc(50% - 34px);bottom:22px;width:68px;height:68px;background:var(--goldenrod);font-size:22px;}
   #title{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
     align-items:center;justify-content:center;text-align:center;color:var(--paper);
     background:radial-gradient(ellipse at 50% 34%, rgba(75,45,94,.66) 0%,
@@ -107,5 +110,10 @@
     padding:13px 38px;background:var(--goldenrod);color:var(--ink);
     border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer;}
   #againBtn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink);}
-  @media (pointer:coarse){ .kbdonly{display:none;} }
+  @media (pointer:coarse){
+    .kbdonly{display:none;}
+    /* clear the bottom-left corner for the drift button; minimap tucks
+       under the speedo/legs bar instead */
+    #mini{ left:12px; top:62px; bottom:auto; width:74px; height:99px; }
+  }
   @media (pointer:fine){ .touchonly{display:none;} }

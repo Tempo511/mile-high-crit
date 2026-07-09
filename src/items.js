@@ -144,18 +144,18 @@ export function useItem(game, r){
 /* a shielded racer eats the hit instead of spinning */
 export function spinRacer(game, r){
   if(r.spin>0) return;
+  const isPlayer = r.driver==='player';
   if(r.shieldT>0){
     r.shieldT=0;
-    game.events.push({type:'toast', msg:'BLOCKED!', ms:600});
-    if(r.driver==='player') r.shake=0.25;
+    if(isPlayer){ r.shake=0.25; game.events.push({type:'toast', msg:'BLOCKED!', ms:600}); }
     return;
   }
   r.spin=1.0;
-  if(r.driver==='player'){
+  if(isPlayer){
     r.drifting=false; r.driftCharge=0; r.shake=0.4;
     game.events.push({type:'feathers', x:r.x, z:r.z});
+    game.events.push({type:'toast', msg:'SPUN OUT!', ms:700});   // player-only feedback
   }
-  game.events.push({type:'toast', msg:'SPUN OUT!', ms:700});
 }
 
 /* ---------- per-frame updates ---------- */

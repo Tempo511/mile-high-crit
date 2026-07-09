@@ -106,8 +106,17 @@ export function buildWorld(scene, track){
     }
   }
 
+  /* goose-poop splats that geese leave on the path (a Wash Park classic) */
+  const poops = [];
+  for(let i=0;i<16;i++){
+    const m = new THREE.Mesh(new THREE.CircleGeometry(0.75,7),
+      new THREE.MeshLambertMaterial({color:0xdce2b8, transparent:true, opacity:0.9}));
+    m.rotation.x=-Math.PI/2; m.position.y=0.03; m.visible=false; scene.add(m);
+    poops.push({m, x:0, z:0, active:false, life:0, cd:0});
+  }
+
   return {
-    geese, feathers, sparkles, joggers, lakeGeese, peds,
+    geese, feathers, sparkles, joggers, lakeGeese, peds, poops, poopT:2,
     boats: track.dynamic.boats,
     clouds: track.dynamic.clouds,
     pads: track.dynamic.pads,
@@ -119,6 +128,45 @@ export function buildWorld(scene, track){
     shields: [],
     slicks: []
   };
+}
+
+/* Geese leave slick poop splats on the racing line near where they gather;
+   hit one at speed and you skid (speed cut + wobble) — a nuisance, not a
+   spin-out, since the goose zones are littered with them. */
+export function updateGoosePoop(game, dt, now){
+  const w = game.world, track = game.track;
+  const player = game.racers.find(r=>r.driver==='player');
+  w.poopT -= dt;
+  if(w.poopT<=0){
+    w.poopT = 0.7 + Math.random()*1.1;
+    const g = w.geese[(Math.random()*w.geese.length)|0];
+    if(g){
+      const [idx] = track.nearestIdx(g.position.x, g.position.z, 0);
+      const s = track.samples[idx];
+      if((s.x-g.position.x)**2 + (s.z-g.position.z)**2 < 900){   // only near the road
+        const slot = w.poops.find(p=>!p.active)
+          || w.poops.reduce((a,b)=>a.life<b.life?a:b);
+        slot.active=true; slot.life=13; slot.cd=0;
+        slot.x = s.x + (Math.random()-0.5)*5;
+        slot.z = s.z + (Math.random()-0.5)*5;
+        slot.m.position.set(slot.x, 0.03, slot.z);
+        slot.m.material.opacity=0.9; slot.m.visible=true;
+      }
+    }
+  }
+  for(const p of w.poops){
+    if(!p.active) continue;
+    p.life-=dt; p.cd=Math.max(0,p.cd-dt);
+    if(p.life<3) p.m.material.opacity = Math.max(0, p.life/3*0.9);
+    if(p.life<=0){ p.active=false; p.m.visible=false; continue; }
+    if(player && p.cd<=0 && Math.abs(player.speed)>5
+        && (p.x-player.x)**2+(p.z-player.z)**2<1.7){
+      p.cd=1.5;
+      player.speed*=0.5; player.shake=0.3;
+      player.heading += (Math.random()-0.5)*0.25;   // little wobble
+      game.events.push({type:'toast', msg:'GOOSE POOP! 💩', ms:800});
+    }
+  }
 }
 
 export function burstSparkles(world, x, z){

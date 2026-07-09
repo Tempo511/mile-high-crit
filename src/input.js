@@ -9,7 +9,7 @@
 export function createInput(){
   const keys={};
   let keyDrift=false, keySprint=false, useItemPressed=false, touchSteer=0;
-  let btnDriftL=false, btnDriftR=false, btnSprint=false;
+  let btnDriftL=false, btnDriftR=false, btnSprintL=false, btnSprintR=false;
 
   addEventListener('keydown', e=>{
     keys[e.key]=true;
@@ -38,14 +38,15 @@ export function createInput(){
     el.addEventListener('pointercancel',()=> set(false));
     return el;
   }
-  const driftBtnR = bindHold('btnDrift',  v=>btnDriftR=v);
-  const driftBtnL = bindHold('btnDriftL', v=>btnDriftL=v);
-  const sprintBtn = bindHold('btnSprint', v=>btnSprint=v);
+  const driftBtnR = bindHold('btnDrift',   v=>btnDriftR=v);
+  const driftBtnL = bindHold('btnDriftL',  v=>btnDriftL=v);
+  const sprintBtnR= bindHold('btnSprint',  v=>btnSprintR=v);
+  const sprintBtnL= bindHold('btnSprintL', v=>btnSprintL=v);
   const itemBtn = document.getElementById('btnItem');
   itemBtn.addEventListener('pointerdown', e=>{ useItemPressed=true; e.preventDefault(); });
 
   if(matchMedia('(pointer:coarse)').matches){
-    [driftBtnR, driftBtnL, sprintBtn, itemBtn].forEach(b=>b.style.display='block');
+    [driftBtnR, driftBtnL, sprintBtnR, sprintBtnL, itemBtn].forEach(b=>b.style.display='block');
   }
 
   return {
@@ -55,7 +56,7 @@ export function createInput(){
       const out = {
         steer,
         drift:   keyDrift || btnDriftL || btnDriftR,
-        sprint:  keySprint || btnSprint,
+        sprint:  keySprint || btnSprintL || btnSprintR,
         useItem: useItemPressed
       };
       useItemPressed=false;   // edge-triggered

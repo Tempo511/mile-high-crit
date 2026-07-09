@@ -6,6 +6,8 @@
 <title>MILE HIGH CRIT — Wash Park GP</title>
 </head>
 <body>
+<!-- inline-styled so it covers the FOUC on the very first paint, before CSS/JS load -->
+<div id="boot" style="position:fixed;inset:0;z-index:100;background:#241832;transition:opacity .4s;"></div>
 <canvas id="game"></canvas>
 <div id="vignette"></div>
 <div id="flash"></div>
@@ -23,8 +25,9 @@
 <div class="pad" id="padR"></div>
 <button class="btn" id="btnDrift">DRIFT</button>
 <button class="btn" id="btnDriftL">DRIFT</button>
-<button class="btn" id="btnItem">☕</button>
 <button class="btn" id="btnSprint">GAS</button>
+<button class="btn" id="btnSprintL">GAS</button>
+<button class="btn" id="btnItem">🎁</button>
 
 <div id="results">
   <h2 id="resTitle">FINISH!</h2>

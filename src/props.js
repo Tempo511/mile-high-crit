@@ -596,6 +596,46 @@ B.grassVolleyball = (ctx, def) => {
   ctx.exclude(def.x,def.z,6);
 };
 
+/* a hammock slung between two trees with someone napping (very Wash Park) */
+B.hammock = (ctx, def) => {
+  const g = new THREE.Group();
+  const trunkG = new THREE.CylinderGeometry(0.35,0.5,3.2,5);
+  [-2.7,2.7].forEach(x=>{
+    const trunk=new THREE.Mesh(trunkG, lambert(0x6e4b2a)); trunk.position.set(x,1.6,0); g.add(trunk);
+    const puff=new THREE.Mesh(new THREE.IcosahedronGeometry(2.0,0), lambert(0x5d8f4a));
+    puff.position.set(x,3.9,0); g.add(puff);
+  });
+  const cloth=new THREE.Mesh(new THREE.BoxGeometry(4.0,0.14,1.0),
+    lambert([0xe84855,0x2e86ab,0xffd166,0xf25caf][Math.floor(ctx.rng()*4)]));
+  cloth.position.y=1.05; cloth.rotation.z=0.03; g.add(cloth);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.4,0.7), lambert(0x4a5a6a));
+  body.position.set(0,1.28,0); body.rotation.z=0.05; g.add(body);
+  const head=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.42,0.42), lambert(0xd9a066));
+  head.position.set(1.35,1.5,0); g.add(head);
+  g.add(blobShadow(3.4,0.14));
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.exclude(def.x,def.z,5);
+};
+
+/* a fitness bootcamp: a trainer facing a row of people on mats mid-workout */
+B.bootcamp = (ctx, def) => {
+  const g = new THREE.Group();
+  const shirts=[0xe84855,0xffd166,0x2e86ab,0xf25caf,0x5db3c9];
+  const matC=[0x9b59b6,0x2e86ab,0xe84855,0x3e6b35];
+  for(let i=0;i<5;i++){
+    const mat=new THREE.Mesh(new THREE.PlaneGeometry(1.2,2.2), lambert(matC[i%4]));
+    mat.rotation.x=-Math.PI/2; mat.position.set(-4+i*2, 0.03, 0.3); g.add(mat);
+    const p=makePerson(ctx.rng, shirts[i], 'stand');
+    p.position.set(-4+i*2, 0, 0.3); p.rotation.y=Math.PI;
+    if(i%2) p.scale.y=0.6;                          // some crouched mid-rep
+    g.add(p);
+  }
+  const trainer=makePerson(ctx.rng, 0x1a1423, 'stand');
+  trainer.position.set(0,0,-2.6); g.add(trainer);
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.exclude(def.x,def.z,7);
+};
+
 /* City Ditch (1867) — Denver's oldest waterway, winding through the park
    to feed the lakes, lined with Russian olives. Cosmetic (no splash). */
 B.cityDitch = (ctx, def) => {

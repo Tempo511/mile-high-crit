@@ -33,12 +33,12 @@ function beginRace(chosen){
   player.x=startP.x; player.z=startP.z;
   player.heading=Math.atan2(startTan.x, startTan.z);
 
-  /* 8 rivals drawn at random from the rest of the roster */
+  /* 5 rivals (6 racers total) drawn at random from the rest of the roster */
   const pool = ROSTER.filter(c=>c.id!==chosen.id);
   for(let i=pool.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];
   }
-  const ais = pool.slice(0,8).map((c,i)=>{
+  const ais = pool.slice(0,5).map((c,i)=>{
     const r = createRacer({ ...c, driver:'ai', itemCd:6+Math.random()*6 });
     r.dist = 4+i*3; positionOnSpline(r, track);
     return r;
@@ -92,11 +92,17 @@ function flyover(now){
 }
 
 /* ---------- loop ---------- */
-let prev=performance.now();
+let prev=performance.now(), booted=false;
+function revealOnce(){
+  if(booted) return; booted=true;
+  const b=document.getElementById('boot');
+  if(b){ b.style.opacity='0'; setTimeout(()=>b.remove(),450); }
+}
 function frame(now){
   requestAnimationFrame(frame);
   const dt=Math.min((now-prev)/1000,0.05); prev=now;
-  if(!game){ flyover(now); return; }
+  if(!game){ flyover(now); revealOnce(); return; }
+  revealOnce();
 
   game.events.length=0;
   if(game.race.phase==='count'){

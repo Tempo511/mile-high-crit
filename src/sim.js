@@ -3,7 +3,7 @@
    gameplay is unchanged. DOM-free — presentation reads state + events. */
 import { playerDriver, aiDriver } from './drivers.js';
 import { useItem, updateProjectiles, updateAttackGeese, updateShields, updateSlicks, spinRacer } from './items.js';
-import { updateBoxes, updateGeese, updateAmbient, burstFeathers } from './world.js';
+import { updateBoxes, updateGeese, updateGoosePoop, updateAmbient, burstFeathers } from './world.js';
 import { progressOf } from './racers.js';
 import { PLACES } from './constants.js';
 
@@ -53,8 +53,9 @@ export function step(game, inputs, dt, now){
     }
   }
 
-  /* resident geese */
+  /* resident geese + their poop-slick gauntlet */
   updateGeese(game, dt, now);
+  updateGoosePoop(game, dt, now);
 
   /* AI racers */
   for(const r of racers) if(r.driver==='ai') aiDriver(r, game, dt);

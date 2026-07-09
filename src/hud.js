@@ -102,6 +102,9 @@ export function createHud(track){
         +'<br><span id="timer">'+fmt(now-race.t0)+'</span>'
         +'<br><span id="best">'+(race.best<Infinity?('BEST '+fmtS(race.best)+'s'):'')+'</span>';
       $('itemSlot').textContent = player.item ? ITEMS[player.item] : '';
+      const ib = $('btnItem');                    // touch button shows the held item
+      ib.textContent = player.item ? ITEMS[player.item] : '🎁';
+      ib.style.opacity = player.item ? '1' : '0.5';
     }
     drawMini(game);
   }

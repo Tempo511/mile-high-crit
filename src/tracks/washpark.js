@@ -17,7 +17,7 @@ export default {
   sun: [0xfff7e0, 0.9],
   bounds: { x: 130, z: 225 },   // hard world clamp for the player
 
-  roadWidth: 8,
+  roadWidth: 8.8,
   spline: [
     [-58,0,  15],[-60,0, -20],
     [-66,0, -52],[-50,0, -80],
@@ -115,7 +115,7 @@ export default {
     { type:'flowerBed', x:52,  z:-46, w:10, d:5, ry:-0.2 },
     { type:'flowerBed', x:-42, z: 62, w:10, d:5, ry: 0.2 },
     { type:'flowerBed', x:-6,  z: 42, w:10, d:5, ry:-0.2 },
-    { type:'blankets',  x:-14, z:8, spreadX:30, spreadZ:38, count:7 },
+    { type:'blankets',  x:-14, z:8, spreadX:30, spreadZ:38, count:9 },
     { type:'volleyball', x:-78, z:-56 },
     { type:'volleyball', x:-78, z:-70 },
     { type:'volleyball', x:-78, z:-84 },
@@ -138,6 +138,7 @@ export default {
     { type:'cottage',   x:-78, z:-30 },
     { type:'lawnBowling', x:-38, z:178 },
     { type:'slackline', x:-2, z:36 },
+    { type:'slackline', x:30, z:40 },
     /* the Olmsted evergreen grove on the north side + scattered north meadow */
     { type:'pines', x:-55, z:-165, spreadX:50, spreadZ:40, count:9 },
     { type:'grove', x:35, z:-172, spreadX:60, spreadZ:40, count:10, margin:6 },
@@ -186,9 +187,19 @@ export default {
     { type:'keepClear', x:8,  z:55, r:42 },
     { type:'keepClear', x:-5, z:14, r:26 },
     /* …and fill it with park life instead */
-    { type:'picnickers', x:8, z:52, spread:34, count:9 },
-    { type:'grassVolleyball', x:10, z:50, ry:0.4 },
-    { type:'grassVolleyball', x:22, z:44, ry:-0.7 },
+    /* peak Wash Park summer: the meadow packed with volleyball & park life */
+    { type:'picnickers', x:8,   z:52, spread:34, count:10 },
+    { type:'picnickers', x:-24, z:20, spread:22, count:7 },
+    { type:'picnickers', x:14,  z:66, spread:18, count:6 },
+    { type:'grassVolleyball', x:10,  z:50, ry:0.4 },
+    { type:'grassVolleyball', x:22,  z:44, ry:-0.7 },
+    { type:'grassVolleyball', x:-20, z:30, ry:0.2 },
+    { type:'grassVolleyball', x:32,  z:24, ry:-0.3 },
+    { type:'grassVolleyball', x:-12, z:64, ry:0.6 },
+    { type:'grassVolleyball', x:36,  z:54, ry:-0.5 },
+    { type:'hammock', x:-32, z:46, ry:0.3 },
+    { type:'hammock', x:40,  z:14, ry:-0.4 },
+    { type:'bootcamp', x:18, z:14, ry:0.2 },
     /* the famous 2.6-mile gravel jogging loop */
     { type:'path', width:3, jog:true, points:[
       [-82,0,-140],[-50,0,-180],[  0,0,-188],[ 50,0,-180],[ 82,0,-140],
@@ -222,10 +233,13 @@ export default {
     { x:-8, z:108, count:4, spread:16 }    // Grasmere
   ],
 
-  /* resident goose gaggles: fixed spots or a t along the spline */
+  /* resident goose gaggles — several right by the racing line to feed the
+     goose-poop gauntlet (fixed spots or a t along the spline) */
   gaggles: [
     { x:-34, z:-68, count:6, spread:11 },  // Smith Lake south lawn, by the boathouse
     { x: 24, z:110, count:6, spread:10 },  // Grasmere east bank
-    { t: 0.36,      count:4, spread:7 }    // the rec center hairpin welcoming committee
+    { t: 0.36,      count:5, spread:7 },   // the rec center hairpin welcoming committee
+    { t: 0.55,      count:4, spread:7 },   // flower-gardens straight
+    { t: 0.80,      count:5, spread:8 }    // great-meadow crossing
   ]
 };
