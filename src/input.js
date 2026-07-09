@@ -1,21 +1,26 @@
 /* Devices → neutral inputs. The sim only ever sees
    { steer:-1..1, drift:bool, sprint:bool, useItem:bool } — a future netcode
-   layer ships exactly this object to represent a remote player's intent. */
+   layer ships exactly this object to represent a remote player's intent.
+
+   Touch note: steering holds a screen half with one thumb, so the *other*
+   thumb must be able to drift — hence a drift button on BOTH sides (you use
+   whichever is opposite your steering thumb). */
 
 export function createInput(){
   const keys={};
-  let driftHeld=false, sprintHeld=false, useItemPressed=false, touchSteer=0;
+  let keyDrift=false, keySprint=false, useItemPressed=false, touchSteer=0;
+  let btnDriftL=false, btnDriftR=false, btnSprint=false;
 
   addEventListener('keydown', e=>{
     keys[e.key]=true;
-    if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W'){ sprintHeld=true; e.preventDefault(); }
-    if(e.key==='Shift'||e.key==='ArrowDown'||e.key==='s'||e.key==='S'){ driftHeld=true; e.preventDefault(); }
+    if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W'){ keySprint=true; e.preventDefault(); }
+    if(e.key==='Shift'||e.key==='ArrowDown'||e.key==='s'||e.key==='S'){ keyDrift=true; e.preventDefault(); }
     if(e.key==='e'||e.key==='E'||e.key==='Enter') useItemPressed=true;
   });
   addEventListener('keyup', e=>{
     keys[e.key]=false;
-    if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W') sprintHeld=false;
-    if(e.key==='Shift'||e.key==='ArrowDown'||e.key==='s'||e.key==='S') driftHeld=false;
+    if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W') keySprint=false;
+    if(e.key==='Shift'||e.key==='ArrowDown'||e.key==='s'||e.key==='S') keyDrift=false;
   });
 
   function bindPad(id,dir){
@@ -26,27 +31,33 @@ export function createInput(){
   }
   bindPad('padL',-1); bindPad('padR',1);
 
-  const driftBtn=document.getElementById('btnDrift');
-  driftBtn.addEventListener('pointerdown', e=>{ driftHeld=true; e.preventDefault(); });
-  driftBtn.addEventListener('pointerup',   ()=> driftHeld=false);
-  driftBtn.addEventListener('pointercancel',()=> driftHeld=false);
-  const itemBtn=document.getElementById('btnItem');
+  function bindHold(id, set){
+    const el=document.getElementById(id);
+    el.addEventListener('pointerdown', e=>{ set(true); e.preventDefault(); });
+    el.addEventListener('pointerup',   ()=> set(false));
+    el.addEventListener('pointercancel',()=> set(false));
+    return el;
+  }
+  const driftBtnR = bindHold('btnDrift',  v=>btnDriftR=v);
+  const driftBtnL = bindHold('btnDriftL', v=>btnDriftL=v);
+  const sprintBtn = bindHold('btnSprint', v=>btnSprint=v);
+  const itemBtn = document.getElementById('btnItem');
   itemBtn.addEventListener('pointerdown', e=>{ useItemPressed=true; e.preventDefault(); });
-  const sprintBtn=document.getElementById('btnSprint');
-  sprintBtn.addEventListener('pointerdown', e=>{ sprintHeld=true; e.preventDefault(); });
-  sprintBtn.addEventListener('pointerup',   ()=> sprintHeld=false);
-  sprintBtn.addEventListener('pointercancel',()=> sprintHeld=false);
 
   if(matchMedia('(pointer:coarse)').matches){
-    driftBtn.style.display='block'; itemBtn.style.display='block';
-    sprintBtn.style.display='block';
+    [driftBtnR, driftBtnL, sprintBtn, itemBtn].forEach(b=>b.style.display='block');
   }
 
   return {
     get(){
       const steer = Math.max(-1,Math.min(1,
         (keys['ArrowLeft']||keys['a']?-1:0)+(keys['ArrowRight']||keys['d']?1:0)+touchSteer));
-      const out = { steer, drift:driftHeld, sprint:sprintHeld, useItem:useItemPressed };
+      const out = {
+        steer,
+        drift:   keyDrift || btnDriftL || btnDriftR,
+        sprint:  keySprint || btnSprint,
+        useItem: useItemPressed
+      };
       useItemPressed=false;   // edge-triggered
       return out;
     }

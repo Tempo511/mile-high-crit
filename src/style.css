@@ -46,6 +46,7 @@
     box-shadow:0 4px 0 var(--ink);display:none;}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);}
   #btnDrift{right:14px;bottom:46px;width:82px;height:82px;background:var(--sunset);font-size:13px;}
+  #btnDriftL{left:14px;bottom:150px;width:78px;height:78px;background:var(--sunset);font-size:13px;}
   #btnItem{right:108px;bottom:60px;width:64px;height:64px;background:var(--goldenrod);font-size:20px;}
   #btnSprint{right:14px;bottom:140px;width:70px;height:70px;background:#8fbe78;font-size:14px;}
   #title{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
