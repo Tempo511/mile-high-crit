@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { gooseMesh } from './riders.js';
 import { giveItem } from './items.js';
-import { makePerson, makePedestrian, makeDog } from './props.js';
+import { makePerson, makePedestrian, makeDog, makeSurrey } from './props.js';
 import { makeRng } from './rng.js';
 
 /* Denver pedestrians who treat the racing line as a walking path.
@@ -52,22 +52,27 @@ export function buildWorld(scene, track){
     sparkles.push({m:s, vx:0, vy:0, vz:0, life:0});
   }
 
-  /* joggers looping the gravel path, both directions */
+  /* gravel-loop traffic: joggers, dog walkers, rollerbladers, and surreys */
   const joggers = [];
   const loop = track.dynamic.paths.find(p=>p.jog) || track.dynamic.paths[0];
   if(loop && track.data.joggers){
     const rng = makeRng((track.data.seed||1)+7);
     const shirts=[0xe84855,0xffd166,0x2e86ab,0xf25caf,0x5db3c9,0xf5e9d0];
     for(let i=0;i<track.data.joggers;i++){
-      const walker = i%3===2;                       // every third is a dog walker
-      const m = makePerson(rng, shirts[i%shirts.length], 'stand');
+      const kind = i%5===0 ? 'surrey' : i%5===1 ? 'walker' : i%5===2 ? 'blader' : 'jogger';
+      let m, dog=null, speed;
+      if(kind==='surrey'){ m=makeSurrey(rng); speed=2.2+rng()*1.0; }
+      else {
+        m=makePerson(rng, shirts[i%shirts.length], 'stand');
+        if(kind==='walker'){ dog=makeDog(rng); scene.add(dog); speed=1.5+rng()*0.6; }
+        else if(kind==='blader'){ speed=5.0+rng()*1.6; }
+        else speed=3.2+rng()*1.8;
+      }
       scene.add(m);
-      let dog=null;
-      if(walker){ dog=makeDog(rng); scene.add(dog); }
       joggers.push({
-        m, dog, curve:loop.curve, len:loop.len,
+        m, dog, kind, curve:loop.curve, len:loop.len,
         t: i/track.data.joggers,
-        speed: (walker ? 1.5+rng()*0.6 : 3.2+rng()*1.8) * (i%2 ? 1 : -1),
+        speed: speed * (i%2 ? 1 : -1),
         phase: rng()*6
       });
     }
@@ -135,7 +140,6 @@ export function buildWorld(scene, track){
    spin-out, since the goose zones are littered with them. */
 export function updateGoosePoop(game, dt, now){
   const w = game.world, track = game.track;
-  const player = game.racers.find(r=>r.driver==='player');
   w.poopT -= dt;
   if(w.poopT<=0){
     w.poopT = 0.7 + Math.random()*1.1;
@@ -154,18 +158,14 @@ export function updateGoosePoop(game, dt, now){
       }
     }
   }
+  /* splats are visual-only flavor — the geese themselves are the hazard.
+     (Doubling up poop + geese in the same zones read as annoying, not funny.
+     To restore hard mode: re-add a hit check here that cuts player.speed.) */
   for(const p of w.poops){
     if(!p.active) continue;
-    p.life-=dt; p.cd=Math.max(0,p.cd-dt);
+    p.life-=dt;
     if(p.life<3) p.m.material.opacity = Math.max(0, p.life/3*0.9);
-    if(p.life<=0){ p.active=false; p.m.visible=false; continue; }
-    if(player && p.cd<=0 && Math.abs(player.speed)>5
-        && (p.x-player.x)**2+(p.z-player.z)**2<1.7){
-      p.cd=1.5;
-      player.speed*=0.5; player.shake=0.3;
-      player.heading += (Math.random()-0.5)*0.25;   // little wobble
-      game.events.push({type:'toast', msg:'GOOSE POOP! 💩', ms:800});
-    }
+    if(p.life<=0){ p.active=false; p.m.visible=false; }
   }
 }
 
@@ -347,11 +347,14 @@ export function updateAmbient(game, dt, now){
     j.t = ((j.t + j.speed*dt/j.len) % 1 + 1) % 1;
     const p = j.curve.getPointAt(j.t), tan = j.curve.getTangentAt(j.t);
     const dir = Math.sign(j.speed);
-    j.m.position.set(p.x, Math.abs(Math.sin(now/95+j.phase))*0.12, p.z);
+    const bob = j.kind==='surrey' ? 0 : Math.abs(Math.sin(now/95+j.phase))*0.12;
+    j.m.position.set(p.x, bob, p.z);
     j.m.rotation.y = Math.atan2(tan.x*dir, tan.z*dir);
-    const [l,r] = j.m.userData.legs;
-    l.position.y = 0.3+Math.sin(now/95+j.phase)*0.12;
-    r.position.y = 0.3+Math.sin(now/95+j.phase+Math.PI)*0.12;
+    const legs = j.m.userData.legs;               // surreys have none
+    if(legs){
+      legs[0].position.y = 0.3+Math.sin(now/95+j.phase)*0.12;
+      legs[1].position.y = 0.3+Math.sin(now/95+j.phase+Math.PI)*0.12;
+    }
     if(j.dog){   // trot alongside, offset perpendicular to travel
       j.dog.position.set(p.x + tan.z*dir*0.9, Math.abs(Math.sin(now/80+j.phase))*0.05,
                          p.z - tan.x*dir*0.9);

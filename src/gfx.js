@@ -14,18 +14,26 @@ export function lambert(color, extra={}){
   return new THREE.MeshLambertMaterial(Object.assign({color, flatShading:true}, extra));
 }
 
-/* a wide cloth banner texture with centered text (nearest-filtered) */
+/* a wide banner/sign texture with centered, readable text. High-res + smooth
+   (linear + mipmaps + anisotropy) so it stays legible through the retro render;
+   font auto-shrinks to fit long labels. POT dimensions so mipmaps work. */
 export function bannerTex(text, bg='#c75146', fg='#ffd166'){
-  const w=512, h=96;
+  const w=1024, h=256;
   const c=document.createElement('canvas'); c.width=w; c.height=h;
   const g=c.getContext('2d');
   g.fillStyle=bg; g.fillRect(0,0,w,h);
-  g.strokeStyle=fg; g.lineWidth=7; g.strokeRect(7,7,w-14,h-14);
-  g.fillStyle=fg; g.font='bold 54px "Courier New", monospace';
-  g.textAlign='center'; g.textBaseline='middle';
-  g.fillText(text, w/2, h/2+4);
+  g.strokeStyle=fg; g.lineWidth=16; g.strokeRect(16,16,w-32,h-32);
+  g.fillStyle=fg; g.textAlign='center'; g.textBaseline='middle';
+  let size=150;
+  g.font=`bold ${size}px Arial, "Helvetica Neue", sans-serif`;
+  while(g.measureText(text).width > w-100 && size>40){
+    size-=8; g.font=`bold ${size}px Arial, "Helvetica Neue", sans-serif`;
+  }
+  g.fillText(text, w/2, h/2+8);
   const t=new THREE.CanvasTexture(c);
-  t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestFilter;
+  t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;
+  t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter;
+  t.anisotropy=8; t.needsUpdate=true;
   return t;
 }
 

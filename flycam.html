@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLYCAM — Wash Park (dev)</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#000;
+    font-family:"Courier New",ui-monospace,monospace;}
+  #cam{display:block;width:100%;height:100%;cursor:crosshair;}
+  #hud{position:fixed;top:10px;left:10px;color:#f5e9d0;font-size:12px;line-height:1.7;
+    text-shadow:1px 1px 0 #000;pointer-events:none;z-index:5;
+    background:rgba(26,20,35,.5);padding:8px 12px;border-radius:5px;}
+  #hud b{color:#ffd166;}
+  #cross{position:fixed;top:50%;left:50%;width:6px;height:6px;margin:-3px 0 0 -3px;
+    border-radius:50%;background:#ffd166;box-shadow:0 0 0 1px #000;pointer-events:none;z-index:5;}
+  #coord{position:fixed;bottom:12px;left:12px;color:#ffd166;font-size:14px;font-weight:bold;
+    text-shadow:1px 1px 0 #000;pointer-events:none;z-index:5;
+    background:rgba(26,20,35,.5);padding:6px 12px;border-radius:5px;}
+</style>
+</head>
+<body>
+<canvas id="cam"></canvas>
+<div id="cross"></div>
+<div id="hud">
+  FLYCAM · WASH PARK<br>
+  <b>click</b> canvas to look · <b>Esc</b> release<br>
+  <b>WASD</b> fly · <b>Space</b>/<b>Q</b> up/down · <b>Shift</b> boost
+</div>
+<div id="coord"></div>
+<script type="module" src="/src/flycam.js"></script>
+</body>
+</html>

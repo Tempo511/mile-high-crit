@@ -106,14 +106,36 @@ export default {
       { t:0.56,  text:'WASH PARK GP',   bg:'#2e5a8f', fg:'#ffd166', side:1 },
       { t:0.72,  text:'HONK FOR BIKES', bg:'#3e6b35', fg:'#f5e9d0', side:1 }
     ]},
+    /* landmark placards — name what you're passing (recognition cues) */
+    { type:'parkSign', t:0.04, side:1,  text:'PERENNIAL GARDEN', w:6.4 },
+    { type:'parkSign', t:0.17, side:-1, text:'DOS CHAPPELL', w:5.2 },
+    { type:'parkSign', t:0.24, side:1,  text:'SMITH LAKE' },
+    { type:'parkSign', t:0.34, side:1,  text:'REC CENTER' },
+    { type:'parkSign', t:0.42, side:-1, text:'BOATHOUSE' },
+    { type:'parkSign', t:0.48, side:1,  text:'LILY POND' },
+    { type:'parkSign', t:0.55, side:1,  text:'MT VERNON GARDEN', w:6.6 },
+    { type:'parkSign', t:0.66, side:1,  text:'GRASMERE LAKE', w:5.6 },
+    { type:'parkSign', t:0.50, side:-1, text:'CITY DITCH' },
+    /* street-name blades at the park edges for orientation */
+    { type:'streetSign', x:-80, z:-30, text:'S DOWNING ST',   ry:Math.PI/2 },
+    { type:'streetSign', x: 64, z:  6, text:'S FRANKLIN ST',  ry:-Math.PI/2 },
+    { type:'streetSign', x: -6, z:-168, text:'E VIRGINIA AVE', ry:0 },
+    { type:'streetSign', x: -6, z: 176, text:'E LOUISIANA AVE', ry:0 },
+    /* east-edge cross streets (match the real N→S order off Franklin) */
+    { type:'streetSign', x:95, z:-113, text:'E EXPOSITION AVE', ry:-Math.PI/2 },
+    { type:'streetSign', x:95, z:-33,  text:'E OHIO AVE',       ry:-Math.PI/2 },
+    { type:'streetSign', x:95, z:47,   text:'E KENTUCKY AVE',   ry:-Math.PI/2 },
+    { type:'streetSign', x:95, z:127,  text:'E ARIZONA AVE',    ry:-Math.PI/2 },
+    /* South High School — SE of the park (its real spot: Louisiana & Franklin) */
+    { type:'southHigh', x:85, z:246, ry:Math.PI },
     { type:'roadBridge', t:0.50 },
     { type:'roadBridge', t:0.895 },
     { type:'roadBridge', t:0.965 },
     { type:'footbridge', x:-30, z:186 },
     { type:'footbridge', x:-36, z:58, ry:0.7 },
     { type:'flowerBed', x:-6,  z:-40, w:10, d:5, ry: 0.3 },
-    { type:'flowerBed', x:52,  z:-46, w:10, d:5, ry:-0.2 },
-    { type:'flowerBed', x:-42, z: 62, w:10, d:5, ry: 0.2 },
+    { type:'flowerBed', x:62,  z:-34, w:10, d:5, ry:-0.2 },
+    { type:'flowerBed', x:-58, z: 66, w:10, d:5, ry: 0.2 },
     { type:'flowerBed', x:-6,  z: 42, w:10, d:5, ry:-0.2 },
     { type:'blankets',  x:-14, z:8, spreadX:30, spreadZ:38, count:9 },
     { type:'volleyball', x:-78, z:-56 },
@@ -121,9 +143,9 @@ export default {
     { type:'volleyball', x:-78, z:-84 },
     /* tennis courts — the real park has clusters on BOTH the west side
        and the south end (the park has ~10 courts total) */
-    { type:'tennis',    x:-62, z:104 },
-    { type:'tennis',    x:-62, z:116 },
-    { type:'tennis',    x:-62, z:128 },
+    { type:'tennis',    x:-72, z:104 },
+    { type:'tennis',    x:-72, z:116 },
+    { type:'tennis',    x:-72, z:128 },
     { type:'tennis',    x:8,  z:176 },
     { type:'tennis',    x:26, z:176 },
     { type:'tennis',    x:44, z:176 },
@@ -132,19 +154,24 @@ export default {
     /* playground west-central by the boathouse (near Downing) */
     { type:'playground', x:-40, z:-52 },
     /* Denver's two largest flower gardens */
-    { type:'formalGarden', x:30, z:62, w:16, d:18 },          // Mount Vernon Garden (NE of Grasmere)
-    { type:'perennialGarden', x:-74, z:-10, w:16, d:24 },     // Perennial Garden at Downing
-    /* Eugene Field cottage + shoe fountain, west edge where they really sit */
-    { type:'cottage',   x:-78, z:-30 },
+    { type:'marthaGarden', x:30, z:62, w:18, d:20 },          // Mt Vernon / Martha Washington garden
+    { type:'perennialGarden', x:-77, z:-10, w:16, d:24 },     // Perennial Garden at Downing
+    /* Eugene Field House + Wynken/Blynken/Nod shoe fountain — EAST side near
+       Franklin & Exposition (moved there by Molly Brown in 1930) */
+    { type:'cottage',   x:84, z:-14, fdx:-9, ry:-Math.PI/2 },   // porch faces the park
+    { type:'parkSign',  x:72, z:-4, ry:-Math.PI/2, text:'EUGENE FIELD HOUSE', w:7.6 },
+    /* Fire Station 21 — the red-brick landmark at the park's NE corner */
+    { type:'fireStation', x:98, z:-186, ry:-Math.PI/2 },
+    { type:'parkSign',  x:80, z:-186, ry:-Math.PI/2, text:'FIRE STATION 21', w:7 },
     { type:'lawnBowling', x:-38, z:178 },
     { type:'slackline', x:-2, z:36 },
     { type:'slackline', x:30, z:40 },
     /* the Olmsted evergreen grove on the north side + scattered north meadow */
     { type:'pines', x:-55, z:-165, spreadX:50, spreadZ:40, count:9 },
-    { type:'grove', x:35, z:-172, spreadX:60, spreadZ:40, count:10, margin:6 },
+    { type:'grove', x:35, z:-172, spreadX:60, spreadZ:40, count:10, margin:7 },
     /* the park is heavily wooded on the east (toward Franklin) */
-    { type:'grove', x:76, z:-92, spreadX:28, spreadZ:70, count:16, margin:5 },
-    { type:'grove', x:78, z:58,  spreadX:26, spreadZ:90, count:18, margin:5 },
+    { type:'grove', x:76, z:-92, spreadX:28, spreadZ:70, count:16, margin:7 },
+    { type:'grove', x:78, z:58,  spreadX:26, spreadZ:90, count:18, margin:7 },
     /* the neighborhood: mansions along Downing (west) & Franklin (east),
        modest bungalows on Louisiana (south), high-rise apartments up on
        the Virginia Ave edge (north) — each set back behind its street */
@@ -197,8 +224,8 @@ export default {
     { type:'grassVolleyball', x:32,  z:24, ry:-0.3 },
     { type:'grassVolleyball', x:-12, z:64, ry:0.6 },
     { type:'grassVolleyball', x:36,  z:54, ry:-0.5 },
-    { type:'hammock', x:-32, z:46, ry:0.3 },
-    { type:'hammock', x:40,  z:14, ry:-0.4 },
+    { type:'hammock', x:2,  z:20, ry:0.3 },
+    { type:'hammock', x:30, z:6,  ry:-0.4 },
     { type:'bootcamp', x:18, z:14, ry:0.2 },
     /* the famous 2.6-mile gravel jogging loop */
     { type:'path', width:3, jog:true, points:[
@@ -221,8 +248,8 @@ export default {
       avoidX:[[86,118]], avoidZ:[[-242,-186],[186,220]] }
   ],
 
-  /* runners on the gravel loop, both directions */
-  joggers: 6,
+  /* gravel-loop traffic: joggers, dog walkers, rollerbladers, surreys */
+  joggers: 10,
 
   /* Denver pedestrians wandering the racing line (see PED_TYPES in world.js) */
   pedestrians: { count: 10, tMin: 0.05, tMax: 0.97 },

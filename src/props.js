@@ -58,7 +58,7 @@ B.grove = (ctx, def) => {
   while(placed<def.count && guard++<def.count*10){
     const p = new THREE.Vector3(def.x+(ctx.rng()-0.5)*def.spreadX, 0,
                                 def.z+(ctx.rng()-0.5)*def.spreadZ);
-    if(!ctx.clearOfRoad(p, def.margin||5) || !ctx.clearOfExclusions(p, 2)) continue;
+    if(!ctx.clearOfRoad(p, def.margin||7) || !ctx.clearOfExclusions(p, 2)) continue;
     const roll=ctx.rng();
     const t = roll<0.42 ? pineTree(ctx.rng)
             : roll<0.58 ? aspenClump(ctx.rng)
@@ -134,13 +134,119 @@ B.boathouse = (ctx, def) => {
   ctx.exclude(def.x,def.z,16); ctx.solid(def.x,def.z,9);
 };
 
+/* Dos Chappell Bathhouse — Craftsman pavilion: stone base, cream body with a
+   banded window row, deep-eaved low hipped roof, and a columned front porch */
 B.bathhouse = (ctx, def) => {
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(10,4,6), lambert(0xb85c48)); body.position.y=2; g.add(body);
-  const roof = new THREE.Mesh(new THREE.ConeGeometry(7.4,3,4), lambert(0x5a4a3a));
-  roof.position.y=5.4; roof.rotation.y=Math.PI/4; roof.scale.z=0.7; g.add(roof);
+  const stone=lambert(0x9a8f80), cream=lambert(0xe8dcc0), roofC=lambert(0x6e4b2a), trim=lambert(0x8a6a48);
+  const base=new THREE.Mesh(new THREE.BoxGeometry(13,1.3,8), stone); base.position.y=0.65; g.add(base);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(11.6,3.2,7), cream); body.position.y=3.0; g.add(body);
+  const winband=new THREE.Mesh(new THREE.BoxGeometry(11.7,1.3,7.05), lambert(0xa8ccd4)); winband.position.y=3.3; g.add(winband);
+  for(let i=-2;i<=2;i++){ const pier=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.5,7.1), cream); pier.position.set(i*2.7,3.3,0); g.add(pier); }
+  const eave=new THREE.Mesh(new THREE.BoxGeometry(13.4,0.4,8.6), trim); eave.position.y=4.75; g.add(eave);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(10,2.4,4), roofC);
+  roof.rotation.y=Math.PI/4; roof.scale.z=0.6; roof.position.y=6.0; g.add(roof);
+  [-4,-1.3,1.3,4].forEach(x=>{ const col=new THREE.Mesh(new THREE.BoxGeometry(0.6,3.0,0.6), stone); col.position.set(x,1.9,3.7); g.add(col); });
+  const porchRoof=new THREE.Mesh(new THREE.BoxGeometry(10,0.35,2.2), roofC); porchRoof.position.set(0,3.55,4.0); g.add(porchRoof);
+  const door=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.2,0.15), lambert(0x3a2a20)); door.position.set(0,1.75,3.55); g.add(door);
   g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
-  ctx.exclude(def.x,def.z,7); ctx.solid(def.x,def.z,4);
+  ctx.exclude(def.x,def.z,9); ctx.solid(def.x,def.z,6);
+};
+
+/* Martha Washington garden — a formal Mt-Vernon-style parterre: four
+   symmetric hedge-outlined beds, a central axial path, white picket border
+   and an arbor arch at the entrance (distinct from a plain flower bed) */
+B.marthaGarden = (ctx, def) => {
+  const g=new THREE.Group();
+  const gravel=new THREE.Mesh(new THREE.PlaneGeometry(def.w,def.d), new THREE.MeshLambertMaterial({map:sandTex}));
+  gravel.rotation.x=-Math.PI/2; gravel.position.y=0.03; g.add(gravel);
+  const path=new THREE.Mesh(new THREE.PlaneGeometry(1.6,def.d), lambert(0xe8dcc0));
+  path.rotation.x=-Math.PI/2; path.position.y=0.04; g.add(path);
+  const hedgeM=lambert(0x2f5a2a), fenceM=lambert(0xf5f0e6);
+  const cols=[0xe84855,0xffd166,0xf25caf,0xf5e9d0];
+  const bloomG=new THREE.BoxGeometry(0.45,0.45,0.45);
+  const bw=def.w/2-2, bd=def.d/2-2;
+  for(let sx=-1;sx<=1;sx+=2)for(let sz=-1;sz<=1;sz+=2){
+    const cx=sx*(def.w/4), cz=sz*(def.d/4);
+    [[bw,0,bd/2],[bw,0,-bd/2]].forEach(([w,ox,oz])=>{
+      const h=new THREE.Mesh(new THREE.BoxGeometry(w,0.5,0.4), hedgeM); h.position.set(cx+ox,0.28,cz+oz); g.add(h); });
+    [[bd,bw/2,0],[bd,-bw/2,0]].forEach(([d,ox,oz])=>{
+      const h=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.5,d), hedgeM); h.position.set(cx+ox,0.28,cz+oz); g.add(h); });
+    for(let i=0;i<Math.floor(bw*bd/5);i++){
+      const f=new THREE.Mesh(bloomG, lambert(cols[(sx+sz+i+2)%4]));
+      f.position.set(cx+(ctx.rng()-0.5)*(bw-1),0.55,cz+(ctx.rng()-0.5)*(bd-1)); g.add(f); }
+  }
+  for(let x=-def.w/2;x<=def.w/2;x+=1.4){ [def.d/2,-def.d/2].forEach(z=>{
+    const p=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.8,0.12),fenceM); p.position.set(x,0.4,z); g.add(p); }); }
+  for(let z=-def.d/2;z<=def.d/2;z+=1.4){ [def.w/2,-def.w/2].forEach(x=>{
+    const p=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.8,0.12),fenceM); p.position.set(x,0.4,z); g.add(p); }); }
+  [-0.9,0.9].forEach(x=>{ const post=new THREE.Mesh(new THREE.BoxGeometry(0.18,2.6,0.18),fenceM); post.position.set(x,1.3,def.d/2); g.add(post); });
+  const arch=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.2,0.2),fenceM); arch.position.set(0,2.5,def.d/2); g.add(arch);
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.exclude(def.x,def.z,Math.max(def.w,def.d)/2+2);
+};
+
+/* South High School — the 1926 landmark across Louisiana from the park's
+   south end: long tan-brick body, arched entry, and the iconic central
+   clock/bell tower. Backdrop building (beyond player bounds, no collision). */
+B.southHigh = (ctx, def) => {
+  const g = new THREE.Group();
+  const brick = lambert(0xd9b48f), roofC = lambert(0x8a9a6a), stone = lambert(0xe8dcc0);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(34,8,10), brick); body.position.y=4; g.add(body);
+  [-21,21].forEach(x=>{
+    const wing=new THREE.Mesh(new THREE.BoxGeometry(8,6.5,9), brick); wing.position.set(x,3.25,0); g.add(wing);
+    const wr=new THREE.Mesh(new THREE.BoxGeometry(8.6,0.5,9.6), roofC); wr.position.set(x,6.75,0); g.add(wr);
+  });
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(34.6,0.6,10.6), roofC); roof.position.y=8.3; g.add(roof);
+  for(let i=-3;i<=3;i++){                       // window rows
+    if(i===0) continue;
+    [2.6,5.6].forEach(y=>{
+      const win=new THREE.Mesh(new THREE.BoxGeometry(2.2,1.7,0.12), lambert(0x6a8a9a));
+      win.position.set(i*4.4,y,5.05); g.add(win);
+    });
+  }
+  const arch = new THREE.Mesh(new THREE.BoxGeometry(4.6,4.4,0.5), stone);
+  arch.position.set(0,2.2,5.1); g.add(arch);
+  const doorway = new THREE.Mesh(new THREE.BoxGeometry(2.6,3.2,0.4), lambert(0x3a2a20));
+  doorway.position.set(0,1.6,5.25); g.add(doorway);
+  /* the clock tower */
+  const tower = new THREE.Mesh(new THREE.BoxGeometry(5,17,5), brick); tower.position.y=8.5; g.add(tower);
+  const belfry = new THREE.Mesh(new THREE.BoxGeometry(5.6,2.6,5.6), stone); belfry.position.y=17.5; g.add(belfry);
+  [-1.4,1.4].forEach(x=>{
+    const slot=new THREE.Mesh(new THREE.BoxGeometry(1,2,5.7), lambert(0x2a1f2e));
+    slot.position.set(x,17.5,0); g.add(slot);
+  });
+  const clock = new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,0.3,12), lambert(0xf5f0e6));
+  clock.rotation.x=Math.PI/2; clock.position.set(0,14.2,2.6); g.add(clock);
+  [[0,0.55,0.12,1.0],[0.4,0.28,0.12,0.7]].forEach(([hx,hy,w,l])=>{
+    const hand=new THREE.Mesh(new THREE.BoxGeometry(w,l,0.08), lambert(0x1a1423));
+    hand.position.set(hx?0.2:0, 14.2+hy, 2.78); g.add(hand);
+  });
+  const cap = new THREE.Mesh(new THREE.ConeGeometry(4.2,2.6,4), roofC);
+  cap.position.y=20.1; cap.rotation.y=Math.PI/4; g.add(cap);
+  const name = new THREE.Mesh(new THREE.PlaneGeometry(9,1.3),
+    new THREE.MeshLambertMaterial({map:bannerTex('SOUTH HIGH SCHOOL','#d9b48f','#5a4030'),
+      side:THREE.DoubleSide}));
+  name.position.set(0,6.9,5.15); g.add(name);
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.exclude(def.x,def.z,24);
+};
+
+/* Fire Station 21 — the red-brick NE-corner landmark with bay doors + tower */
+B.fireStation = (ctx, def) => {
+  const g=new THREE.Group();
+  const brick=lambert(0xb04a3a);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(12,6,9), brick); body.position.y=3; g.add(body);
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(12.6,0.6,9.6), lambert(0x4a3c38)); roof.position.y=6.3; g.add(roof);
+  [-3,3].forEach(x=>{ const door=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.6,0.2), lambert(0xc0392b)); door.position.set(x,1.9,4.55); g.add(door); });
+  const tower=new THREE.Mesh(new THREE.BoxGeometry(2.6,9,2.6), brick); tower.position.set(-6.6,4.5,-2); g.add(tower);
+  const towerRoof=new THREE.Mesh(new THREE.ConeGeometry(2.2,1.6,4), lambert(0x4a3c38));
+  towerRoof.position.set(-6.6,9.8,-2); towerRoof.rotation.y=Math.PI/4; g.add(towerRoof);
+  const band=new THREE.Mesh(new THREE.PlaneGeometry(5,1.3),
+    new THREE.MeshLambertMaterial({map:bannerTex('STATION 21','#7a2a20','#f5e9d0'), side:THREE.DoubleSide}));
+  band.position.set(0,5.2,4.62); g.add(band);
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.exclude(def.x,def.z,12); ctx.solid(def.x,def.z,8);
 };
 
 B.boats = (ctx, def) => {
@@ -246,21 +352,54 @@ B.formalGarden = (ctx, def) => {
 };
 
 B.cottage = (ctx, def) => {
+  /* Eugene Field House: 1875 clapboard cottage — front-gabled with a full
+     porch and a landmark plaque, so it reads as *the* house, not a shed */
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(6,3,4.5), lambert(0xf5e9d0)); body.position.y=1.5; g.add(body);
+  const clap = lambert(0xf5e9d0), trim = lambert(0x8a6a48);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(6,3.2,4.5), clap); body.position.y=1.6; g.add(body);
   const roof = new THREE.Mesh(new THREE.ConeGeometry(4.6,2.4,4), lambert(0x6e4b2a));
-  roof.position.y=4.1; roof.rotation.y=Math.PI/4; roof.scale.z=0.8; g.add(roof);
-  g.position.set(def.x,0,def.z); ctx.scene.add(g);
+  roof.position.y=4.3; roof.rotation.y=Math.PI/4; roof.scale.z=0.8; g.add(roof);
+  const gable = new THREE.Mesh(new THREE.ConeGeometry(1.7,1.5,4), lambert(0x6e4b2a));
+  gable.position.set(0,4.0,1.9); gable.rotation.y=Math.PI/4; gable.scale.x=0.9; g.add(gable);
+  const gwin = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.9,0.1), lambert(0xa8ccd4));
+  gwin.position.set(0,3.5,2.28); g.add(gwin);
+  const slab = new THREE.Mesh(new THREE.BoxGeometry(5.6,0.4,1.8), trim);
+  slab.position.set(0,0.2,3.1); g.add(slab);
+  [-2.3,-0.8,0.8,2.3].forEach(x=>{
+    const col=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.11,2.2,5), clap);
+    col.position.set(x,1.5,3.7); g.add(col);
+  });
+  const pRoof = new THREE.Mesh(new THREE.BoxGeometry(6,0.25,2.1), lambert(0x6e4b2a));
+  pRoof.position.set(0,2.72,3.15); g.add(pRoof);
+  const door = new THREE.Mesh(new THREE.BoxGeometry(0.9,1.8,0.1), lambert(0x3a2a20));
+  door.position.set(-0.9,1.1,2.28); g.add(door);
+  const win = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.1,0.1), lambert(0xa8ccd4));
+  win.position.set(1.2,1.5,2.28); g.add(win);
+  const plaque = new THREE.Mesh(new THREE.PlaneGeometry(2.6,0.7),
+    new THREE.MeshLambertMaterial({map:bannerTex('EST. 1875','#5a4030','#f5e9d0'), side:THREE.DoubleSide}));
+  plaque.position.set(0,2.2,2.35); g.add(plaque);
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
   ctx.exclude(def.x,def.z,6); ctx.solid(def.x,def.z,4);
-  // the Wynken, Blynken & Nod shoe fountain beside the cottage
-  const fx=def.x+7, fz=def.z-6;
-  const basin = new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.6,0.6,10), lambert(0xd8d2c5));
-  basin.position.set(fx,0.3,fz); ctx.scene.add(basin);
-  const water = new THREE.Mesh(new THREE.CircleGeometry(2.2,10), new THREE.MeshLambertMaterial({map:waterTex}));
-  water.rotation.x=-Math.PI/2; water.position.set(fx,0.62,fz); ctx.scene.add(water);
-  const shoe = new THREE.Mesh(new THREE.BoxGeometry(1.8,0.7,0.8), lambert(0x8a8275));
-  shoe.position.set(fx,1,fz); ctx.scene.add(shoe);
-  ctx.exclude(fx,fz,4); ctx.solid(fx,fz,3);
+  // the Wynken, Blynken & Nod fountain beside the cottage — the bronze kids
+  // in a sailing shoe, on a larger basin so it reads as a real landmark.
+  // Offset is data-driven (fdx/fdz) so it lands park-side wherever the
+  // cottage sits (east edge now — a +x offset would put it on Franklin St).
+  const fx=def.x+(def.fdx??8), fz=def.z+(def.fdz??-7), bronze=lambert(0x8a6a4a);
+  const basin = new THREE.Mesh(new THREE.CylinderGeometry(4,4,0.7,14), lambert(0xd8d2c5));
+  basin.position.set(fx,0.35,fz); ctx.scene.add(basin);
+  const water = new THREE.Mesh(new THREE.CircleGeometry(3.5,14), new THREE.MeshLambertMaterial({map:waterTex}));
+  water.rotation.x=-Math.PI/2; water.position.set(fx,0.72,fz); ctx.scene.add(water);
+  const shoe = new THREE.Mesh(new THREE.BoxGeometry(2.6,0.9,1.1), bronze);
+  shoe.position.set(fx,1.15,fz); ctx.scene.add(shoe);
+  const toe = new THREE.Mesh(new THREE.BoxGeometry(0.8,1.4,1.0), bronze);
+  toe.position.set(fx+1.3,1.5,fz); ctx.scene.add(toe);
+  for(let i=0;i<3;i++){                              // three little sleepy kids
+    const kid=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.6,0.32), bronze);
+    kid.position.set(fx-0.6+i*0.6,1.9,fz); ctx.scene.add(kid);
+    const h=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.3,0.32), bronze);
+    h.position.set(fx-0.6+i*0.6,2.3,fz); ctx.scene.add(h);
+  }
+  ctx.exclude(fx,fz,6); ctx.solid(fx,fz,4);
 };
 
 /* shared materials for architectural details (keeps material count down) */
@@ -649,7 +788,7 @@ B.cityDitch = (ctx, def) => {
     const p = curve.getPointAt(ctx.rng());
     const side = ctx.rng()<0.5 ? -1 : 1;
     const q = new THREE.Vector3(p.x+side*(3+ctx.rng()*3), 0, p.z+(ctx.rng()-0.5)*4);
-    if(!ctx.clearOfRoad(q,3) || !ctx.clearOfExclusions(q,2)) continue;   // never in a lake
+    if(!ctx.clearOfRoad(q,5) || !ctx.clearOfExclusions(q,2)) continue;   // never in a lake
     const t = new THREE.Group();
     const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.45,2,5), lambert(0x7a6a52));
     trunk.position.y=1; t.add(trunk);
@@ -678,10 +817,77 @@ B.banners = (ctx, def) => {
         side:THREE.DoubleSide, emissive:0x2a1410}));
     panel.position.y=2.7; g.add(panel);
     g.position.set(bx,0,bz);
-    g.lookAt(p.x, 2.7, p.z);          // face the racing line
+    g.lookAt(p.x, 0, p.z);            // face the racing line (y=0 keeps posts upright)
     ctx.scene.add(g);
   }
 };
+
+/* a park landmark placard — wooden board on a post, naming what you're
+   passing (SMITH LAKE, BOATHOUSE…). faceT points it at a track position. */
+B.parkSign = (ctx, def) => {
+  const g = new THREE.Group();
+  const w = def.w || 5.4;
+  const post=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.18,3.4,6), lambert(0x5a4030));
+  post.position.y=1.7; g.add(post);
+  const frame=new THREE.Mesh(new THREE.BoxGeometry(w+0.35,2.0,0.14), lambert(0x5a4030));
+  frame.position.y=3.5; g.add(frame);
+  const board=new THREE.Mesh(new THREE.PlaneGeometry(w,1.7),
+    new THREE.MeshLambertMaterial({map:bannerTex(def.text, def.bg||'#3e5a34', def.fg||'#f5e9d0'),
+      side:THREE.DoubleSide}));
+  board.position.set(0,3.5,0.08); g.add(board);
+  if(def.t!==undefined){                 // auto-place beside the road, facing it
+    const p=ctx.trackPoint(def.t), tan=ctx.trackTangent(def.t);
+    const n=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),tan).normalize();
+    const side=def.side||1;
+    g.position.set(p.x+n.x*(ctx.roadHalf+2.6)*side, 0, p.z+n.z*(ctx.roadHalf+2.6)*side);
+    g.lookAt(p.x,0,p.z);
+  } else {
+    g.position.set(def.x,0,def.z);
+    if(def.faceT!==undefined){ const p=ctx.trackPoint(def.faceT); g.lookAt(p.x,0,p.z); }
+    else g.rotation.y = def.ry||0;
+  }
+  ctx.scene.add(g);
+};
+
+/* a green street-name blade on a pole for the park's edges (S DOWNING ST…) */
+B.streetSign = (ctx, def) => {
+  const g = new THREE.Group();
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,4.6,6), lambert(0x3a3a3a));
+  pole.position.y=2.3; g.add(pole);
+  const blade=new THREE.Mesh(new THREE.PlaneGeometry(5.6,1.12),
+    new THREE.MeshLambertMaterial({map:bannerTex(def.text, '#2f6b3a', '#f7f7f2'),
+      side:THREE.DoubleSide}));
+  blade.position.y=4.3; g.add(blade);
+  g.position.set(def.x,0,def.z); g.rotation.y = def.ry||0;
+  ctx.scene.add(g);
+};
+
+/* a rented Wash Park surrey — canopy pedal-buggy with two riders.
+   Built front-along-+z (the loop-traffic convention, same as makePerson),
+   so it rolls forward rather than sliding broadside. */
+export function makeSurrey(rng){
+  const g = new THREE.Group();
+  const c = [0xe84855,0xffd166,0x2e86ab,0xf25caf][Math.floor(rng()*4)];
+  const deck=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.3,2.4), lambert(0x9b6b53)); deck.position.y=0.55; g.add(deck);
+  const wgeo=new THREE.CylinderGeometry(0.3,0.3,0.16,6);
+  [[0.6,0.9],[0.6,-0.9],[-0.6,0.9],[-0.6,-0.9]].forEach(([x,z])=>{
+    const w=new THREE.Mesh(wgeo, lambert(0x1a1423));
+    w.rotation.z=Math.PI/2;                        // axle along x → rolls along z
+    w.position.set(x,0.3,z); g.add(w);
+  });
+  [[0.6,1.0],[0.6,-1.0],[-0.6,1.0],[-0.6,-1.0]].forEach(([x,z])=>{
+    const post=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,1.5,4), lambert(0x8a8275));
+    post.position.set(x,1.35,z); g.add(post);
+  });
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(1.7,0.16,2.7), lambert(c)); roof.position.y=2.15; g.add(roof);
+  const fringe=new THREE.Mesh(new THREE.BoxGeometry(1.7,0.22,0.05), lambert(c)); fringe.position.set(0,2.0,1.38); g.add(fringe);
+  [0.35,-0.35].forEach(x=>{
+    const p=makePerson(rng, [0xf5e9d0,0x5db3c9,0xffd166][Math.floor(rng()*3)], 'sit');
+    p.position.set(x,0.72,0.1); p.scale.setScalar(0.82); g.add(p);   // facing +z = forward
+  });
+  g.add(blobShadow(1.7,0.2));
+  return g;
+}
 
 /* stone rails where the race road crosses the ditch */
 B.roadBridge = (ctx, def) => {
@@ -708,7 +914,7 @@ B.footbridge = (ctx, def) => {
 /* the Victorian Perennial Garden at Downing — elliptical lawn ringed by beds */
 B.perennialGarden = (ctx, def) => {
   const g=new THREE.Group();
-  const gravel=new THREE.Mesh(new THREE.PlaneGeometry(def.w+6,def.d+6),
+  const gravel=new THREE.Mesh(new THREE.PlaneGeometry(def.w+4,def.d+4),
     new THREE.MeshLambertMaterial({map:sandTex}));
   gravel.rotation.x=-Math.PI/2; gravel.position.y=0.025; g.add(gravel);
   const lawn=new THREE.Mesh(new THREE.CircleGeometry(1,24), lambert(0x6fae5c));
@@ -805,7 +1011,7 @@ B.pines = (ctx, def) => {
   while(placed<def.count && guard++<300){
     const p = new THREE.Vector3(def.x+(ctx.rng()-0.5)*def.spreadX, 0,
                                 def.z+(ctx.rng()-0.5)*def.spreadZ);
-    if(!ctx.clearOfRoad(p,4) || !ctx.clearOfExclusions(p,1.5)) continue;
+    if(!ctx.clearOfRoad(p,6) || !ctx.clearOfExclusions(p,1.5)) continue;
     const t = pineTree(ctx.rng);
     t.position.copy(p); t.rotation.y=ctx.rng()*6; ctx.scene.add(t);
     ctx.solid(p.x,p.z,0.9); placed++;
@@ -1122,7 +1328,7 @@ B.trees = (ctx, def) => {
     const p = inPark
       ? new THREE.Vector3((ctx.rng()-0.5)*def.parkX, 0, (ctx.rng()-0.5)*def.parkZ)
       : new THREE.Vector3((ctx.rng()-0.5)*def.outerX, 0, (ctx.rng()-0.5)*def.outerZ);
-    if(!ctx.clearOfRoad(p, 5.5) || !ctx.clearOfExclusions(p, 2)) continue;
+    if(!ctx.clearOfRoad(p, 7.5) || !ctx.clearOfExclusions(p, 2)) continue;
     // keep trees off the street bands
     if((def.avoidX||[]).some(([a,b]) => Math.abs(p.x)>=a && Math.abs(p.x)<=b)) continue;
     if((def.avoidZ||[]).some(([a,b]) => p.z>=a && p.z<=b)) continue;

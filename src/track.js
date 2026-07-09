@@ -171,7 +171,10 @@ export class Track {
     const b = new THREE.Mesh(new THREE.PlaneGeometry(this.data.roadWidth+3, 2.0),
       new THREE.MeshLambertMaterial({map:bTex, side:THREE.DoubleSide}));
     b.position.copy(p); b.position.y = 4.2;
-    b.lookAt(p.clone().add(tan)); scene.add(b);
+    /* aim at a point at the banner's own height, else lookAt pitches the
+       plane down toward the ground and it hangs at a weird angle */
+    const aim = p.clone().add(tan); aim.y = b.position.y;
+    b.lookAt(aim); scene.add(b);
   }
 
   #buildPads(scene, data){
