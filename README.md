@@ -21,9 +21,12 @@ Then open the printed localhost URL.
 ## Controls
 
 - ← / → (or A / D) — steer
-- SPACE or SHIFT — drift (hold while turning) / brake
+- SPACE (or ↑ / W) — gas: sprint that burns the LEGS meter; drafting refills it.
+  Hold on the countdown's "1" for a launch boost
+- SHIFT (or ↓ / S) — drift (hold while turning) / brake
 - E or ENTER — use item
-- Touch: hold screen sides to steer, on-screen DRIFT / item buttons
+- Touch: hold screen sides to steer; mirrored DRIFT + GAS buttons in both
+  bottom corners (use your free thumb), item button centered
 
 ## Project layout
 

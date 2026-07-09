@@ -118,6 +118,11 @@ export default {
     { type:'parkSign', t:0.55, side:1,  text:'MT VERNON GARDEN', w:6.6 },
     { type:'parkSign', t:0.66, side:1,  text:'GRASMERE LAKE', w:5.6 },
     { type:'parkSign', t:0.50, side:-1, text:'CITY DITCH' },
+    /* amber crossing signs ~0.025t BEFORE each ped zone (zones start at
+       0.07 / 0.39 / 0.77) so the warning arrives before the hazard */
+    { type:'parkSign', t:0.045, side:-1, text:'PED XING', w:4, bg:'#d9a520', fg:'#1a1423' },
+    { type:'parkSign', t:0.365, side:1,  text:'PED XING', w:4, bg:'#d9a520', fg:'#1a1423' },
+    { type:'parkSign', t:0.745, side:1,  text:'PED XING', w:4, bg:'#d9a520', fg:'#1a1423' },
     /* street-name blades at the park edges for orientation */
     { type:'streetSign', x:-80, z:-30, text:'S DOWNING ST',   ry:Math.PI/2 },
     { type:'streetSign', x: 64, z:  6, text:'S FRANKLIN ST',  ry:-Math.PI/2 },
@@ -253,8 +258,13 @@ export default {
   /* gravel-loop traffic: joggers, dog walkers, rollerbladers, surreys */
   joggers: 10,
 
-  /* Denver pedestrians wandering the racing line (see PED_TYPES in world.js) */
-  pedestrians: { count: 10, tMin: 0.05, tMax: 0.97 },
+  /* Denver pedestrians in authored crossing zones (see PED_TYPES in world.js):
+     playground/volleyball, the boathouse, and the Great Meadow crossing */
+  pedestrians: { zones: [
+    { t:0.10, span:0.03, count:4 },
+    { t:0.42, span:0.03, count:4 },
+    { t:0.80, span:0.03, count:3 }
+  ]},
 
   /* geese floating out on the lakes */
   lakeGeese: [

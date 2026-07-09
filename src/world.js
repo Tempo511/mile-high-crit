@@ -90,24 +90,31 @@ export function buildWorld(scene, track){
     }
   }
 
-  /* pedestrians on the racing line */
+  /* pedestrians on the racing line — confined to authored crossing zones
+     so the hazard is readable ("that's a ped area") rather than diffuse */
   const peds = [];
   const pcfg = track.data.pedestrians;
   if(pcfg){
     const prng = makeRng((track.data.seed||1)+13);
-    for(let i=0;i<pcfg.count;i++){
-      const type = PED_TYPES[i%PED_TYPES.length];
-      const m = makePedestrian(prng, type);
-      scene.add(m);
-      peds.push({
-        m, type,
-        t: pcfg.tMin + prng()*(pcfg.tMax-pcfg.tMin),
-        dir: prng()<0.5 ? -1 : 1,
-        lateral: (prng()-0.5)*5,
-        latPhase: prng()*6,
-        state:'walk', stateT:0, bumpCd:0, phase:prng()*6,
-        lastX:0, lastZ:0
-      });
+    const zones = pcfg.zones || [{t:(pcfg.tMin+pcfg.tMax)/2,
+      span:(pcfg.tMax-pcfg.tMin)/2, count:pcfg.count}];
+    let pi=0;
+    for(const zone of zones){
+      for(let k=0;k<zone.count;k++,pi++){
+        const type = PED_TYPES[pi%PED_TYPES.length];
+        const m = makePedestrian(prng, type);
+        scene.add(m);
+        peds.push({
+          m, type,
+          t: zone.t + (prng()-0.5)*2*zone.span,
+          tMin: zone.t-zone.span, tMax: zone.t+zone.span,
+          dir: prng()<0.5 ? -1 : 1,
+          lateral: (prng()-0.5)*5,
+          latPhase: prng()*6,
+          state:'walk', stateT:0, bumpCd:0, phase:prng()*6,
+          lastX:0, lastZ:0
+        });
+      }
     }
   }
 
@@ -256,7 +263,9 @@ function updatePeds(game, dt, now){
     if(pd.state==='flee'){ pd.stateT-=dt; if(pd.stateT<=0){ pd.state='walk'; } }
 
     const spd = pd.state==='flee' ? 4 : pd.type.speed;
-    pd.t = ((pd.t + pd.dir*spd*dt/track.length) % 1 + 1) % 1;
+    pd.t += pd.dir*spd*dt/track.length;
+    if(pd.t > pd.tMax){ pd.t = pd.tMax; pd.dir = -1; }   // pace within the zone
+    else if(pd.t < pd.tMin){ pd.t = pd.tMin; pd.dir = 1; }
 
     if(pd.state==='flee'){
       pd.lateral += Math.sign(pd.lateral||1)*6*dt;

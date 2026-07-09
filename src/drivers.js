@@ -131,7 +131,10 @@ export function aiDriver(r, game, dt){
   const bend = track.curvatureAt(r.dist+ahead);
   let target = r.base * AI_SKILL * (1 - Math.min(grip, bend*grip));
   const gap = progressOf(track, player) - progressOf(track, r);
-  if(gap>18) target*=1.30; else if(gap<-50) target*=0.98;   // hunt hard, barely coast
+  /* rubber band: a smooth ramp, not a cliff — starts after a meaningful
+     gap (25u) and caps at +15%, so a clean lead still feels earned */
+  if(gap>25) target *= 1 + Math.min(0.15, (gap-25)*0.004);
+  else if(gap<-50) target*=0.98;               // leaders barely coast
   if(r.boostT>0){ target=BOOST_SPEED; r.boostT-=dt; }
   if(r.spin>0){ target=2; r.spin-=dt; }
   r.speed += Math.max(-14*dt, Math.min(11*dt, target-r.speed));  // quicker off the corners
