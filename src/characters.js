@@ -11,7 +11,7 @@
 */
 
 export const PLAYER_CHARACTER = {
-  id:'you', name:'YOU', torso:0x2e86ab, helmet:0xffd166
+  id:'you', name:'THE LOCAL', torso:0x2e86ab, helmet:0xffd166
 };
 
 export const ROSTER = [
