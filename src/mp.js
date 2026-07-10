@@ -14,20 +14,23 @@ export function createSession(role, room='local'){
   const s = {
     role, tp, myId,
     roster: [],                    // [{uid, char}] in grid order, host first
+    track: null,                   // host's track id, stamped into lobby/start
     onLobby: null, onStart: null, onState: null, onFinish: null,
-    onItem: null, onBox: null,
+    onItem: null, onBox: null, onWrongTrack: null,
   };
   tp.onMessage(m => {
     if(m.type==='hello' && role==='host'){
       const i = s.roster.findIndex(p => p.uid===m.uid);
       if(i>=0) s.roster[i].char = m.char;
       else if(s.roster.length < MAX_PLAYERS) s.roster.push({uid:m.uid, char:m.char});
-      tp.send({type:'lobby', players:s.roster});
+      tp.send({type:'lobby', players:s.roster, track:s.track});
       s.onLobby && s.onLobby(s.roster);
     } else if(m.type==='lobby' && role==='join'){
+      if(m.track && s.track && m.track!==s.track){ s.onWrongTrack && s.onWrongTrack(m.track); return; }
       s.roster = m.players;
       s.onLobby && s.onLobby(s.roster);
     } else if(m.type==='start' && role==='join'){
+      if(m.track && s.track && m.track!==s.track){ s.onWrongTrack && s.onWrongTrack(m.track); return; }
       s.roster = m.players;
       s.onStart && s.onStart(m);
     } else if(m.type==='state' && m.id!==s.myId){

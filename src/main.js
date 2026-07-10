@@ -16,6 +16,7 @@ import { createHud } from './hud.js';
 import { createAudio } from './audio.js';
 import { createCharacterSelect } from './select.js';
 import { createSession, snapshot, applyState, updateRemote, gridSlot, SEND_HZ } from './mp.js';
+import { hasInternet } from './net.js';
 import { remoteUseItem } from './items.js';
 import { step } from './sim.js';
 
@@ -27,7 +28,9 @@ document.querySelectorAll('#trackPick button').forEach(b=>{
   b.classList.toggle('on', (TRACKS[b.dataset.track]||washpark)===trackData);
   b.addEventListener('click', ()=>{
     if(TRACKS[b.dataset.track]===trackData) return;
-    location.href = location.pathname + '?track=' + b.dataset.track + location.hash;
+    const q = new URLSearchParams(location.search);
+    q.set('track', b.dataset.track);
+    location.href = location.pathname + '?' + q + location.hash;
   });
 });
 document.querySelector('#title .badge').textContent = trackData.name;
@@ -136,23 +139,27 @@ function onPick(chosen){
   audio.unlock();
   if(!mp){ beginRace(chosen); return; }
   if(mp.role==='host'){
-    const joinUrl = location.origin + location.pathname + location.search + '#join';
+    const joinUrl = location.origin + location.pathname + location.search + '#join-' + mpRoom;
     const localHost = /^(localhost|127\.)/.test(location.hostname);
     mp.roster = [{uid:mp.myId, char:chosen}, ...mp.roster.filter(p=>p.uid!==mp.myId)];
-    mp.tp.send({type:'lobby', players:mp.roster});
+    mp.tp.send({type:'lobby', players:mp.roster, track:trackData.id});
     mpWait.style.display='flex';
+    const wire = () => mp.tp.kind==='supabase' ? 'over the internet'
+                 : mp.tp.kind==='ws-relay' ? 'same wifi' : 'this browser (tabs)';
     const render = ()=>{
       mpStatus.innerHTML =
-        `friends join at <b>${joinUrl}</b> (up to 6 riders)<br>` +
+        `ROOM CODE: <b>${mpRoom}</b> · racing ${wire()}<br>` +
+        `friends join at <b>${joinUrl}</b><br>` +
+        `<button id="copyLink">COPY LINK</button> (up to 6 riders)<br>` +
         (localHost ? `<small>on phones, use your Mac's network URL
-          (e.g. http://10.0.0.244:5173/#join)</small><br>` : '') +
+          (e.g. http://10.0.0.244:5173/${location.search}#join-${mpRoom})</small><br>` : '') +
         `<br>IN THE LOBBY:<br>${lobbyList(mp.roster)}`;
       mpGo.style.display = mp.roster.length>=2 ? 'inline-block' : 'none';
     };
     render();
     mp.onLobby = render;
     mpGo.onclick = ()=>{
-      mp.tp.send({type:'start', players:mp.roster});
+      mp.tp.send({type:'start', players:mp.roster, track:trackData.id});
       mpWait.style.display='none';
       beginRace(chosen);
     };
@@ -173,20 +180,47 @@ function onPick(chosen){
   }
 }
 
+/* room codes: #join-XXXXX carries the room across the internet transport;
+   a bare #join keeps the old same-wifi/two-tab behavior */
+let mpRoom = 'local';
+function makeRoomCode(){
+  const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';   // no 0/O/1/I/L lookalikes
+  return Array.from({length:5},()=>A[Math.floor(Math.random()*A.length)]).join('');
+}
+/* one delegated listener survives the lobby re-renders */
+mpStatus.addEventListener('click', e=>{
+  if(e.target.id!=='copyLink') return;
+  const joinUrl = location.origin + location.pathname + location.search + '#join-' + mpRoom;
+  navigator.clipboard.writeText(joinUrl).then(()=>{ e.target.textContent='COPIED!'; });
+});
+
 const select = createCharacterSelect(onPick);
 document.getElementById('startBtn').addEventListener('click', ()=>{
   audio.unlock();                             // AudioContext needs a user gesture
   document.getElementById('title').style.display='none';
   select.open();
 });
+if(hasInternet)
+  document.getElementById('btn2p').textContent = '👥 RACE A FRIEND — share a link (beta)';
 document.getElementById('btn2p').addEventListener('click', ()=>{
   audio.unlock();
-  mp = createSession('host');
+  mpRoom = makeRoomCode();
+  mp = createSession('host', mpRoom);
+  mp.track = trackData.id;
   document.getElementById('title').style.display='none';
   select.open();
 });
-if(location.hash.includes('join')){           // second tab: straight to select
-  mp = createSession('join');
+const joinMatch = location.hash.match(/#join(?:-([A-Z0-9]+))?/);
+if(joinMatch){                                // joiner: straight to select
+  mpRoom = joinMatch[1] || 'local';
+  mp = createSession('join', mpRoom);
+  mp.track = trackData.id;
+  mp.onWrongTrack = id => {                   // host is on another course: follow it
+    if(!TRACKS[id]) return;
+    const q = new URLSearchParams(location.search);
+    q.set('track', id);
+    location.href = location.pathname + '?' + q + location.hash;
+  };
   document.getElementById('title').style.display='none';
   select.open();
 }

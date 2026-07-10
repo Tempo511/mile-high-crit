@@ -96,6 +96,10 @@
     margin:0 0 18px;text-shadow:3px 3px 0 var(--ink);}
   #mpStatus{font-size:clamp(12px,2.6vw,16px);line-height:2;margin-bottom:24px;max-width:88vw;}
   #mpStatus b{color:var(--goldenrod);}
+  #copyLink{font-family:inherit;font-weight:bold;font-size:11px;letter-spacing:1px;
+    padding:5px 12px;background:var(--goldenrod);color:var(--ink);
+    border:2px solid var(--ink);box-shadow:0 3px 0 var(--ink);cursor:pointer;}
+  #copyLink:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink);}
   #mpGo{display:none;font-family:inherit;font-weight:bold;font-size:18px;letter-spacing:3px;
     padding:14px 44px;background:var(--goldenrod);color:var(--ink);
     border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer;}

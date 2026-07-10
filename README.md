@@ -20,6 +20,18 @@ npm run dev
 
 Then open the printed localhost URL.
 
+## Multiplayer
+
+- **Same wifi** (zero setup): `npm run dev -- --host`, click *RACE A
+  FRIEND*, share the network URL. Rides a WebSocket relay inside the dev
+  server; falls back to BroadcastChannel for two tabs in one browser.
+- **Over the internet**: copy `.env.example` to `.env.local` with your
+  Supabase project's URL + anon key. Hosting a race generates a 5-letter
+  room code and a shareable `#join-CODE` link; the transport switches to a
+  Supabase Realtime broadcast channel (the channel IS the relay — no game
+  server). Deployed builds use it automatically; test it from localhost
+  with `?net=sb`.
+
 ## Controls
 
 - ← / → (or A / D) — steer
