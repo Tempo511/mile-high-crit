@@ -33,5 +33,7 @@ function mpRelay(){
 }
 
 export default defineConfig({
+  base: '',            // relative asset paths: works at both the GitHub Pages
+                       // subpath and a custom domain root
   plugins: [mpRelay()]
 });
