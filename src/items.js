@@ -166,7 +166,8 @@ export function remoteUseItem(game, m){
    block) happens on their machine and arrives via their snapshots. */
 export function spinRacer(game, r){
   if(game.mp && r.driver==='remote') return;
-  if(r.spin>0) return;
+  if(r.spin>0 || (r.spinImmune||0)>0) return;
+  r.spinImmune=2.4;              // spin (1s) + time to escape the hazard
   const isPlayer = r.driver==='player';
   if(r.shieldT>0){
     r.shieldT=0;

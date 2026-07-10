@@ -8,6 +8,16 @@ import { progressOf } from './racers.js';
 import { PLACES } from './constants.js';
 
 export function respawn(track, r){
+  /* never respawn inside a solid — walk forward to a clear sample, else
+     the stuck-rescue re-triggers forever */
+  let guard=0;
+  while(guard++<track.NS){
+    const sp=track.samples[r.lastIdx];
+    const blocked=track.solids.some(o=>
+      (sp.x-o.x)**2+(sp.z-o.z)**2 < (o.r+1.3)**2);
+    if(!blocked) break;
+    r.lastIdx=(r.lastIdx+4)%track.NS;
+  }
   const s = track.samples[r.lastIdx], s2 = track.samples[(r.lastIdx+2)%track.NS];
   r.x=s.x; r.z=s.z;
   r.heading=Math.atan2(s2.x-s.x, s2.z-s.z);
@@ -32,6 +42,20 @@ export function step(game, inputs, dt, now){
       player.x=s.x+dx/d*min; player.z=s.z+dz/d*min;
       if(Math.abs(player.speed)>6){ player.shake=0.35; events.push({type:'toast', msg:'OOF', ms:450}); }
       player.speed*=0.25; player.drifting=false; player.driftCharge=0;
+    }
+  }
+
+  /* BRT buses: moving walls in the red lanes */
+  for(const b of game.world.brtBuses||[]){
+    const fx=Math.sin(b.m.rotation.y), fz=Math.cos(b.m.rotation.y);
+    for(const k of [-3.6,0,3.6]){
+      const cx=b.m.position.x+fx*k, cz=b.m.position.z+fz*k;
+      const dx=player.x-cx, dz=player.z-cz, d=Math.hypot(dx,dz), min=1.9;
+      if(d<min && d>0.001){
+        player.x=cx+dx/d*min; player.z=cz+dz/d*min;
+        if(Math.abs(player.speed)>6){ player.shake=0.4; events.push({type:'toast', msg:'THE BUS!!', ms:600}); }
+        player.speed*=0.2; player.drifting=false; player.driftCharge=0;
+      }
     }
   }
 
@@ -91,8 +115,17 @@ export function step(game, inputs, dt, now){
   player.lastIdx=idx;
   const prevProg=player.prog;
   player.prog=idx/track.NS;
+  /* stage (point-to-point): cross the line at the end of the spline once */
+  if(track.data.format==='stage' && player.prog>=(track.data.finishT ?? 0.996) && !player.finished){
+    race.phase='done'; player.finished=true;
+    race.finishOrder.push(player.id);
+    const place=race.finishOrder.indexOf(player.id)+1;
+    race.place=place;
+    player.dist = progressOf(track, player);
+    events.push({type:'finish', place, total: now-race.t0});
+  }
   if(player.prog>0.45 && player.prog<0.55) player.passedHalf=true;
-  if(prevProg>0.9 && player.prog<0.1 && player.passedHalf){
+  if(track.data.format!=='stage' && prevProg>0.9 && player.prog<0.1 && player.passedHalf){
     player.passedHalf=false;
     const lapTime = now-race.lapStart; race.lapStart=now;
     if(lapTime<race.best) race.best=lapTime;
@@ -119,6 +152,7 @@ export function step(game, inputs, dt, now){
   if(player.stuckT>3){ events.push({type:'toast', msg:'RESET', ms:700}); respawn(track, player); }
 
   player.shake=Math.max(0,player.shake-dt);
+  for(const r of racers) r.spinImmune=Math.max(0,(r.spinImmune||0)-dt);
 
   /* live standings */
   const me=progressOf(track, player);

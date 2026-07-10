@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { gooseMesh } from './riders.js';
 import { giveItem } from './items.js';
-import { makePerson, makePedestrian, makeDog, makeSurrey } from './props.js';
+import { makePerson, makePedestrian, makeDog, makeSurrey, makeBusMesh } from './props.js';
 import { makeRng } from './rng.js';
 
 /* Denver pedestrians who treat the racing line as a walking path.
@@ -85,6 +85,25 @@ export function buildWorld(scene, track){
      curve-follower as the jogging loop */
   joggers.push(...(track.dynamic.strollers||[]));
 
+  /* BRT buses running the red center lanes, both directions (track.data.brt) */
+  const brtBuses = [];
+  const brt = track.data.brt;
+  if(brt){
+    const span = track.length * (brt.tMax ?? 1);
+    for(let i=0;i<brt.count;i++){
+      const dir = i%2 ? -1 : 1;
+      const m = makeBusMesh(false, brt.route||'COLFAX BRT');
+      scene.add(m);
+      brtBuses.push({
+        m, dir,
+        dist: span * ((i+0.5)/brt.count),
+        speed: (brt.speed||8.5) * (0.9+0.2*(i%3)/2),
+        lat: (brt.lat||2.9) * dir,     // each direction keeps its own lane
+        span
+      });
+    }
+  }
+
   /* geese floating on the lakes — scenery, not chaseable */
   const lakeGeese = [];
   for(const lg of track.data.lakeGeese || []){
@@ -136,6 +155,7 @@ export function buildWorld(scene, track){
 
   return {
     geese, feathers, sparkles, joggers, lakeGeese, peds, poops, poopT:2,
+    brtBuses,
     boats: track.dynamic.boats,
     clouds: track.dynamic.clouds,
     pads: track.dynamic.pads,
@@ -219,6 +239,14 @@ export function updateBoxes(game, dt, now){
         game.events.push({type:'pickup'});
         // peers see the same box wink out (box order is deterministic)
         if(game.mp) game.mp.tp.send({type:'box', id:game.mp.myId, i:bi});
+      }
+      // remote riders consume boxes locally too — visual self-healing even
+      // if their pickup broadcast is lost on the wire
+      if(game.mp) for(const r of game.racers){
+        if(r.driver!=='remote') continue;
+        if(b.cd<=0 && (b.x-r.x)**2+(b.z-r.z)**2<2.6){
+          b.cd=3; b.m.visible=b.shadow.visible=false;
+        }
       }
       // AIs consume boxes too (their actual item use runs on a timer in aiDriver)
       for(const r of game.racers){
@@ -360,6 +388,16 @@ export function updateAmbient(game, dt, now){
   for(const gz of game.world.lakeGeese){
     gz.position.y = -0.25+Math.sin(now/1100+gz.userData.phase)*0.06;
     gz.rotation.y += Math.sin(now/1300+gz.userData.phase)*0.003;
+  }
+  for(const b of game.world.brtBuses||[]){
+    b.dist += b.dir*b.speed*dt;
+    if(b.dist > b.span) b.dist -= b.span;
+    if(b.dist < 0) b.dist += b.span;
+    const t = Math.min(0.9999, Math.max(0, b.dist/game.track.length));
+    const p = game.track.pointAt(t), tan = game.track.tangentAt(t);
+    const nx = -tan.z, nz = tan.x;               // road normal
+    b.m.position.set(p.x + nx*b.lat, 0, p.z + nz*b.lat);
+    b.m.rotation.y = Math.atan2(tan.x*b.dir, tan.z*b.dir);
   }
   for(const j of game.world.joggers){
     j.t = ((j.t + j.speed*dt/j.len) % 1 + 1) % 1;
