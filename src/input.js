@@ -12,14 +12,26 @@ export function createInput(){
   let btnDriftL=false, btnDriftR=false, btnSprintL=false, btnSprintR=false;
 
   /* iOS Safari zooms on double-tap and pinch even with user-scalable=no
-     (ignored since iOS 10) and touch-action:none — swallow both manually.
-     Only the SECOND rapid tap is eaten, so normal menu taps still click. */
+     (ignored since iOS 10) — swallow the gestures at every layer:
+     gesturestart (pinch), rapid touchend (double-tap), touchstart on game
+     surfaces (kills the long-press loupe + any tap-zoom at the source
+     while leaving menu buttons clickable), touchmove (rubber-band pans),
+     and the long-press context menu. */
   document.addEventListener('gesturestart', e=>e.preventDefault());
+  document.addEventListener('dblclick', e=>e.preventDefault());
+  document.addEventListener('contextmenu', e=>e.preventDefault());
   let lastTouchEnd=0;
   document.addEventListener('touchend', e=>{
     const now=Date.now();
     if(now-lastTouchEnd<350) e.preventDefault();
     lastTouchEnd=now;
+  }, {passive:false});
+  document.addEventListener('touchstart', e=>{
+    if(e.target.closest && e.target.closest('.pad,.btn,#game,#vignette,#flash'))
+      e.preventDefault();
+  }, {passive:false});
+  document.addEventListener('touchmove', e=>{
+    if(!(e.target.closest && e.target.closest('#selGrid'))) e.preventDefault();
   }, {passive:false});
 
   addEventListener('keydown', e=>{

@@ -4,9 +4,14 @@
     --sunset:#ff9a5c;
     --goldenrod:#ffd166;
   }
+  /* iOS: touch-action is NOT inherited — every touch target needs it, and
+     the long-press loupe needs touch-callout killed everywhere */
+  *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
   html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#000;
-    font-family:"Courier New",ui-monospace,monospace;-webkit-user-select:none;user-select:none;
+    font-family:"Courier New",ui-monospace,monospace;
     touch-action:none;}
+  .pad,.btn,#game,#vignette,#flash{touch-action:none;}
+  #selGrid{touch-action:pan-y;}   /* the roster still scrolls */
   #game{position:fixed;inset:0;width:100%;height:100%;
     image-rendering:pixelated;image-rendering:crisp-edges;
     filter:saturate(1.12) contrast(1.06) brightness(1.02);}
