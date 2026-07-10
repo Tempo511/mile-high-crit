@@ -1,25 +1,33 @@
-/* Multiplayer session glue (rung 1: two tabs, one host + one joiner).
-   The remote player is just a racer with driver:'remote' whose state
-   arrives over the transport; we dead-reckon it between snapshots and
-   converge smoothly so it never teleports. */
+/* Multiplayer session (rung 2.5: N players on the LAN relay).
+   Host-authoritative lobby: joiners send hello{uid,char}; the host keeps
+   the roster and rebroadcasts it; START ships the final roster and every
+   client builds the same grid from it. Remote players are racers with
+   driver:'remote', dead-reckoned between 15Hz snapshots. */
 import { createTransport } from './net.js';
 
 export const SEND_HZ = 15;
+export const MAX_PLAYERS = 6;
 
 export function createSession(role, room='local'){
   const tp = createTransport(room);
+  const myId = Math.random().toString(36).slice(2,8);
   const s = {
-    role, tp,
-    myId: role==='host' ? 'p1' : 'p2',
-    remoteChar: null,
-    onPeerHello: null, onStart: null, onState: null, onFinish: null,
+    role, tp, myId,
+    roster: [],                    // [{uid, char}] in grid order, host first
+    onLobby: null, onStart: null, onState: null, onFinish: null,
   };
   tp.onMessage(m => {
     if(m.type==='hello' && role==='host'){
-      s.remoteChar = m.char;
-      s.onPeerHello && s.onPeerHello(m.char);
+      const i = s.roster.findIndex(p => p.uid===m.uid);
+      if(i>=0) s.roster[i].char = m.char;
+      else if(s.roster.length < MAX_PLAYERS) s.roster.push({uid:m.uid, char:m.char});
+      tp.send({type:'lobby', players:s.roster});
+      s.onLobby && s.onLobby(s.roster);
+    } else if(m.type==='lobby' && role==='join'){
+      s.roster = m.players;
+      s.onLobby && s.onLobby(s.roster);
     } else if(m.type==='start' && role==='join'){
-      s.remoteChar = m.char;
+      s.roster = m.players;
       s.onStart && s.onStart(m);
     } else if(m.type==='state' && m.id!==s.myId){
       s.onState && s.onState(m);
@@ -28,6 +36,11 @@ export function createSession(role, room='local'){
     }
   });
   return s;
+}
+
+/* grid slot for roster index i: three across, rows fall back behind */
+export function gridSlot(i){
+  return { lat: [-2.8, 0, 2.8][i%3], back: Math.floor(i/3)*4.5 };
 }
 
 /* pack the local player's racer state into a wire snapshot */
@@ -40,7 +53,7 @@ export function snapshot(session, r){
   };
 }
 
-/* apply an incoming snapshot to the remote racer's net-targets */
+/* apply an incoming snapshot to a remote racer's net-targets */
 export function applyState(r, m){
   r.netX=m.x; r.netZ=m.z; r.netH=m.h;
   r.speed=m.s; r.drifting=m.dr; r.driftDir=m.dd;

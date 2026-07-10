@@ -78,6 +78,24 @@ function ensureFx(view){
     m.visible=false; view.scene.add(m);
     view.dust.push({m, life:0, x:0, y:0, z:0});
   }
+  view.driftSparks=[]; view.sprayAcc=0;
+  const kg=new THREE.BoxGeometry(0.15,0.15,0.15);
+  for(let i=0;i<26;i++){
+    const m=new THREE.Mesh(kg, new THREE.MeshBasicMaterial(
+      {color:0x5db3c9, transparent:true, opacity:1}));
+    m.visible=false; view.scene.add(m);
+    view.driftSparks.push({m, life:0, vx:0, vy:0, vz:0});
+  }
+}
+
+const TIER_COLORS=[0, 0x5db3c9, 0xff9a5c, 0xf25caf];
+function spawnSpark(view, x, y, z, vx, vy, vz, color, life){
+  const s = view.driftSparks.find(p=>p.life<=0);
+  if(!s) return;
+  s.life=life; s.vx=vx; s.vy=vy; s.vz=vz;
+  s.m.position.set(x,y,z);
+  s.m.material.color.setHex(Math.random()<0.2 ? 0xfff6d8 : color);
+  s.m.material.opacity=1; s.m.visible=true;
 }
 
 export function draw(game, view, dt, now){
@@ -86,9 +104,9 @@ export function draw(game, view, dt, now){
   ensureFx(view);
 
   const pfx=Math.sin(player.heading), pfz=Math.cos(player.heading);
-  /* gas: streaks whipping past */
+  /* speed-lines: while sprinting AND during boost payoffs */
   for(const s of view.streaks){
-    if(!player.sprinting){ s.m.visible=false; continue; }
+    if(!player.sprinting && player.boostT<=0){ s.m.visible=false; continue; }
     s.ahead -= (player.speed+16)*dt;
     if(s.ahead<-5){
       s.ahead=6+Math.random()*7;
@@ -116,6 +134,43 @@ export function draw(game, view, dt, now){
     d.m.visible=true;
     d.m.material.opacity=Math.max(0, d.life*1.8);
     d.m.position.set(d.x, d.y, d.z);
+  }
+
+  /* drift-charge sparks: colored spray by tier, radial burst on tier-up */
+  const pTier = player.driftCharge>=ULTRA?3 : player.driftCharge>=SUPER?2
+              : player.driftCharge>=MINI?1 : 0;
+  if(player.drifting && pTier>0 && Math.abs(player.speed)>10){
+    view.sprayAcc += dt*(8 + pTier*9);
+    while(view.sprayAcc>1){
+      view.sprayAcc-=1;
+      const side = player.driftDir;
+      spawnSpark(view,
+        player.x - pfx*1.1 - pfz*side*0.4, 0.3,
+        player.z - pfz*1.1 + pfx*side*0.4,
+        -pfx*(3+Math.random()*2) - pfz*side*(2+Math.random()*3),
+        1.5+Math.random()*2.5,
+        -pfz*(3+Math.random()*2) + pfx*side*(2+Math.random()*3),
+        TIER_COLORS[pTier], 0.3+Math.random()*0.2);
+    }
+  } else view.sprayAcc=0;
+  for(const e of game.events){
+    if(e.type==='driftTier'){                    // level-up: radial pop
+      for(let i=0;i<12;i++){
+        const a=i/12*Math.PI*2, sp=5+Math.random()*4;
+        spawnSpark(view, player.x, 0.6, player.z,
+          Math.cos(a)*sp, 2.5+Math.random()*2, Math.sin(a)*sp,
+          TIER_COLORS[e.tier], 0.4+Math.random()*0.2);
+      }
+    }
+  }
+  for(const s of view.driftSparks){
+    if(s.life<=0){ s.m.visible=false; continue; }
+    s.life-=dt;
+    s.m.position.x+=s.vx*dt; s.m.position.y+=s.vy*dt; s.m.position.z+=s.vz*dt;
+    s.vy-=12*dt;
+    s.m.rotation.x+=dt*10; s.m.rotation.y+=dt*8;
+    s.m.material.opacity=Math.max(0, s.life*2.6);
+    if(s.life<=0) s.m.visible=false;
   }
 
   /* draft: cyan motes gathering up the rider */
@@ -162,7 +217,8 @@ export function draw(game, view, dt, now){
       const tier = r.driftCharge>=ULTRA?3 : r.driftCharge>=SUPER?2 : r.driftCharge>=MINI?1 : 0;
       m.userData.sparks.forEach(s=>{
         s.visible = r.drifting && tier>0 && (Math.floor(now/60)%2===0);
-        s.material.color.setHex(tier===3?0xf25caf : tier===2?0xff9a5c : 0x5db3c9);
+        s.material.color.setHex(TIER_COLORS[tier] || 0x5db3c9);
+        s.scale.setScalar(0.8 + tier*0.4);         // chunkier as the charge builds
       });
     } else {
       bike.rotation.x = -Math.sin(r.dist*0.02+r.ph)*0.15;

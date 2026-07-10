@@ -23,9 +23,14 @@ export function createInput(){
     if(e.key==='Shift'||e.key==='ArrowDown'||e.key==='s'||e.key==='S') keyDrift=false;
   });
 
+  /* pointer capture keeps the release event coming to the element even if
+     the thumb slides off before lifting — otherwise inputs latch on */
   function bindPad(id,dir){
     const el=document.getElementById(id);
-    el.addEventListener('pointerdown', e=>{ touchSteer=dir; e.preventDefault(); });
+    el.addEventListener('pointerdown', e=>{
+      el.setPointerCapture(e.pointerId);
+      touchSteer=dir; e.preventDefault();
+    });
     el.addEventListener('pointerup',   ()=>{ if(touchSteer===dir) touchSteer=0; });
     el.addEventListener('pointercancel',()=>{ if(touchSteer===dir) touchSteer=0; });
   }
@@ -33,7 +38,10 @@ export function createInput(){
 
   function bindHold(id, set){
     const el=document.getElementById(id);
-    el.addEventListener('pointerdown', e=>{ set(true); e.preventDefault(); });
+    el.addEventListener('pointerdown', e=>{
+      el.setPointerCapture(e.pointerId);
+      set(true); e.preventDefault();
+    });
     el.addEventListener('pointerup',   ()=> set(false));
     el.addEventListener('pointercancel',()=> set(false));
     return el;

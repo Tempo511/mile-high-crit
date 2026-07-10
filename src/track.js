@@ -159,9 +159,9 @@ export class Track {
   #buildBanner(scene){
     const p = this.curve.getPointAt(0), tan = this.curve.getTangentAt(0);
     const n = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),tan).normalize();
-    const postG = new THREE.CylinderGeometry(0.22,0.22,5,5);
+    const postG = new THREE.CylinderGeometry(0.22,0.22,7.6,5);
     [-1,1].forEach(s=>{ const m=new THREE.Mesh(postG, lambert(0xd94f30));
-      m.position.copy(p).addScaledVector(n, s*(this.roadHalf+0.8)); m.position.y=2.5; scene.add(m); });
+      m.position.copy(p).addScaledVector(n, s*(this.roadHalf+0.8)); m.position.y=3.8; scene.add(m); });
     /* full checkerboard filling the whole texture (2 rows × 8 cols) */
     const bTex = pixTex(64,(g,px)=>{
       for(let x=0;x<8;x++)for(let y=0;y<2;y++){
@@ -170,7 +170,7 @@ export class Track {
       } }, 2, 1);
     const b = new THREE.Mesh(new THREE.PlaneGeometry(this.data.roadWidth+3, 2.0),
       new THREE.MeshLambertMaterial({map:bTex, side:THREE.DoubleSide}));
-    b.position.copy(p); b.position.y = 4.2;
+    b.position.copy(p); b.position.y = 6.4;   // high overhead — clear of the pack
     /* aim at a point at the banner's own height, else lookAt pitches the
        plane down toward the ground and it hangs at a weird angle */
     const aim = p.clone().add(tan); aim.y = b.position.y;

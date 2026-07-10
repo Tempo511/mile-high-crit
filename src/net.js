@@ -1,17 +1,43 @@
 /* Transport layer for multiplayer.
-   Rung 1: BroadcastChannel — two tabs on the same machine, zero backend.
-   Rung 2 swaps createTransport's internals for WebRTC data channels;
-   the send/onMessage surface stays identical, so nothing above changes. */
+   Rung 2: a WebSocket room-relay riding the dev server (vite.config.js),
+   so any device on the LAN — your phone — can race. Falls back to
+   BroadcastChannel (same-browser tabs) if the relay isn't reachable.
+   Rung 3 swaps these internals for a hosted channel / WebRTC; the
+   send/onMessage surface stays identical, so nothing above changes. */
 
 export function createTransport(room){
-  const ch = new BroadcastChannel('mhc-' + room);
   const handlers = [];
-  ch.onmessage = e => handlers.forEach(h => h(e.data));
+  const emit = m => handlers.forEach(h => h(m));
+  const queue = [];
+  let kind = 'ws-relay', ws = null, bc = null, sendImpl = m => queue.push(m);
+
+  const useBroadcast = () => {
+    if(bc) return;
+    kind = 'local-tabs';
+    bc = new BroadcastChannel('mhc-' + room);
+    bc.onmessage = e => emit(e.data);
+    sendImpl = m => bc.postMessage(m);
+    queue.splice(0).forEach(m => bc.postMessage(m));   // flush anything queued
+  };
+
+  try {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(`${proto}://${location.host}/mp?room=${room}`);
+    ws.onopen = () => {
+      sendImpl = m => ws.send(JSON.stringify(m));
+      queue.splice(0).forEach(m => ws.send(JSON.stringify(m)));
+    };
+    ws.onmessage = e => emit(JSON.parse(e.data));
+    ws.onerror = () => useBroadcast();   // no relay (static build?) → tabs mode
+  } catch (e) {
+    useBroadcast();
+  }
+
   return {
-    kind: 'local-tabs',
-    send: m => ch.postMessage(m),
+    get kind(){ return kind; },
+    send: m => sendImpl(m),
     onMessage: h => handlers.push(h),
-    close: () => ch.close()
+    close: () => { ws && ws.close(); bc && bc.close(); }
   };
 }
 

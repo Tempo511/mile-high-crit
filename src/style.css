@@ -45,12 +45,12 @@
     color:var(--ink);font-family:inherit;font-weight:bold;letter-spacing:1px;
     box-shadow:0 4px 0 var(--ink);display:none;}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);}
-  /* symmetric mobile controls: DRIFT + GAS mirrored on both sides so the
+  /* symmetric mobile controls: DRIFT + SPRINT mirrored on both sides so the
      free (non-steering) thumb can always reach them; ITEM centered */
   #btnDrift{right:32px;bottom:40px;width:82px;height:82px;background:var(--sunset);font-size:13px;}
   #btnDriftL{left:32px;bottom:40px;width:82px;height:82px;background:var(--sunset);font-size:13px;}
-  #btnSprint{right:16px;bottom:132px;width:70px;height:70px;background:#8fbe78;font-size:14px;}
-  #btnSprintL{left:16px;bottom:132px;width:70px;height:70px;background:#8fbe78;font-size:14px;}
+  #btnSprint{right:16px;bottom:132px;width:70px;height:70px;background:#8fbe78;font-size:11px;}
+  #btnSprintL{left:16px;bottom:132px;width:70px;height:70px;background:#8fbe78;font-size:11px;}
   #btnItem{left:calc(50% - 34px);bottom:22px;width:68px;height:68px;background:var(--goldenrod);font-size:22px;}
   #title{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
     align-items:center;justify-content:center;text-align:center;color:var(--paper);

@@ -14,7 +14,7 @@ import { createInput } from './input.js';
 import { createHud } from './hud.js';
 import { createAudio } from './audio.js';
 import { createCharacterSelect } from './select.js';
-import { createSession, snapshot, applyState, updateRemote, SEND_HZ } from './mp.js';
+import { createSession, snapshot, applyState, updateRemote, gridSlot, SEND_HZ } from './mp.js';
 import { step } from './sim.js';
 
 const trackData = washpark;
@@ -38,13 +38,21 @@ function beginRace(chosen){
 
   let rivals;
   if(mp){
-    /* two humans, side by side on the grid — host left, joiner right */
-    const side = mp.role==='host' ? -1 : 1;
-    player.x += startN.x*2*side; player.z += startN.z*2*side;
-    const remote = createRacer({ ...mp.remoteChar, id:'remote', driver:'remote' });
-    remote.x = startP.x - startN.x*2*side; remote.z = startP.z - startN.z*2*side;
-    remote.heading = player.heading;
-    rivals = [remote];
+    /* humans on a shared grid — every client derives the same slots from
+       the same roster order (three across, rows falling back) */
+    const place = (r, i) => {
+      const g = gridSlot(i);
+      r.x = startP.x + startN.x*g.lat - startTan.x*g.back;
+      r.z = startP.z + startN.z*g.lat - startTan.z*g.back;
+      r.heading = Math.atan2(startTan.x, startTan.z);
+    };
+    const myIdx = mp.roster.findIndex(p => p.uid===mp.myId);
+    place(player, Math.max(0, myIdx));
+    rivals = mp.roster.filter(p => p.uid!==mp.myId).map(p => {
+      const r = createRacer({ ...p.char, id:p.uid, driver:'remote' });
+      place(r, mp.roster.findIndex(q => q.uid===p.uid));
+      return r;
+    });
   } else {
     /* 5 rivals (6 racers total) drawn at random from the rest of the roster */
     const pool = ROSTER.filter(c=>c.id!==chosen.id);
@@ -65,10 +73,10 @@ function beginRace(chosen){
     events:[]
   };
   if(mp){
-    const remote = game.racers.find(r=>r.driver==='remote');
-    mp.onState  = m => applyState(remote, m);
-    mp.onFinish = m => { if(!game.race.finishOrder.includes('remote'))
-      game.race.finishOrder.push('remote'); };
+    const remotes = new Map(game.racers.filter(r=>r.driver==='remote').map(r=>[r.id, r]));
+    mp.onState  = m => { const r = remotes.get(m.id); if(r) applyState(r, m); };
+    mp.onFinish = m => { if(remotes.has(m.id) && !game.race.finishOrder.includes(m.id))
+      game.race.finishOrder.push(m.id); };
   }
   view.meshes = createRacerMeshes(view.scene, game.racers);
   hud = createHud(track);
@@ -101,29 +109,48 @@ const mpWait = document.getElementById('mpWait');
 const mpStatus = document.getElementById('mpStatus');
 const mpGo = document.getElementById('mpGo');
 
+function lobbyList(roster){
+  return roster.map((p,i)=>`${i+1}. <b>${p.char.name}</b>`).join('<br>');
+}
+
 function onPick(chosen){
   audio.unlock();
   if(!mp){ beginRace(chosen); return; }
   if(mp.role==='host'){
     const joinUrl = location.origin + location.pathname + '#join';
+    const localHost = /^(localhost|127\.)/.test(location.hostname);
+    mp.roster = [{uid:mp.myId, char:chosen}, ...mp.roster.filter(p=>p.uid!==mp.myId)];
+    mp.tp.send({type:'lobby', players:mp.roster});
     mpWait.style.display='flex';
-    mpStatus.innerHTML =
-      `open <b>${joinUrl}</b> in a second tab<br>waiting for player 2…`;
-    mp.onPeerHello = char => {
-      mpStatus.innerHTML = `<b>${char.name}</b> is ready!`;
-      mpGo.style.display='inline-block';
+    const render = ()=>{
+      mpStatus.innerHTML =
+        `friends join at <b>${joinUrl}</b> (up to 6 riders)<br>` +
+        (localHost ? `<small>on phones, use your Mac's network URL
+          (e.g. http://10.0.0.244:5173/#join)</small><br>` : '') +
+        `<br>IN THE LOBBY:<br>${lobbyList(mp.roster)}`;
+      mpGo.style.display = mp.roster.length>=2 ? 'inline-block' : 'none';
     };
-    if(mp.remoteChar){ mp.onPeerHello(mp.remoteChar); }   // joiner arrived early
+    render();
+    mp.onLobby = render;
     mpGo.onclick = ()=>{
-      mp.tp.send({type:'start', char:chosen});
+      mp.tp.send({type:'start', players:mp.roster});
       mpWait.style.display='none';
       beginRace(chosen);
     };
   } else {
-    mp.tp.send({type:'hello', id:mp.myId, char:chosen});
+    const sendHello = ()=> mp.tp.send({type:'hello', uid:mp.myId, char:chosen});
+    sendHello();
+    const helloTimer = setInterval(sendHello, 1500);   // retry until the lobby sees us
     mpWait.style.display='flex';
-    mpStatus.textContent='waiting for the host to start the race…';
-    mp.onStart = ()=>{ mpWait.style.display='none'; beginRace(chosen); };
+    mpStatus.textContent='joining the lobby…';
+    mp.onLobby = roster => {
+      mpStatus.innerHTML = `IN THE LOBBY (host starts the race):<br>${lobbyList(roster)}`;
+    };
+    mp.onStart = ()=>{
+      clearInterval(helloTimer);
+      mpWait.style.display='none';
+      beginRace(chosen);
+    };
   }
 }
 
@@ -172,7 +199,6 @@ function frame(now){
   if(game.race.phase==='count'){
     if(now-countStart<1600 && input.get().sprint) earlyHold+=dt;
   }
-  const remote = mp ? game.racers.find(r=>r.driver==='remote') : null;
   if(game.race.phase==='race'){
     step(game, input.get(), dt, now);
     audio.ambient(dt);
@@ -181,8 +207,9 @@ function frame(now){
     for(const r of game.racers) if(r.driver!=='remote') aiDriver(r, game, dt);
     updateAmbient(game, dt, now);
   }
-  if(remote){
-    updateRemote(remote, dt);                       // smooth the net player
+  if(mp){
+    for(const r of game.racers)
+      if(r.driver==='remote') updateRemote(r, dt);  // smooth every net player
     sendT += dt;
     if(sendT >= 1/SEND_HZ){
       sendT = 0;
