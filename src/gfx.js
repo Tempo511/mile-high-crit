@@ -73,6 +73,16 @@ export const asphaltTex = pixTex(16,(g,px)=>{
     g.fillRect(Math.random()*px|0, Math.random()*px|0, 2, 1);}
 });
 
+/* downtown ground: pale concrete sidewalk grid with expansion seams */
+export const concreteTex = pixTex(32,(g,px)=>{
+  g.fillStyle='#a8a49a'; g.fillRect(0,0,px,px);
+  for(let i=0;i<60;i++){ g.fillStyle=i%2?'#b2aea4':'#9c988e';
+    g.fillRect(Math.random()*px|0, Math.random()*px|0, 2, 1);}
+  g.fillStyle='#8e8a80';
+  g.fillRect(0,0,px,1); g.fillRect(0,0,1,px);
+  g.fillRect(0,px/2,px,1); g.fillRect(px/2,0,1,px);
+}, 160, 160);
+
 export const sandTex = pixTex(16,(g,px)=>{
   g.fillStyle='#d9bf8f'; g.fillRect(0,0,px,px);
   g.fillStyle='#c9ae7d';

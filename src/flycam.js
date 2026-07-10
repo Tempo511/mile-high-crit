@@ -5,27 +5,34 @@
    handy for placing props while editing src/tracks/washpark.js. */
 import * as THREE from 'three';
 import washpark from './tracks/washpark.js';
+import unionstation from './tracks/unionstation.js';
 import { Track } from './track.js';
 import { buildWorld, updateAmbient } from './world.js';
+
+/* same ?track= param as the game (e.g. /flycam.html?track=unionstation) */
+const TRACKS = { washpark, unionstation };
+const trackData = TRACKS[new URLSearchParams(location.search).get('track')] || washpark;
+document.title = `FLYCAM — ${trackData.name} (dev)`;
+document.getElementById('trackName').textContent = trackData.name;
 
 const canvas = document.getElementById('cam');
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(washpark.sky);
-scene.fog = new THREE.Fog(washpark.sky, 260, 1100);   // pushed back to see the whole park
+scene.background = new THREE.Color(trackData.sky);
+scene.fog = new THREE.Fog(trackData.sky, 260, 1100);   // pushed back to see the whole map
 
 const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 3000);
 camera.rotation.order = 'YXZ';
 
-const amb = washpark.ambient || [0xffe6c7,0.55];
+const amb = trackData.ambient || [0xffe6c7,0.55];
 scene.add(new THREE.AmbientLight(amb[0], amb[1]));
-const sunDef = washpark.sun || [0xfff1d0,0.95];
+const sunDef = trackData.sun || [0xfff1d0,0.95];
 const sun = new THREE.DirectionalLight(sunDef[0], sunDef[1]); sun.position.set(-140,150,40); scene.add(sun);
 const fill = new THREE.DirectionalLight(0x9b8ec4,0.3); fill.position.set(120,60,-80); scene.add(fill);
 
-const track = new Track(scene, washpark);
+const track = new Track(scene, trackData);
 const world = buildWorld(scene, track);
 const gameStub = { scene, track, world, racers:[], race:{phase:'race'}, events:[] };
 

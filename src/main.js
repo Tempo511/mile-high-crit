@@ -5,6 +5,7 @@
 import './style.css';
 import { ROSTER, PLAYER_CHARACTER } from './characters.js';
 import washpark from './tracks/washpark.js';
+import unionstation from './tracks/unionstation.js';
 import { Track } from './track.js';
 import { createRenderer, createRacerMeshes, draw } from './render.js';
 import { createRacer } from './racers.js';
@@ -18,7 +19,18 @@ import { createSession, snapshot, applyState, updateRemote, gridSlot, SEND_HZ } 
 import { remoteUseItem } from './items.js';
 import { step } from './sim.js';
 
-const trackData = washpark;
+/* track select: ?track=<id> picks the course; the scene is built once at
+   load, so the title-screen picker just reloads with the param set */
+const TRACKS = { washpark, unionstation };
+const trackData = TRACKS[new URLSearchParams(location.search).get('track')] || washpark;
+document.querySelectorAll('#trackPick button').forEach(b=>{
+  b.classList.toggle('on', (TRACKS[b.dataset.track]||washpark)===trackData);
+  b.addEventListener('click', ()=>{
+    if(TRACKS[b.dataset.track]===trackData) return;
+    location.href = location.pathname + '?track=' + b.dataset.track + location.hash;
+  });
+});
+document.querySelector('#title .badge').textContent = trackData.name;
 const view = createRenderer(trackData);
 const track = new Track(view.scene, trackData);
 const world = buildWorld(view.scene, track);          // park backdrop for the menus
@@ -124,7 +136,7 @@ function onPick(chosen){
   audio.unlock();
   if(!mp){ beginRace(chosen); return; }
   if(mp.role==='host'){
-    const joinUrl = location.origin + location.pathname + '#join';
+    const joinUrl = location.origin + location.pathname + location.search + '#join';
     const localHost = /^(localhost|127\.)/.test(location.hostname);
     mp.roster = [{uid:mp.myId, char:chosen}, ...mp.roster.filter(p=>p.uid!==mp.myId)];
     mp.tp.send({type:'lobby', players:mp.roster});
@@ -205,6 +217,7 @@ function frame(now){
   game.events.length=0;
   if(game.race.phase==='count'){
     if(now-countStart<1600 && input.get().sprint) earlyHold+=dt;
+    updateAmbient(game, dt, now);   // the city keeps moving during the countdown
   }
   if(game.race.phase==='race'){
     step(game, input.get(), dt, now);

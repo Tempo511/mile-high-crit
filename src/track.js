@@ -2,7 +2,7 @@
    Owns the spline, road mesh, pickups, colliders, and spatial queries.
    No game state, no DOM, no per-frame logic. */
 import * as THREE from 'three';
-import { lambert, pixTex, blobShadow, grassTex, roadTex } from './gfx.js';
+import { lambert, pixTex, blobShadow, grassTex, roadTex, concreteTex } from './gfx.js';
 import { PROP_BUILDERS } from './props.js';
 import { makeRng } from './rng.js';
 
@@ -59,7 +59,8 @@ export class Track {
     this.waters = data.waters || [];
     this.pads = [];        // boost pads {x,z,r}
     this.boxes = [];       // item boxes {m,x,z,cd}
-    this.dynamic = { boats: [], clouds: [], paths: [], pads: [], cars: [], fans: [] };
+    this.dynamic = { boats: [], clouds: [], paths: [], pads: [], cars: [], fans: [],
+                     strollers: [] };   // street traffic + sidewalk walkers
 
     const rng = makeRng(data.seed || 1);
     const ctx = {
@@ -131,8 +132,9 @@ export class Track {
   }
 
   #buildGround(scene, data){
+    // tracks pick their base ground: park grass or downtown concrete
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600,1600),
-      new THREE.MeshLambertMaterial({map:grassTex}));
+      new THREE.MeshLambertMaterial({map: data.ground==='urban' ? concreteTex : grassTex}));
     ground.rotation.x = -Math.PI/2; ground.position.y = -0.05;
     scene.add(ground);
   }

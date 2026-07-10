@@ -69,14 +69,21 @@ export function buildWorld(scene, track){
         else speed=3.2+rng()*1.8;
       }
       scene.add(m);
+      const t0 = i/track.data.joggers;
+      m.position.copy(loop.curve.getPointAt(t0));  // place now — the per-frame
+      if(dog) dog.position.copy(m.position);       // updater only runs mid-race
       joggers.push({
         m, dog, kind, curve:loop.curve, len:loop.len,
-        t: i/track.data.joggers,
+        t: t0,
         speed: speed * (i%2 ? 1 : -1),
         phase: rng()*6
       });
     }
   }
+
+  /* street cars + sidewalk walkers spawned by street props ride the same
+     curve-follower as the jogging loop */
+  joggers.push(...(track.dynamic.strollers||[]));
 
   /* geese floating on the lakes — scenery, not chaseable */
   const lakeGeese = [];
