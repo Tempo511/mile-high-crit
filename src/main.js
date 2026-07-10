@@ -187,11 +187,22 @@ function makeRoomCode(){
   const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';   // no 0/O/1/I/L lookalikes
   return Array.from({length:5},()=>A[Math.floor(Math.random()*A.length)]).join('');
 }
-/* one delegated listener survives the lobby re-renders */
-mpStatus.addEventListener('click', e=>{
+/* one delegated listener survives the lobby re-renders.
+   clipboard API needs a secure context (https) — fall back to the old
+   hidden-textarea trick so the button also works over plain http */
+async function copyText(text){
+  try { await navigator.clipboard.writeText(text); return true; } catch(e){}
+  const ta=document.createElement('textarea');
+  ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { return document.execCommand('copy'); }
+  catch(e){ return false; }
+  finally { ta.remove(); }
+}
+mpStatus.addEventListener('click', async e=>{
   if(e.target.id!=='copyLink') return;
   const joinUrl = location.origin + location.pathname + location.search + '#join-' + mpRoom;
-  navigator.clipboard.writeText(joinUrl).then(()=>{ e.target.textContent='COPIED!'; });
+  e.target.textContent = await copyText(joinUrl) ? 'COPIED!' : joinUrl;
 });
 
 const select = createCharacterSelect(onPick);
