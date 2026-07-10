@@ -124,7 +124,8 @@ B.boathouse = (ctx, def) => {
   for(let x=-10;  x<=10;  x+=3.4) addFan(x, 4.35, -2.9, Math.PI,  ctx.rng()<0.4);   // veranda back
   for(let x=-12;  x<=12;  x+=3.0) addFan(x, 0.62,  4.4, 0,        ctx.rng()<0.5);    // deck at the rail
 
-  // MILE HIGH CRIT banner strung across the veranda front
+  // MILE HIGH CRIT championship banner strung across the veranda front
+  // (the in-world event branding — the game itself is DENVER DASH)
   const banner=new THREE.Mesh(new THREE.PlaneGeometry(23,1.9),
     new THREE.MeshLambertMaterial({map:bannerTex('MILE HIGH CRIT'), side:THREE.DoubleSide,
       emissive:0x3a1410}));

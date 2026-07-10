@@ -1,5 +1,5 @@
 /* =========================================================
-   MILE HIGH CRIT — bootstrap + game loop.
+   DENVER DASH — bootstrap + game loop.
    You vs the roster in src/characters.js.
    ========================================================= */
 import './style.css';

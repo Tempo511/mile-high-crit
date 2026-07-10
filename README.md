@@ -1,11 +1,13 @@
-# MILE HIGH CRIT — Wash Park GP
+# DENVER DASH — bike racing in the Mile High City
 
-A retro-styled bike racing game set in Denver's Washington Park. You race
-MAGPIE, BLUCIFER JR, and THE YETI over 3 laps around Smith Lake and Grasmere,
-grabbing item crates (espresso boost, sopapilla toss, attack goose) and
-dodging geese along the way.
+A retro-styled kart-style bike racer set in real Denver locations, starting
+with Washington Park. Race a roster of Denver characters (Blucifer, the Yeti,
+Strava Dad, Honker the goose…) over 3 laps around Smith Lake and Grasmere —
+sprint, draft, drift, throw green chiles, and dodge the geese. Up to 6 friends
+can race on the same wifi.
 
-Started as a Claude web-app artifact prototype
+"MILE HIGH CRIT" survives in-world as the championship branding on the
+trackside banners. Started as a Claude web-app artifact prototype
 (`archive/mile-high-crit-washpark-gp.html`, kept for reference), now a Vite
 project with an ES-module architecture.
 

@@ -1,9 +1,9 @@
 {
-  "name": "mile-high-crit",
+  "name": "denver-dash",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "MILE HIGH CRIT — a retro bike racing game set in Denver's Washington Park",
+  "description": "DENVER DASH — bike racing in the Mile High City",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
