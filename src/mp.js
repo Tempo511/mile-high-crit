@@ -15,6 +15,7 @@ export function createSession(role, room='local'){
     role, tp, myId,
     roster: [],                    // [{uid, char}] in grid order, host first
     onLobby: null, onStart: null, onState: null, onFinish: null,
+    onItem: null, onBox: null,
   };
   tp.onMessage(m => {
     if(m.type==='hello' && role==='host'){
@@ -33,6 +34,10 @@ export function createSession(role, room='local'){
       s.onState && s.onState(m);
     } else if(m.type==='finish' && m.id!==s.myId){
       s.onFinish && s.onFinish(m);
+    } else if(m.type==='item' && m.id!==s.myId){
+      s.onItem && s.onItem(m);
+    } else if(m.type==='box' && m.id!==s.myId){
+      s.onBox && s.onBox(m);
     }
   });
   return s;
@@ -49,7 +54,7 @@ export function snapshot(session, r){
     type:'state', id: session.myId,
     x:r.x, z:r.z, h:r.heading, s:r.speed,
     dr:r.drifting, dd:r.driftDir, sp:r.spin, b:r.boostT,
-    d:r.dist, lap:r.lap
+    sh:r.shieldT, d:r.dist, lap:r.lap
   };
 }
 
@@ -58,6 +63,7 @@ export function applyState(r, m){
   r.netX=m.x; r.netZ=m.z; r.netH=m.h;
   r.speed=m.s; r.drifting=m.dr; r.driftDir=m.dd;
   r.spin=m.sp; r.boostT=m.b;
+  if(m.sh!==undefined) r.shieldT=m.sh;   // their machine owns their shield
   r.dist=m.d; r.lap=m.lap;
   if(!r.netInit){ r.x=m.x; r.z=m.z; r.heading=m.h; r.netInit=true; }
 }

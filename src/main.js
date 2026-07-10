@@ -15,6 +15,7 @@ import { createHud } from './hud.js';
 import { createAudio } from './audio.js';
 import { createCharacterSelect } from './select.js';
 import { createSession, snapshot, applyState, updateRemote, gridSlot, SEND_HZ } from './mp.js';
+import { remoteUseItem } from './items.js';
 import { step } from './sim.js';
 
 const trackData = washpark;
@@ -39,7 +40,10 @@ function beginRace(chosen){
   let rivals;
   if(mp){
     /* humans on a shared grid — every client derives the same slots from
-       the same roster order (three across, rows falling back) */
+       the same roster order (three across, rows falling back).
+       In MP every racer's id is its peer's uid on EVERY client, so item
+       targets and finish orders resolve to the same rider everywhere. */
+    player.id = mp.myId;
     const place = (r, i) => {
       const g = gridSlot(i);
       r.x = startP.x + startN.x*g.lat - startTan.x*g.back;
@@ -77,6 +81,9 @@ function beginRace(chosen){
     mp.onState  = m => { const r = remotes.get(m.id); if(r) applyState(r, m); };
     mp.onFinish = m => { if(remotes.has(m.id) && !game.race.finishOrder.includes(m.id))
       game.race.finishOrder.push(m.id); };
+    mp.onItem   = m => remoteUseItem(game, m);
+    mp.onBox    = m => { const b = game.world.boxes[m.i];
+      if(b){ b.cd=3; b.m.visible=b.shadow.visible=false; } };
   }
   view.meshes = createRacerMeshes(view.scene, game.racers);
   hud = createHud(track);

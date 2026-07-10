@@ -197,7 +197,7 @@ export function burstFeathers(world, x, z){
 /* item boxes: spin, respawn cooldown, pickups */
 export function updateBoxes(game, dt, now){
   const player = game.racers.find(r=>r.driver==='player');
-  for(const b of game.world.boxes){
+  game.world.boxes.forEach((b, bi)=>{
     if(b.cd>0){ b.cd-=dt; b.m.visible=b.shadow.visible=b.cd<=0; }
     b.m.rotation.y += dt*1.6;
     b.m.position.y = 1.1+Math.sin(now/400+b.x)*0.18;
@@ -206,11 +206,12 @@ export function updateBoxes(game, dt, now){
       const s = 1+Math.sin(now/220+b.x)*0.18; b.gem.scale.setScalar(s);
     }
     if(b.cd<=0){
-      // items are off in multiplayer until they're synced (rung 1 = movement only)
-      if(!game.mp && player && !player.item && (b.x-player.x)**2+(b.z-player.z)**2<2.6){
+      if(player && !player.item && (b.x-player.x)**2+(b.z-player.z)**2<2.6){
         giveItem(player, game); b.cd=3; b.m.visible=b.shadow.visible=false;
         burstSparkles(game.world, b.x, b.z);
         game.events.push({type:'pickup'});
+        // peers see the same box wink out (box order is deterministic)
+        if(game.mp) game.mp.tp.send({type:'box', id:game.mp.myId, i:bi});
       }
       // AIs consume boxes too (their actual item use runs on a timer in aiDriver)
       for(const r of game.racers){
@@ -220,7 +221,7 @@ export function updateBoxes(game, dt, now){
         }
       }
     }
-  }
+  });
 }
 
 /* resident geese: flee from the player, get honked, waddle home */

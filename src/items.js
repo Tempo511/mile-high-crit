@@ -59,20 +59,25 @@ export function throwChile(game, owner){
     speed:34, life:2.4, owner, target:null
   });
 }
-export function throwFrisbee(game, owner){
-  const me = progressOf(game.track, owner);
-  let target=null, best=1e9;
-  for(const o of game.racers){
-    if(o===owner) continue;
-    const gap=progressOf(game.track,o)-me;
-    if(gap>0 && gap<best){ best=gap; target=o; }
-  }
+export function throwFrisbee(game, owner, target){
   const m = frisbeeMesh();
   m.position.set(owner.x,0.8,owner.z); game.scene.add(m);
   game.world.projectiles.push({
     m, x:owner.x, z:owner.z, hx:Math.sin(owner.heading), hz:Math.cos(owner.heading),
     speed:40, life:3.5, owner, target, homing:true
   });
+}
+
+/* the racer nearest ahead of r — homing-item target selection */
+function nearestAhead(game, r){
+  const me = progressOf(game.track, r);
+  let target=null, best=1e9;
+  for(const o of game.racers){
+    if(o===r) continue;
+    const gap=progressOf(game.track,o)-me;
+    if(gap>0 && gap<best){ best=gap; target=o; }
+  }
+  return target;
 }
 export function launchGoose(game, owner, target){
   const m = gooseMesh(0.95);
@@ -116,11 +121,14 @@ export function giveItem(r, game){
 export function useItem(game, r){
   if(!r.item || game.race.phase!=='race' || r.spin>0) return;
   const it=r.item; r.item=null;
+  let targetId=null;
   if(it==='coffee'){ r.boostT=1.25; r.energy=1;
     game.events.push({type:'toast', msg:'ESPRESSO!', ms:700}); }
   else if(it==='chile'){ throwChile(game, r);
     game.events.push({type:'toast', msg:'GREEN CHILE!', ms:700}); }
-  else if(it==='frisbee'){ throwFrisbee(game, r);
+  else if(it==='frisbee'){
+    const target=nearestAhead(game, r); targetId=target && target.id;
+    throwFrisbee(game, r, target);
     game.events.push({type:'toast', msg:'FRISBEE!', ms:700}); }
   else if(it==='bison'){ launchShield(game, r);
     game.events.push({type:'toast', msg:'BISON GUARD', ms:800}); }
@@ -129,20 +137,35 @@ export function useItem(game, r){
   else if(it==='coldbrew'){ dropSlick(game, r);
     game.events.push({type:'toast', msg:'COLD BREW SPILL', ms:800}); }
   else if(it==='goose'){
-    const me=progressOf(game.track, r);
-    let target=null, bestGap=1e9;
-    for(const o of game.racers){
-      if(o===r) continue;
-      const gap=progressOf(game.track,o)-me;
-      if(gap>0 && gap<bestGap){bestGap=gap; target=o;}
-    }
+    const target=nearestAhead(game, r); targetId=target && target.id;
     launchGoose(game, r, target);
     game.events.push({type:'toast', msg:'GOOSE DEPLOYED', ms:700});
   }
+  /* multiplayer: tell everyone so they spawn the same item locally */
+  if(game.mp && r.driver==='player')
+    game.mp.tp.send({type:'item', id:game.mp.myId, kind:it, target:targetId});
 }
 
-/* a shielded racer eats the hit instead of spinning */
+/* a peer used an item — spawn its local copy here, owned by their racer.
+   coffee/chinook are self-only: their effects arrive via snapshots. */
+export function remoteUseItem(game, m){
+  if(game.race.phase!=='race') return;   // our updaters stop after we finish
+  const owner = game.racers.find(r=>r.id===m.id);
+  if(!owner) return;
+  const target = m.target ? game.racers.find(r=>r.id===m.target) : null;
+  if(m.kind==='chile') throwChile(game, owner);
+  else if(m.kind==='frisbee') throwFrisbee(game, owner, target);
+  else if(m.kind==='goose') launchGoose(game, owner, target);
+  else if(m.kind==='bison') launchShield(game, owner);
+  else if(m.kind==='coldbrew') dropSlick(game, owner);
+}
+
+/* a shielded racer eats the hit instead of spinning.
+   Multiplayer is victim-authoritative: only YOUR machine decides you got
+   hit — remote racers are never spun locally; their spin (or their shield
+   block) happens on their machine and arrives via their snapshots. */
 export function spinRacer(game, r){
+  if(game.mp && r.driver==='remote') return;
   if(r.spin>0) return;
   const isPlayer = r.driver==='player';
   if(r.shieldT>0){
