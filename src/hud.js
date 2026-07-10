@@ -98,7 +98,9 @@ export function createHud(track){
         : player.drafting ? 'hud draft' : 'hud';
       $('energyLabel').textContent = player.bonkT>0 ? 'BONK!'
         : player.drafting ? 'DRAFT ≋' : 'LEGS';
-      $('laps').innerHTML='LAP '+player.lap+'/'+race.laps
+      $('laps').innerHTML=(track.data.format==='stage'
+          ? 'STAGE '+Math.min(100,Math.round(player.prog/(track.data.finishT||1)*100))+'%'
+          : 'LAP '+player.lap+'/'+race.laps)
         +'<br><span id="timer">'+fmt(now-race.t0)+'</span>'
         +'<br><span id="best">'+(race.best<Infinity?('BEST '+fmtS(race.best)+'s'):'')+'</span>';
       $('itemSlot').textContent = player.item ? ITEMS[player.item] : '';

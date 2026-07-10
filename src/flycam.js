@@ -6,11 +6,12 @@
 import * as THREE from 'three';
 import washpark from './tracks/washpark.js';
 import unionstation from './tracks/unionstation.js';
+import colfax from './tracks/colfax.js';
 import { Track } from './track.js';
 import { buildWorld, updateAmbient } from './world.js';
 
 /* same ?track= param as the game (e.g. /flycam.html?track=unionstation) */
-const TRACKS = { washpark, unionstation };
+const TRACKS = { washpark, unionstation, colfax };
 const trackData = TRACKS[new URLSearchParams(location.search).get('track')] || washpark;
 document.title = `FLYCAM — ${trackData.name} (dev)`;
 document.getElementById('trackName').textContent = trackData.name;

@@ -2,7 +2,7 @@
    Owns the spline, road mesh, pickups, colliders, and spatial queries.
    No game state, no DOM, no per-frame logic. */
 import * as THREE from 'three';
-import { lambert, pixTex, blobShadow, grassTex, roadTex, concreteTex } from './gfx.js';
+import { lambert, pixTex, blobShadow, grassTex, roadTex, arterialTex, brtTex, concreteTex } from './gfx.js';
 import { PROP_BUILDERS } from './props.js';
 import { makeRng } from './rng.js';
 
@@ -74,12 +74,14 @@ export class Track {
       trackPoint: t=>this.curve.getPointAt(t),
       trackTangent: t=>this.curve.getTangentAt(t),
       roadHalf: this.roadHalf,
+      trackLength: this.length,
       dynamic: this.dynamic
     };
 
     this.#buildGround(scene, data);
     this.#buildRoad(scene);
-    this.#buildBanner(scene);
+    this.#buildBanner(scene, 0);
+    if(data.format==='stage') this.#buildBanner(scene, data.finishT ?? 0.997);   // the finish line
     this.#buildPads(scene, data);
     this.#buildBoxes(scene, data);
     for(const def of data.props || []) PROP_BUILDERS[def.type](ctx, def);
@@ -108,6 +110,12 @@ export class Track {
 
   /* radians of bend in the next 14 units past `dist` — used by AI cornering */
   curvatureAt(dist){
+    if(this.data.format==='stage'){
+      const t1=Math.min(0.999, Math.max(0, dist/this.length));
+      const t2=Math.min(0.9999, (dist+14)/this.length);
+      const a=this.curve.getTangentAt(t1), b=this.curve.getTangentAt(t2);
+      return Math.acos(Math.max(-1,Math.min(1,a.dot(b))));
+    }
     const t1=((dist%this.length)+this.length)%this.length/this.length;
     const t2=((dist+14)%this.length)/this.length;
     const a=this.curve.getTangentAt(t1), b=this.curve.getTangentAt(t2);
@@ -155,11 +163,13 @@ export class Track {
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2));
     g.setIndex(idx); g.computeVertexNormals();
-    scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({map:roadTex})));
+    scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial(
+      {map: this.data.roadStyle==='brt' ? brtTex
+          : this.data.roadStyle==='arterial' ? arterialTex : roadTex})));
   }
 
-  #buildBanner(scene){
-    const p = this.curve.getPointAt(0), tan = this.curve.getTangentAt(0);
+  #buildBanner(scene, t){
+    const p = this.curve.getPointAt(t), tan = this.curve.getTangentAt(t);
     const n = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),tan).normalize();
     const postG = new THREE.CylinderGeometry(0.22,0.22,7.6,5);
     [-1,1].forEach(s=>{ const m=new THREE.Mesh(postG, lambert(0xd94f30));

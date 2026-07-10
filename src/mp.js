@@ -46,9 +46,12 @@ export function createSession(role, room='local'){
   return s;
 }
 
-/* grid slot for roster index i: three across, rows fall back behind */
-export function gridSlot(i){
-  return { lat: [-2.8, 0, 2.8][i%3], back: Math.floor(i/3)*4.5 };
+/* grid slot for roster index i: columns across, rows fall back behind.
+   Tracks may override the column lats (Colfax keeps the grid out of the
+   red bus lanes). */
+export function gridSlot(i, cols){
+  const c = cols || [-2.8, 0, 2.8];
+  return { lat: c[i%c.length], back: Math.floor(i/c.length)*4.5 };
 }
 
 /* pack the local player's racer state into a wire snapshot */

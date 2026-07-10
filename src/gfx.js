@@ -11,7 +11,8 @@ export function pixTex(px, draw, repX=1, repY=1){
 }
 
 export function lambert(color, extra={}){
-  return new THREE.MeshLambertMaterial(Object.assign({color, flatShading:true}, extra));
+  // (MeshLambertMaterial ignores flatShading — passing it just warns)
+  return new THREE.MeshLambertMaterial(Object.assign({color}, extra));
 }
 
 /* a wide banner/sign texture with centered, readable text. High-res + smooth
@@ -59,6 +60,31 @@ export const roadTex = pixTex(32,(g,px)=>{
   for(let i=0;i<80;i++){ g.fillStyle=i%2?'#8a8275':'#6f6759';
     g.fillRect(Math.random()*px|0, Math.random()*px|0, 2, 1);}
   g.fillStyle='#e8d98a'; g.fillRect(px/2-1, 2, 2, 12);
+});
+
+/* four-lane arterial: double-yellow centerline, dashed white lane lines */
+export const arterialTex = pixTex(32,(g,px)=>{
+  g.fillStyle='#6e6e6c'; g.fillRect(0,0,px,px);
+  for(let i=0;i<60;i++){ g.fillStyle=i%2?'#79797a':'#636361';
+    g.fillRect(Math.random()*px|0, Math.random()*px|0, 2, 1);}
+  g.fillStyle='#d9b23a';
+  g.fillRect(px/2-2,0,1,px); g.fillRect(px/2+1,0,1,px);
+  g.fillStyle='#e8e4da';
+  for(let y=0;y<px;y+=8){ g.fillRect(px/4,y,1,4); g.fillRect(3*px/4,y,1,4); }
+});
+
+/* BRT arterial: red center bus lanes, white edge lines, outer car lanes */
+export const brtTex = pixTex(32,(g,px)=>{
+  g.fillStyle='#6e6e6c'; g.fillRect(0,0,px,px);
+  g.fillStyle='#7e4038'; g.fillRect(px*0.3,0,px*0.4,px);       // red BUS ONLY zone
+  for(let i=0;i<50;i++){ g.fillStyle=i%2?'#79797a':'#8a4a42';
+    const x=Math.random()*px|0;
+    if(x>px*0.3&&x<px*0.7) g.fillStyle=i%2?'#8a4a42':'#74352e';
+    g.fillRect(x, Math.random()*px|0, 2, 1);}
+  g.fillStyle='#d9b23a';
+  g.fillRect(px/2-1,0,2,px);                                    // center double yellow
+  g.fillStyle='#e8e4da';
+  g.fillRect(px*0.3-1,0,1,px); g.fillRect(px*0.7,0,1,px);       // solid bus-lane edges
 });
 
 export const waterTex = pixTex(32,(g,px)=>{

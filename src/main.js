@@ -6,6 +6,7 @@ import './style.css';
 import { ROSTER, PLAYER_CHARACTER } from './characters.js';
 import washpark from './tracks/washpark.js';
 import unionstation from './tracks/unionstation.js';
+import colfax from './tracks/colfax.js';
 import { Track } from './track.js';
 import { createRenderer, createRacerMeshes, draw } from './render.js';
 import { createRacer } from './racers.js';
@@ -22,7 +23,7 @@ import { step } from './sim.js';
 
 /* track select: ?track=<id> picks the course; the scene is built once at
    load, so the title-screen picker just reloads with the param set */
-const TRACKS = { washpark, unionstation };
+const TRACKS = { washpark, unionstation, colfax };
 const trackData = TRACKS[new URLSearchParams(location.search).get('track')] || washpark;
 document.querySelectorAll('#trackPick button').forEach(b=>{
   b.classList.toggle('on', (TRACKS[b.dataset.track]||washpark)===trackData);
@@ -52,6 +53,14 @@ function beginRace(chosen){
   player.x=startP.x; player.z=startP.z;
   player.heading=Math.atan2(startTan.x, startTan.z);
 
+  const place = (r, i) => {
+    const g = gridSlot(i, trackData.gridLats);
+    r.x = startP.x + startN.x*g.lat - startTan.x*g.back;
+    r.z = startP.z + startN.z*g.lat - startTan.z*g.back;
+    r.heading = Math.atan2(startTan.x, startTan.z);
+  };
+  place(player, 0);                                    // solo starts in a real lane too
+
   let rivals;
   if(mp){
     /* humans on a shared grid — every client derives the same slots from
@@ -59,12 +68,6 @@ function beginRace(chosen){
        In MP every racer's id is its peer's uid on EVERY client, so item
        targets and finish orders resolve to the same rider everywhere. */
     player.id = mp.myId;
-    const place = (r, i) => {
-      const g = gridSlot(i);
-      r.x = startP.x + startN.x*g.lat - startTan.x*g.back;
-      r.z = startP.z + startN.z*g.lat - startTan.z*g.back;
-      r.heading = Math.atan2(startTan.x, startTan.z);
-    };
     const myIdx = mp.roster.findIndex(p => p.uid===mp.myId);
     place(player, Math.max(0, myIdx));
     rivals = mp.roster.filter(p => p.uid!==mp.myId).map(p => {

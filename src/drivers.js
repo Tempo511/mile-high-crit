@@ -123,7 +123,13 @@ export function playerDriver(r, inputs, game, dt){
    rubber-banding vs the local player, and occasional item use. */
 export function aiDriver(r, game, dt){
   const { track, racers } = game;
-  if(r.finished){ r.dist+=r.speed*dt; positionOnSpline(r, track); return; }
+  if(r.finished){
+    if(track.data.format==='stage'){
+      const remain = track.length - r.dist;
+      if(remain < 30) r.speed = Math.max(0, Math.min(r.speed, remain*0.7));
+    }
+    r.dist+=r.speed*dt; positionOnSpline(r, track); return;
+  }
 
   const player = racers.find(o=>o.driver==='player');
   const ahead = r.corner?.ahead ?? 6;      // how early they read the corner
@@ -157,14 +163,20 @@ export function aiDriver(r, game, dt){
   }
   positionOnSpline(r, track);
 
-  const lapNow = Math.floor(r.dist/track.length)+1;
-  if(lapNow>game.race.laps && !r.finished){
+  /* the finish: laps of the circuit, or the checkered line of a stage
+     (the spline runs on past it so finishers coast out of frame) */
+  const finishDist = track.data.format==='stage'
+    ? track.length*(track.data.finishT ?? 1)
+    : track.length*game.race.laps;
+  if(r.dist>=finishDist && !r.finished){
     r.finished=true; game.race.finishOrder.push(r.id);
   }
 }
 
 export function positionOnSpline(r, track){
-  const t=((r.dist%track.length)+track.length)%track.length/track.length;
+  const t = track.data.format==='stage'
+    ? Math.min(0.9999, Math.max(0, r.dist/track.length))
+    : ((r.dist%track.length)+track.length)%track.length/track.length;
   const p=track.pointAt(t), tan=track.tangentAt(t);
   const n=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),tan).normalize();
   const lat = Math.sin(r.dist*0.02+r.ph)*r.amp;
