@@ -53,9 +53,9 @@ export function createInput(){
   const itemBtn = document.getElementById('btnItem');
   itemBtn.addEventListener('pointerdown', e=>{ useItemPressed=true; e.preventDefault(); });
 
-  if(matchMedia('(pointer:coarse)').matches){
-    [driftBtnR, driftBtnL, sprintBtnR, sprintBtnL, itemBtn].forEach(b=>b.style.display='block');
-  }
+  /* touch devices get the buttons — but CSS only shows them while
+     body.racing is set, so menus and track previews stay clean */
+  if(matchMedia('(pointer:coarse)').matches) document.body.classList.add('touch');
 
   return {
     get(){

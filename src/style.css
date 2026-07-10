@@ -44,6 +44,8 @@
   .btn{position:fixed;z-index:6;border-radius:50%;border:3px solid var(--ink);
     color:var(--ink);font-family:inherit;font-weight:bold;letter-spacing:1px;
     box-shadow:0 4px 0 var(--ink);display:none;}
+  /* touch controls exist only during an actual race */
+  body.racing.touch .btn{display:block;}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);}
   /* symmetric mobile controls: DRIFT + SPRINT mirrored on both sides so the
      free (non-steering) thumb can always reach them; ITEM centered */
