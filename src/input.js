@@ -11,6 +11,17 @@ export function createInput(){
   let keyDrift=false, keySprint=false, useItemPressed=false, touchSteer=0;
   let btnDriftL=false, btnDriftR=false, btnSprintL=false, btnSprintR=false;
 
+  /* iOS Safari zooms on double-tap and pinch even with user-scalable=no
+     (ignored since iOS 10) and touch-action:none — swallow both manually.
+     Only the SECOND rapid tap is eaten, so normal menu taps still click. */
+  document.addEventListener('gesturestart', e=>e.preventDefault());
+  let lastTouchEnd=0;
+  document.addEventListener('touchend', e=>{
+    const now=Date.now();
+    if(now-lastTouchEnd<350) e.preventDefault();
+    lastTouchEnd=now;
+  }, {passive:false});
+
   addEventListener('keydown', e=>{
     keys[e.key]=true;
     if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W'){ keySprint=true; e.preventDefault(); }
