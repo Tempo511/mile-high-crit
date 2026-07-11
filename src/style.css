@@ -111,6 +111,15 @@
     padding:14px 44px;background:var(--goldenrod);color:var(--ink);
     border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer;}
   #mpGo:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink);}
+  #resTracks{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+    align-items:center;margin:6px 0 14px;}
+  #resTracks .resLabel{width:100%;font-size:clamp(10px,2vw,13px);letter-spacing:2px;
+    color:var(--goldenrod);margin-bottom:4px;}
+  #resTracks button{font-family:inherit;font-weight:bold;font-size:clamp(10px,2vw,13px);
+    letter-spacing:2px;padding:9px 16px;background:transparent;color:var(--paper);
+    border:2px solid var(--paper);opacity:.75;cursor:pointer;}
+  #resTracks button.on{background:var(--goldenrod);color:var(--ink);opacity:1;
+    border-color:var(--ink);box-shadow:0 3px 0 var(--ink);}
   /* ---- character select ---- */
   #select{position:fixed;inset:0;z-index:11;display:none;flex-direction:column;
     align-items:center;justify-content:center;color:var(--paper);

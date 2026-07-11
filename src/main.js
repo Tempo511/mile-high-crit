@@ -45,6 +45,7 @@ const startP = track.pointAt(0), startTan = track.tangentAt(0);
 let game=null, hud=null;                               // null while in the menus
 let countStart=0, earlyHold=0;
 let mp=null, sendT=0;                                  // multiplayer session (rung 1)
+let pendingAgain=null;                                 // deferred host rematch
 
 /* ---------- start a race with the chosen character ---------- */
 function beginRace(chosen){
@@ -104,7 +105,18 @@ function beginRace(chosen){
       if(b){ b.cd=3; b.m.visible=b.shadow.visible=false; } };
   }
   view.meshes = createRacerMeshes(view.scene, game.racers);
-  hud = createHud(track);
+  hud = createHud(track, !mp ? null : {
+    isHost: mp.role==='host',
+    current: trackData.id,
+    tracks: Object.keys(TRACKS),
+    names: { washpark:'WASH PARK', unionstation:'UNION STATION', colfax:'COLFAX' },
+    rematch: id => {
+      mp.tp.send({type:'again', id:mp.myId, track:id});
+      const q = new URLSearchParams(location.search);
+      q.set('track', id);
+      location.href = location.pathname + '?' + q + '#host-' + mpRoom;
+    }
+  });
   document.body.classList.add('racing');    // reveal the HUD
 
   /* countdown with a timed launch: hold gas on the "1" */
@@ -219,11 +231,29 @@ if(hasInternet)
 document.getElementById('btn2p').addEventListener('click', ()=>{
   audio.unlock();
   mpRoom = makeRoomCode();
+  startHosting();
+});
+function startHosting(){
   mp = createSession('host', mpRoom);
   mp.track = trackData.id;
+  /* keep the host role + room in the URL so rematch reloads re-host.
+     sessionStorage marks THIS TAB as the room's owner — anyone else who
+     opens a #host- URL (people copy the address bar!) joins instead. */
+  sessionStorage.setItem('dash-host-'+mpRoom, '1');
+  history.replaceState(null,'',location.pathname+location.search+'#host-'+mpRoom);
   document.getElementById('title').style.display='none';
   select.open();
-});
+}
+const hostMatch = location.hash.match(/#host-([A-Z0-9]+)/);
+if(hostMatch){
+  if(sessionStorage.getItem('dash-host-'+hostMatch[1])){
+    mpRoom = hostMatch[1];                    // rematch reload: same room, still host
+    startHosting();
+  } else {
+    /* not this room's owner — a shared address-bar link: join instead */
+    history.replaceState(null,'',location.pathname+location.search+'#join-'+hostMatch[1]);
+  }
+}
 const joinMatch = location.hash.match(/#join(?:-([A-Z0-9]+))?/);
 if(joinMatch){                                // joiner: straight to select
   mpRoom = joinMatch[1] || 'local';
@@ -234,6 +264,15 @@ if(joinMatch){                                // joiner: straight to select
     const q = new URLSearchParams(location.search);
     q.set('track', id);
     location.href = location.pathname + '?' + q + location.hash;
+  };
+  mp.onAgain = m => {                         // host started a rematch
+    const go = ()=>{
+      const q = new URLSearchParams(location.search);
+      if(m.track) q.set('track', m.track);
+      location.href = location.pathname + '?' + q + '#join-' + mpRoom;
+    };
+    if(game && game.race.phase==='race') pendingAgain = go;  // finish first
+    else go();
   };
   document.getElementById('title').style.display='none';
   select.open();
@@ -271,6 +310,7 @@ function frame(now){
     step(game, input.get(), dt, now);
     audio.ambient(dt);
   } else if(game.race.phase==='done'){
+    if(pendingAgain){ const go=pendingAgain; pendingAgain=null; setTimeout(go, 2500); }
     // everyone coasts on (remotes stay net-driven); the camera keeps following
     for(const r of game.racers) if(r.driver!=='remote') aiDriver(r, game, dt);
     updateAmbient(game, dt, now);

@@ -16,7 +16,7 @@ export function createSession(role, room='local'){
     roster: [],                    // [{uid, char}] in grid order, host first
     track: null,                   // host's track id, stamped into lobby/start
     onLobby: null, onStart: null, onState: null, onFinish: null,
-    onItem: null, onBox: null, onWrongTrack: null,
+    onItem: null, onBox: null, onWrongTrack: null, onAgain: null,
   };
   tp.onMessage(m => {
     if(m.type==='hello' && role==='host'){
@@ -41,6 +41,8 @@ export function createSession(role, room='local'){
       s.onItem && s.onItem(m);
     } else if(m.type==='box' && m.id!==s.myId){
       s.onBox && s.onBox(m);
+    } else if(m.type==='again' && m.id!==s.myId){
+      s.onAgain && s.onAgain(m);
     }
   });
   return s;

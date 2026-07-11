@@ -25,7 +25,7 @@ export function fmt(ms){ const s=ms/1000,m=Math.floor(s/60);
   return m+':'+(s-m*60).toFixed(1).padStart(4,'0'); }
 export function fmtS(ms){ return (ms/1000).toFixed(1); }
 
-export function createHud(track){
+export function createHud(track, mpHooks){
   const mini = $('mini');
   const mctx = mini.getContext('2d');
   const seen = new Set();
@@ -125,6 +125,28 @@ export function createHud(track){
       : 'FINISH! '+PLACES[e.place-1];
     $('resList').innerHTML = rows +
       (race.best<Infinity ? `<div>&nbsp;</div><div>BEST LAP · ${fmtS(race.best)}s</div>` : '');
+    /* online rooms: the host rematches (same track or a new one) and the
+       whole room follows — no new link needed */
+    if(mpHooks){
+      const btn = $('againBtn');
+      if(mpHooks.isHost){
+        btn.style.display='none';
+        const row=document.createElement('div');
+        row.id='resTracks';
+        row.innerHTML='<div class="resLabel">REMATCH — PICK THE TRACK</div>';
+        for(const id of mpHooks.tracks){
+          const b2=document.createElement('button');
+          b2.textContent=mpHooks.names[id]||id.toUpperCase();
+          if(id===mpHooks.current) b2.classList.add('on');
+          b2.addEventListener('click', ()=>mpHooks.rematch(id));
+          row.appendChild(b2);
+        }
+        $('results').insertBefore(row, btn);
+      } else {
+        btn.disabled=true;
+        btn.textContent='WAITING FOR HOST — rematch loads automatically';
+      }
+    }
     $('results').style.display='flex';
   }
   $('againBtn').addEventListener('click', ()=>location.reload());
