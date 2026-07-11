@@ -77,6 +77,10 @@ export function applyState(r, m){
 /* per-frame: dead-reckon the last snapshot forward, converge toward it */
 export function updateRemote(r, dt){
   if(!r.netInit) return;
+  /* drift charge is just seconds-held: mirror it locally so tier sparks
+     and bike lights render for remote riders (their boost outcome still
+     arrives via boostT in snapshots) */
+  if(r.drifting) r.driftCharge=(r.driftCharge||0)+dt; else r.driftCharge=0;
   const fx=Math.sin(r.netH), fz=Math.cos(r.netH);
   r.netX += fx*r.speed*dt;
   r.netZ += fz*r.speed*dt;

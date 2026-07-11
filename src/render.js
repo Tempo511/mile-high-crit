@@ -136,23 +136,31 @@ export function draw(game, view, dt, now){
     d.m.position.set(d.x, d.y, d.z);
   }
 
-  /* drift-charge sparks: colored spray by tier, radial burst on tier-up */
-  const pTier = player.driftCharge>=ULTRA?3 : player.driftCharge>=SUPER?2
-              : player.driftCharge>=MINI?1 : 0;
-  if(player.drifting && pTier>0 && Math.abs(player.speed)>10){
-    view.sprayAcc += dt*(8 + pTier*9);
-    while(view.sprayAcc>1){
-      view.sprayAcc-=1;
-      const side = player.driftDir;
-      spawnSpark(view,
-        player.x - pfx*1.1 - pfz*side*0.4, 0.3,
-        player.z - pfz*1.1 + pfx*side*0.4,
-        -pfx*(3+Math.random()*2) - pfz*side*(2+Math.random()*3),
-        1.5+Math.random()*2.5,
-        -pfz*(3+Math.random()*2) + pfx*side*(2+Math.random()*3),
-        TIER_COLORS[pTier], 0.3+Math.random()*0.2);
-    }
-  } else view.sprayAcc=0;
+  /* drift-charge sparks: colored spray by tier, radial burst on tier-up.
+     Every drifting racer sprays — remote riders included (their charge is
+     mirrored locally in updateRemote). */
+  if(!view.sprayAccs) view.sprayAccs = new Map();
+  for(const r of game.racers){
+    const tier = r.driftCharge>=ULTRA?3 : r.driftCharge>=SUPER?2
+               : r.driftCharge>=MINI?1 : 0;
+    let acc = view.sprayAccs.get(r.id)||0;
+    if(r.drifting && tier>0 && Math.abs(r.speed)>10){
+      const fx=Math.sin(r.heading), fz=Math.cos(r.heading);
+      acc += dt*(8 + tier*9);
+      while(acc>1){
+        acc-=1;
+        const side = r.driftDir;
+        spawnSpark(view,
+          r.x - fx*1.1 - fz*side*0.4, 0.3,
+          r.z - fz*1.1 + fx*side*0.4,
+          -fx*(3+Math.random()*2) - fz*side*(2+Math.random()*3),
+          1.5+Math.random()*2.5,
+          -fz*(3+Math.random()*2) + fx*side*(2+Math.random()*3),
+          TIER_COLORS[tier], 0.3+Math.random()*0.2);
+      }
+    } else acc=0;
+    view.sprayAccs.set(r.id, acc);
+  }
   for(const e of game.events){
     if(e.type==='driftTier'){                    // level-up: radial pop
       for(let i=0;i<12;i++){
