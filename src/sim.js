@@ -154,8 +154,10 @@ export function step(game, inputs, dt, now){
   player.shake=Math.max(0,player.shake-dt);
   for(const r of racers) r.spinImmune=Math.max(0,(r.spinImmune||0)-dt);
 
-  /* live standings */
+  /* live standings — and keep player.dist current: it is what the network
+     snapshot carries, so peers rank us by it (stale 0 = everyone "1ST") */
   const me=progressOf(track, player);
+  player.dist = me;
   let place=1;
   for(const r of racers){ if(r!==player && progressOf(track,r)>me) place++; }
   race.playerPlace=place;
