@@ -72,10 +72,10 @@ export default {
     /* the Fillmore keeps its skating-rink barrel vault */
     { type:'marquee', x:-45, z:18, ry:Math.PI, text:'FILLMORE', brick:'#7a4034', neon:'#ff8c3a', w:19, h:9, style:'barrel', posters:3 },
     { type:'crowd', x:-37, z:14, spread:6, count:5 },
-    { type:'diner', x:120,  z:-16, sign:"PETE'S KITCHEN", sub:'BREAKFAST BURRITOS', accentC:0x2e86ab },
+    { type:'diner', x:120,  z:-14.5, ry:0.3, sign:"PETE'S KITCHEN", sub:'BREAKFAST BURRITOS', accentC:0x2e86ab },
     { type:'crowd', x:128, z:-12, spread:5, count:3 },
     /* Tom's goes full Googie: swept wing, glass corner, parking apron */
-    { type:'diner', x:-145, z:20, ry:Math.PI, sign:"TOM'S DINER", signBg:'#3e5a34', googie:true },
+    { type:'diner', x:-145, z:16, ry:Math.PI-0.28, sign:"TOM'S DINER", signBg:'#3e5a34', googie:true },
     { type:'brickBlock', x:-95, z:23, ry:Math.PI, w:20, d:10, h:6, sign:'ARGONAUT WINE - LIQUOR', signBg:'#a83232' },
     { type:'cathedral', x:-295, z:-22 },
 
@@ -180,6 +180,13 @@ export default {
     { type:'brickBlock', x:-350, z:-16, w:18, d:11, h:9, color:'#9a5a44' },
     { type:'brickBlock', x:-390, z:-14, w:15, d:10, h:11 },
     { type:'tower', x:-415, z:-24, w:13, h:16, style:'tan' },
+    /* sightline corridors: no filler shops in front of the civic set
+       pieces or on the approach views to the diners */
+    { type:'keepClear', x:215,  z:-14, r:19 },   // Sullivan Gateway + East High
+    { type:'keepClear', x:248,  z:-13, r:14 },   // ...and its eastern approach
+    { type:'keepClear', x:180,  z:-12, r:15 },   // Carla Madison
+    { type:'keepClear', x:102,  z:-11, r:10 },   // Pete's approach
+    { type:'keepClear', x:-130, z:12,  r:12 },   // Tom's approach
     /* the unbroken street wall — placed after every curb landmark so their
        exclusions carve out the right gaps. Stops at Broadway. */
     { type:'colfaxWall', t0:0.005, t1:0.775 },
@@ -196,7 +203,7 @@ export default {
     /* ---------- cross-street blades (real order, heading west) ---------- */
     { type:'streetSign', x:452, z:12,  text:'COOK ST',       ry:Math.PI/2 },
     { type:'streetSign', x:420, z:14,  text:'ADAMS ST',      ry:Math.PI/2 },
-    { type:'streetSign', x:340, z:-13, text:'YORK ST',       ry:Math.PI/2 },
+    { type:'streetSign', x:340, z:-9,  text:'YORK ST',       ry:Math.PI/2 },
     { type:'streetSign', x:260, z:14,  text:'JOSEPHINE ST',  ry:Math.PI/2 },
     { type:'streetSign', x:180, z:-14, text:'RACE ST',       ry:Math.PI/2 },
     { type:'streetSign', x:100, z:14,  text:'FRANKLIN ST',   ry:Math.PI/2 },
