@@ -51,7 +51,8 @@
     box-shadow:0 4px 0 var(--ink);display:none;}
   /* touch controls exist only during an actual race */
   body.racing.touch .btn{display:block;}
-  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);}
+  .btn:active, .btn.pressed{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);
+    filter:brightness(1.18);}
   /* symmetric mobile controls: DRIFT + SPRINT mirrored on both sides so the
      free (non-steering) thumb can always reach them; ITEM centered */
   #btnDrift{right:32px;bottom:40px;width:82px;height:82px;background:var(--sunset);font-size:13px;}

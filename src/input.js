@@ -61,12 +61,18 @@ export function createInput(){
 
   function bindHold(id, set){
     const el=document.getElementById(id);
+    /* :active never fires once touchstart is preventDefault'd (the iOS
+       zoom fix), so drive the pressed look ourselves + a tick of haptics */
+    const press=v=>{
+      set(v); el.classList.toggle('pressed', v);
+      if(v && navigator.vibrate) navigator.vibrate(8);
+    };
     el.addEventListener('pointerdown', e=>{
       el.setPointerCapture(e.pointerId);
-      set(true); e.preventDefault();
+      press(true); e.preventDefault();
     });
-    el.addEventListener('pointerup',   ()=> set(false));
-    el.addEventListener('pointercancel',()=> set(false));
+    el.addEventListener('pointerup',   ()=> press(false));
+    el.addEventListener('pointercancel',()=> press(false));
     return el;
   }
   const driftBtnR = bindHold('btnDrift',   v=>btnDriftR=v);
@@ -74,7 +80,12 @@ export function createInput(){
   const sprintBtnR= bindHold('btnSprint',  v=>btnSprintR=v);
   const sprintBtnL= bindHold('btnSprintL', v=>btnSprintL=v);
   const itemBtn = document.getElementById('btnItem');
-  itemBtn.addEventListener('pointerdown', e=>{ useItemPressed=true; e.preventDefault(); });
+  itemBtn.addEventListener('pointerdown', e=>{
+    useItemPressed=true; e.preventDefault();
+    itemBtn.classList.add('pressed');
+    if(navigator.vibrate) navigator.vibrate(8);
+    setTimeout(()=>itemBtn.classList.remove('pressed'), 160);
+  });
 
   /* touch devices get the buttons — but CSS only shows them while
      body.racing is set, so menus and track previews stay clean */
