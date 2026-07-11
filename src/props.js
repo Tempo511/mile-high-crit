@@ -2615,7 +2615,8 @@ B.colfaxWall = (ctx, def) => {
         ap.rotation.y=Math.atan2(-n.x*side, -n.z*side);
         ctx.scene.add(ap);
       }
-      else if(ctx.clearOfExclusions(new THREE.Vector3(px,0,pz), 3)){
+      else if(ctx.clearOfExclusions(new THREE.Vector3(px,0,pz), 3) &&
+              ctx.clearOfRoad(new THREE.Vector3(px,0,pz), 4)){
         const g=new THREE.Group();
         const shallow=ctx.rng()<0.25;                 // squat one-story sheds
         const h=shallow ? 2.6+ctx.rng() : 3.5+ctx.rng()*3;

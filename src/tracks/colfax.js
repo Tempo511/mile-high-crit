@@ -107,6 +107,11 @@ export default {
     { type:'flowerBed', x:-446, z:92, w:9, d:4, ry:-0.3 },
     /* ONE MILE ABOVE SEA LEVEL — the famous step marker, facing the line */
     { type:'parkSign', x:-486, z:44, ry:-Math.PI/2+0.3, text:'ONE MILE HIGH', w:5.6, bg:'#3e5a34' },
+    /* keep the sprawl out of the finish-line wedge + the Broadway elbow */
+    { type:'keepClear', x:-484, z:30, r:18 },
+    { type:'keepClear', x:-448, z:14, r:18 },
+    { type:'keepClear', x:-508, z:20, r:14 },
+
     /* ---------- Civic Center Park across Lincoln ---------- */
     /* the formal park: great lawn on the Capitol axis, promenade paths,
        the Greek Amphitheater south, Voorhies Memorial north, and the
