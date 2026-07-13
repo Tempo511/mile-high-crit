@@ -34,16 +34,20 @@ export function createInput(){
     if(!(e.target.closest && e.target.closest('#selGrid'))) e.preventDefault();
   }, {passive:false});
 
+  /* normalize to lowercase so Caps Lock / Shift can't break WASD or
+     leave a key stuck between mismatched down/up events */
   addEventListener('keydown', e=>{
-    keys[e.key]=true;
-    if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W'){ keySprint=true; e.preventDefault(); }
-    if(e.key==='Shift'||e.key==='ArrowDown'||e.key==='s'||e.key==='S'){ keyDrift=true; e.preventDefault(); }
-    if(e.key==='e'||e.key==='E'||e.key==='Enter') useItemPressed=true;
+    const k=e.key.length===1 ? e.key.toLowerCase() : e.key;
+    keys[k]=true;
+    if(k===' '||k==='ArrowUp'||k==='w'){ keySprint=true; e.preventDefault(); }
+    if(k==='Shift'||k==='ArrowDown'||k==='s'){ keyDrift=true; e.preventDefault(); }
+    if(k==='e'||k==='Enter') useItemPressed=true;
   });
   addEventListener('keyup', e=>{
-    keys[e.key]=false;
-    if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W') keySprint=false;
-    if(e.key==='Shift'||e.key==='ArrowDown'||e.key==='s'||e.key==='S') keyDrift=false;
+    const k=e.key.length===1 ? e.key.toLowerCase() : e.key;
+    keys[k]=false;
+    if(k===' '||k==='ArrowUp'||k==='w') keySprint=false;
+    if(k==='Shift'||k==='ArrowDown'||k==='s') keyDrift=false;
   });
 
   /* pointer capture keeps the release event coming to the element even if
