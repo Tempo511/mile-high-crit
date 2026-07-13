@@ -92,6 +92,10 @@
     padding:15px 52px;background:var(--goldenrod);color:var(--ink);
     border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer;}
   #startBtn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink);}
+  #ttBtn{font-family:inherit;font-weight:bold;font-size:12px;letter-spacing:2px;
+    margin-top:14px;padding:9px 22px;background:transparent;color:var(--goldenrod);
+    border:2px solid var(--goldenrod);opacity:.9;cursor:pointer;}
+  #ttBtn:active{transform:translateY(2px);}
   #btn2p{font-family:inherit;font-weight:bold;font-size:12px;letter-spacing:2px;
     margin-top:14px;padding:9px 22px;background:transparent;color:var(--paper);
     border:2px solid var(--paper);opacity:.85;cursor:pointer;}
@@ -121,6 +125,10 @@
     border:2px solid var(--paper);opacity:.75;cursor:pointer;}
   #resTracks button.on{background:var(--goldenrod);color:var(--ink);opacity:1;
     border-color:var(--ink);box-shadow:0 3px 0 var(--ink);}
+  #homeBtn{font-family:inherit;font-weight:bold;font-size:12px;letter-spacing:2px;
+    margin-top:12px;padding:8px 20px;background:transparent;color:var(--paper);
+    border:2px solid var(--paper);opacity:.8;cursor:pointer;}
+  #homeBtn:active{transform:translateY(2px);}
   /* ---- character select ---- */
   #select{position:fixed;inset:0;z-index:11;display:none;flex-direction:column;
     align-items:center;justify-content:center;color:var(--paper);

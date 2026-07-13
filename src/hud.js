@@ -2,6 +2,7 @@
    The only module (besides input) that touches the DOM. */
 import { ITEMS, PLACES } from './constants.js';
 import { progressOf } from './racers.js';
+import { medalFor } from './ghost.js';
 
 const $=id=>document.getElementById(id);
 
@@ -78,6 +79,11 @@ export function createHud(track, mpHooks){
         if(e.msg==='BOOST!'||e.msg==='SUPER BOOST!'||e.msg==='ULTRA BOOST!')
           flash('#ffd166', 0.18);
       }
+      else if(e.type==='split'){
+        const pbS = race.pb && race.pb.splits && race.pb.splits[e.i];
+        toast('S'+(e.i+1)+' · '+fmtS(e.ms)+'s' + (pbS!=null
+          ? '  ('+(e.ms<=pbS?'−':'+')+fmtS(Math.abs(e.ms-pbS))+')' : ''), 1600);
+      }
       else if(e.type==='lap'){
         toast((e.final?'FINAL LAP · ':'LAP '+e.lap+' · ')+fmtS(e.lapTime)+'s');
         flash('#fff', 0.3);
@@ -98,11 +104,15 @@ export function createHud(track, mpHooks){
         : player.drafting ? 'hud draft' : 'hud';
       $('energyLabel').textContent = player.bonkT>0 ? 'BONK!'
         : player.drafting ? 'DRAFT ≋' : 'LEGS';
+      const gd = race.ghostDelta;
       $('laps').innerHTML=(track.data.format==='stage'
           ? 'STAGE '+Math.min(100,Math.round(player.prog/(track.data.finishT||1)*100))+'%'
           : 'LAP '+player.lap+'/'+race.laps)
         +'<br><span id="timer">'+fmt(now-race.t0)+'</span>'
-        +'<br><span id="best">'+(race.best<Infinity?('BEST '+fmtS(race.best)+'s'):'')+'</span>';
+        +(gd!==undefined
+          ? '<br><span style="color:'+(gd<=0?'#8fbe78':'#e84855')+'">'
+            +(gd<=0?'−':'+')+Math.abs(gd/1000).toFixed(2)+' GHOST</span>'
+          : '<br><span id="best">'+(race.best<Infinity?('BEST '+fmtS(race.best)+'s'):'')+'</span>');
       $('itemSlot').textContent = player.item ? ITEMS[player.item] : '';
       const ib = $('btnItem');                    // touch button shows the held item
       ib.textContent = player.item ? ITEMS[player.item] : '🎁';
@@ -116,6 +126,28 @@ export function createHud(track, mpHooks){
     const done = race.finishOrder.map(id=>racers.find(r=>r.id===id));
     const rest = racers.filter(r=>!race.finishOrder.includes(r.id))
       .sort((a,b)=>progressOf(track,b)-progressOf(track,a));
+    if(game.tt){
+      const m = race.medals, ms = e.total;
+      const medal = medalFor(ms, m);
+      $('resTitle').textContent = e.newPB ? 'NEW PERSONAL BEST!' : 'TIME TRIAL';
+      const ladder = [['👑 AUTHOR',m.author],['🥇 GOLD',m.gold],
+                      ['🥈 SILVER',m.silver],['🥉 BRONZE',m.bronze]]
+        .map(([label,t])=>`<div style="opacity:${ms<=t?1:.45}">${label} · ${fmt(t)}</div>`)
+        .join('');
+      const splits=(race.splitTimes||[]).map((sms,i2)=>{
+        const pbS=race.pb&&race.pb.splits&&race.pb.splits[i2];
+        return `<div>S${i2+1} · ${fmt(sms)}${pbS!=null
+          ? ' ('+(sms<=pbS?'−':'+')+fmtS(Math.abs(sms-pbS))+')' : ''}</div>`;
+      }).join('');
+      $('resList').innerHTML =
+        `<div class="you" style="font-size:1.3em">⏱ ${fmt(ms)}${medal?' · '+medal:''}</div>`
+        + splits
+        + (race.pb && !e.newPB ? `<div>PB · ${fmt(race.pb.ms)}</div>` : '')
+        + '<div>&nbsp;</div>' + ladder;
+      $('againBtn').textContent='RETRY';
+      $('results').style.display='flex';
+      return;
+    }
     const rows = [...done, ...rest].map((r,i)=>{
       const you = r.driver==='player';
       const time = you ? ' · '+fmt(e.total) : '';
@@ -150,6 +182,10 @@ export function createHud(track, mpHooks){
     $('results').style.display='flex';
   }
   $('againBtn').addEventListener('click', ()=>location.reload());
+  /* home: drop any mode hash (#tt / #host / #join) and land on the title */
+  $('homeBtn').addEventListener('click', ()=>{
+    location.href = location.pathname + location.search;
+  });
 
   return { update, toast };
 }

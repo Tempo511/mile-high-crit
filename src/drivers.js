@@ -55,7 +55,7 @@ export function playerDriver(r, inputs, game, dt){
   if(r.speed>10 && r.spin<=0){
     const fx=Math.sin(r.heading), fz=Math.cos(r.heading);
     for(const o of game.racers){
-      if(o===r) continue;
+      if(o===r || o.ghost) continue;      // you can't draft a hologram
       const dx=o.x-r.x, dz=o.z-r.z, d2=dx*dx+dz*dz;
       if(d2<3 || d2>56) continue;
       const along=dx*fx+dz*fz, side=Math.abs(dx*fz-dz*fx);

@@ -35,29 +35,35 @@ export function step(game, inputs, dt, now){
   /* item boxes */
   updateBoxes(game, dt, now);
 
-  /* solid collisions (player only — AIs are on rails) */
-  for(const s of track.solids){
-    const dx=player.x-s.x, dz=player.z-s.z, d=Math.hypot(dx,dz), min=s.r+0.7;
-    if(d<min && d>0.001){
-      player.x=s.x+dx/d*min; player.z=s.z+dz/d*min;
-      if(Math.abs(player.speed)>6){ player.shake=0.35; events.push({type:'toast', msg:'OOF', ms:450}); }
-      player.speed*=0.25; player.drifting=false; player.driftCharge=0;
+  /* solid collisions (player only — AIs are on rails).
+     Feel: the IMPACT costs speed once (wallCd gates the impulse); staying
+     in contact only grinds you down to a floor you can still ride away
+     at — the old per-frame 0.25 multiplier stalled riders against parked
+     cars until the stuck-reset fired, which read as double punishment. */
+  const wallHit = (cx, cz, min, toastMsg) => {
+    const dx=player.x-cx, dz=player.z-cz, d=Math.hypot(dx,dz);
+    if(d>=min || d<=0.001) return;
+    player.x=cx+dx/d*(min+0.05); player.z=cz+dz/d*(min+0.05);
+    if((player.wallCd||0)<=0){
+      if(Math.abs(player.speed)>7){
+        player.shake=0.35; events.push({type:'toast', msg:toastMsg, ms:500});
+      }
+      player.speed*=0.45;                       // the crash, paid once
+      player.wallCd=0.6;
+      player.drifting=false; player.driftCharge=0;
+    } else {
+      player.speed=Math.max(5, player.speed*(1-2.2*dt));   // scrape, don't stall
     }
-  }
+  };
+  for(const s of track.solids) wallHit(s.x, s.z, s.r+0.7, 'OOF');
 
   /* BRT buses: moving walls in the red lanes */
   for(const b of game.world.brtBuses||[]){
     const fx=Math.sin(b.m.rotation.y), fz=Math.cos(b.m.rotation.y);
-    for(const k of [-3.6,0,3.6]){
-      const cx=b.m.position.x+fx*k, cz=b.m.position.z+fz*k;
-      const dx=player.x-cx, dz=player.z-cz, d=Math.hypot(dx,dz), min=1.9;
-      if(d<min && d>0.001){
-        player.x=cx+dx/d*min; player.z=cz+dz/d*min;
-        if(Math.abs(player.speed)>6){ player.shake=0.4; events.push({type:'toast', msg:'THE BUS!!', ms:600}); }
-        player.speed*=0.2; player.drifting=false; player.driftCharge=0;
-      }
-    }
+    for(const k of [-3.6,0,3.6])
+      wallHit(b.m.position.x+fx*k, b.m.position.z+fz*k, 1.9, 'THE BUS!!');
   }
+  player.wallCd=Math.max(0,(player.wallCd||0)-dt);
 
   /* water hazards */
   for(const wt of track.waters){
@@ -88,7 +94,7 @@ export function step(game, inputs, dt, now){
      sustained contact is an annoyance, not a wall), and never below a
      floor speed so you can always ride out of a tangle */
   for(const a of racers){
-    if(a===player) continue;
+    if(a===player || a.ghost) continue;
     const dx=player.x-a.x, dz=player.z-a.z, d=Math.hypot(dx,dz);
     if(d<1.5 && d>0.001){
       player.x=a.x+dx/d*1.5; player.z=a.z+dz/d*1.5;
@@ -142,7 +148,13 @@ export function step(game, inputs, dt, now){
       events.push({type:'lap', lap:player.lap, final:player.lap===race.laps, lapTime});
     }
   }
-  if(delta<0 && player.speed>6) player.wrongT+=dt; else player.wrongT=0;
+  /* wrong-way: LATCH direction on index ticks (they only happen ~8x/sec),
+     then accumulate every frame while latched — accumulating only on tick
+     frames made the 1.2s threshold secretly take ~9 real seconds */
+  if(delta<0) player.wrongDir=true;
+  else if(delta>0) player.wrongDir=false;
+  if(player.wrongDir && player.speed>6) player.wrongT+=dt;
+  else player.wrongT=0;
   if(player.wrongT>1.2 && now-player.lastWrongToast>2200){
     player.lastWrongToast=now; events.push({type:'toast', msg:'WRONG WAY!', ms:900});
   }
@@ -159,8 +171,22 @@ export function step(game, inputs, dt, now){
   const me=progressOf(track, player);
   player.dist = me;
   let place=1;
-  for(const r of racers){ if(r!==player && progressOf(track,r)>me) place++; }
+  for(const r of racers){ if(r!==player && !r.ghost && progressOf(track,r)>me) place++; }
   race.playerPlace=place;
+
+  /* time-trial sector splits at thirds of the full course */
+  if(game.tt){
+    const totalLen = track.length * (track.data.format==='stage'
+      ? (track.data.finishT ?? 1) : race.laps);
+    const frac = me/totalLen;
+    race.sector = race.sector||0;
+    if(race.sector<2 && frac >= (race.sector+1)/3){
+      race.sector++;
+      const ms = now-race.t0;
+      (race.splitTimes=race.splitTimes||[]).push(ms);
+      events.push({type:'split', i:race.sector-1, ms});
+    }
+  }
 }
 
 export { PLACES, progressOf };

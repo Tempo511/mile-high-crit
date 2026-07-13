@@ -17,9 +17,10 @@ import { createHud } from './hud.js';
 import { createAudio } from './audio.js';
 import { createCharacterSelect } from './select.js';
 import { createSession, snapshot, applyState, updateRemote, gridSlot, SEND_HZ } from './mp.js';
+import { loadPB, savePB, createRecorder, createPlayback, medalTimes } from './ghost.js';
 import { hasInternet } from './net.js';
 import { remoteUseItem } from './items.js';
-import { step } from './sim.js';
+import { step, progressOf } from './sim.js';
 
 /* track select: ?track=<id> picks the course; the scene is built once at
    load, so the title-screen picker just reloads with the param set */
@@ -45,6 +46,7 @@ const startP = track.pointAt(0), startTan = track.tangentAt(0);
 let game=null, hud=null;                               // null while in the menus
 let countStart=0, earlyHold=0;
 let mp=null, sendT=0;                                  // multiplayer session (rung 1)
+let ttMode=false, ttRec=null, ttPlay=null, ttGhost=null, ttPB=null;
 let pendingAgain=null;                                 // deferred host rematch
 
 /* ---------- start a race with the chosen character ---------- */
@@ -76,6 +78,19 @@ function beginRace(chosen){
       place(r, mp.roster.findIndex(q => q.uid===p.uid));
       return r;
     });
+  } else if(ttMode){
+    /* time trial: just you and (maybe) your PB ghost */
+    rivals = [];
+    ttPB = loadPB(trackData.id);
+    if(ttPB && ttPB.frames && ttPB.frames.length>1){
+      const look = [PLAYER_CHARACTER, ...ROSTER].find(c=>c.id===ttPB.char) || chosen;
+      ttGhost = createRacer({ ...look, id:'__ghost', driver:'remote' });
+      ttGhost.ghost = true;
+      ttPlay = createPlayback(ttPB.frames);
+      ttPlay.at(0, ttGhost);                    // hold at its grid spot
+      rivals = [ttGhost];
+    }
+    ttRec = createRecorder();
   } else {
     /* 5 rivals (6 racers total) drawn at random from the rest of the roster */
     const pool = ROSTER.filter(c=>c.id!==chosen.id);
@@ -95,6 +110,16 @@ function beginRace(chosen){
            finishOrder:[], playerPlace:1, place:0 },
     events:[]
   };
+  if(ttMode){
+    game.tt = true;
+    game.race.medals = medalTimes(track);
+    game.race.pb = ttPB;
+    /* no items in TT — the boxes go dark */
+    for(const b of game.world.boxes){ b.cd=Infinity; b.m.visible=b.shadow.visible=false; }
+    /* instant RETRY: reload lands straight back here with the same rider */
+    sessionStorage.setItem('dash-tt-char', chosen.id);
+    history.replaceState(null,'',location.pathname+location.search+'#tt');
+  }
   if(mp){
     const remotes = new Map(game.racers.filter(r=>r.driver==='remote').map(r=>[r.id, r]));
     mp.onState  = m => { const r = remotes.get(m.id); if(r) applyState(r, m); };
@@ -105,6 +130,17 @@ function beginRace(chosen){
       if(b){ b.cd=3; b.m.visible=b.shadow.visible=false; } };
   }
   view.meshes = createRacerMeshes(view.scene, game.racers);
+  if(ttGhost){
+    const gm = view.meshes.get('__ghost');
+    if(gm) gm.traverse(o=>{
+      if(o.material){
+        o.material = o.material.clone();
+        o.material.transparent = true;
+        o.material.opacity = 0.42;
+        o.material.depthWrite = false;
+      }
+    });
+  }
   hud = createHud(track, !mp ? null : {
     isHost: mp.role==='host',
     current: trackData.id,
@@ -228,6 +264,19 @@ document.getElementById('startBtn').addEventListener('click', ()=>{
 });
 if(hasInternet)
   document.getElementById('btn2p').textContent = '👥 RACE A FRIEND — share a link (beta)';
+document.getElementById('ttBtn').addEventListener('click', ()=>{
+  audio.unlock();
+  ttMode = true;
+  document.getElementById('title').style.display='none';
+  select.open();
+});
+if(location.hash==='#tt'){                    // RETRY reload: straight to the line
+  ttMode = true;
+  const cid = sessionStorage.getItem('dash-tt-char');
+  const chosen = [PLAYER_CHARACTER, ...ROSTER].find(c=>c.id===cid);
+  document.getElementById('title').style.display='none';
+  if(chosen) beginRace(chosen); else select.open();
+}
 document.getElementById('btn2p').addEventListener('click', ()=>{
   audio.unlock();
   mpRoom = makeRoomCode();
@@ -309,7 +358,28 @@ function frame(now){
   if(game.race.phase==='race'){
     step(game, input.get(), dt, now);
     audio.ambient(dt);
+    if(game.tt){
+      const ms = now - game.race.t0;
+      const player = game.racers[0];
+      ttRec.tick(player, player.dist, ms, dt);
+      if(ttPlay && ttGhost){
+        ttPlay.at(ms, ttGhost);
+        game.race.ghostDelta = ms - ttPlay.msAtDist(player.dist);
+      }
+      /* a new PB saves the moment you cross the line */
+      for(const e of game.events) if(e.type==='finish'){
+        e.tt = true;
+        if(!ttPB || e.total < ttPB.ms){
+          e.newPB = true;
+          savePB(trackData.id, { ms:e.total,
+            char:sessionStorage.getItem('dash-tt-char'),
+            frames:ttRec.frames, splits:game.race.splitTimes||[],
+            date:Date.now() });
+        }
+      }
+    }
   } else if(game.race.phase==='done'){
+    if(game.tt && ttPlay && ttGhost) ttPlay.at(now-game.race.t0, ttGhost);
     if(pendingAgain){ const go=pendingAgain; pendingAgain=null; setTimeout(go, 2500); }
     // everyone coasts on (remotes stay net-driven); the camera keeps following
     for(const r of game.racers) if(r.driver!=='remote') aiDriver(r, game, dt);
