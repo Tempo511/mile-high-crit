@@ -13,7 +13,7 @@ function wheel(x, disc){
   g.add(tire);
   if(disc){
     const d = new THREE.Mesh(new THREE.CircleGeometry(0.38,12),
-      new THREE.MeshLambertMaterial({color:0x2b2b33, side:THREE.DoubleSide, flatShading:true}));
+      new THREE.MeshLambertMaterial({color:0x2b2b33, side:THREE.DoubleSide}));
     g.add(d);
   } else {
     for(let i=0;i<3;i++){

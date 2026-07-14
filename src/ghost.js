@@ -91,7 +91,7 @@ export function medalTimes(track){
   };
 }
 export function medalFor(ms, m){
-  return ms<=m.author ? '👑 AUTHOR'
+  return ms<=m.author ? '👑 MILE HIGH'
        : ms<=m.gold   ? '🥇 GOLD'
        : ms<=m.silver ? '🥈 SILVER'
        : ms<=m.bronze ? '🥉 BRONZE' : null;

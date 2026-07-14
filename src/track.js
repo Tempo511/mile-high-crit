@@ -12,7 +12,7 @@ const NS = 600;   // spline samples for nearest-point queries & minimap
    both arms share a material so it can be pulsed via userData.mat */
 function makeChevron(){
   const mat = new THREE.MeshLambertMaterial({color:0xffd166, emissive:0xffd166,
-    emissiveIntensity:0.5, flatShading:true});
+    emissiveIntensity:0.5});
   const g = new THREE.Group();
   const geo = new THREE.BoxGeometry(1.7,0.14,0.55);
   const l = new THREE.Mesh(geo, mat); l.position.set(-0.55,0,0.15); l.rotation.y = 3*Math.PI/4; g.add(l);
@@ -27,7 +27,7 @@ function makeItemBox(){
   const g = new THREE.Group();
   const shell = new THREE.Mesh(new THREE.BoxGeometry(1.4,1.4,1.4),
     new THREE.MeshLambertMaterial({color:0xffd166, transparent:true, opacity:0.4,
-      flatShading:true, emissive:0x7a4f00, depthWrite:false}));
+      emissive:0x7a4f00, depthWrite:false}));
   g.add(shell);
   const edges = new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.BoxGeometry(1.42,1.42,1.42)),

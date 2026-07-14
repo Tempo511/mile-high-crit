@@ -197,7 +197,13 @@ export default {
     { type:'tower',      x:-118, z:148, w:12, h:12, style:'tan' },
 
     /* ---------- Larimer Square ---------- */
-    { type:'stringLights', at:[0.435, 0.455, 0.475] },
+    /* the flag canopy: five cable spans, Colorado flags hanging in rows,
+       twin globe lamps on the poles — straight from the real block */
+    { type:'stringLights', at:[0.425, 0.44, 0.455, 0.47, 0.485], flags:true, globes:true },
+    { type:'patio', x:-48, z:114, ry:0.5, count:3 },
+    { type:'patio', x:-68, z:101, ry:0.5, count:2 },
+    { type:'flowerBed', x:-38, z:100, w:7, d:3, ry:0.45 },
+    { type:'flowerBed', x:-60, z:110, w:7, d:3, ry:0.5 },
     { type:'parkSign', t:0.43, side:-1, text:'LARIMER SQUARE', w:6.6, bg:'#4b2d5e' },
     { type:'brickBlock', x:-52, z:120, w:15, d:11, h:7, sign:'LARIMER SQ', signBg:'#4b2d5e' },
     { type:'brickBlock', x:-76, z:110, w:14, d:11, h:6, color:'#9a5a44' },

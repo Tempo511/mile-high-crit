@@ -23,15 +23,18 @@ const PED_TYPES = [
 ];
 
 export function buildWorld(scene, track){
+  /* hazard spawns are SEEDED so every run (and every time-trial) faces
+     the same geese in the same spots */
+  const grng = makeRng((track.data.seed||1)+3);
   const geese = [];
   for(const gg of track.data.gaggles || []){
     let cx=gg.x, cz=gg.z;
     if(gg.t!==undefined){ const p=track.pointAt(gg.t); cx=p.x; cz=p.z; }
     for(let i=0;i<gg.count;i++){
       const gz = gooseMesh();
-      gz.position.set(cx+(Math.random()-0.5)*gg.spread, 0, cz+(Math.random()-0.5)*gg.spread);
-      gz.rotation.y = Math.random()*6;
-      gz.userData = {home:gz.position.clone(), flee:0, phase:Math.random()*6, stunned:0};
+      gz.position.set(cx+(grng()-0.5)*gg.spread, 0, cz+(grng()-0.5)*gg.spread);
+      gz.rotation.y = grng()*6;
+      gz.userData = {home:gz.position.clone(), flee:0, phase:grng()*6, stunned:0};
       scene.add(gz); geese.push(gz);
     }
   }

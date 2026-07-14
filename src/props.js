@@ -1262,11 +1262,11 @@ B.sprawl = (ctx, def) => {
   const MAXH=2400, MAXT=900;
 
   const bodies=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),
-    new THREE.MeshLambertMaterial({flatShading:true}), MAXH);
+    new THREE.MeshLambertMaterial({}), MAXH);
   const roofs=new THREE.InstancedMesh(new THREE.ConeGeometry(0.74,1,4),
-    new THREE.MeshLambertMaterial({flatShading:true}), MAXH);
+    new THREE.MeshLambertMaterial({}), MAXH);
   const canopy=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),
-    new THREE.MeshLambertMaterial({flatShading:true}), MAXT);
+    new THREE.MeshLambertMaterial({}), MAXT);
 
   let hi=0, ti=0;
   for(let gx=def.xMin; gx<=def.xMax; gx+=def.gridX){
@@ -3341,7 +3341,31 @@ B.highlands = (ctx, def) => {
   g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
 };
 
-/* Larimer Square festoon lights strung across the road at t */
+/* the Colorado flag, drawn once (blue-white-blue, red C, gold center) */
+let _coFlagTex=null;
+function coloradoFlagTex(){
+  if(_coFlagTex) return _coFlagTex;
+  /* portrait to match the hanging 1.15x1.7 plane, high-res + mipmapped */
+  const W=256, H=384;
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const g=c.getContext('2d');
+  g.fillStyle='#33487a'; g.fillRect(0,0,W,H);
+  g.fillStyle='#f5f0e6'; g.fillRect(0,H/3,W,H/3);
+  const cx=W*0.42, cy=H/2, R=H*0.155;
+  g.strokeStyle='#c73232'; g.lineWidth=R*0.85;
+  g.beginPath(); g.arc(cx,cy,R,0.55,5.73); g.stroke();     // the C opens right
+  g.fillStyle='#f0b429';
+  g.beginPath(); g.arc(cx,cy,R*0.52,0,Math.PI*2); g.fill();
+  _coFlagTex=new THREE.CanvasTexture(c);
+  _coFlagTex.magFilter=THREE.LinearFilter;
+  _coFlagTex.minFilter=THREE.LinearMipmapLinearFilter;
+  _coFlagTex.anisotropy=8;
+  return _coFlagTex;
+}
+
+/* Larimer Square canopy: festoon cables across the road; flags:true hangs
+   the Colorado-flag rows (THE Larimer image), globes:true adds the twin
+   glass globe lamps to each pole */
 B.stringLights = (ctx, def) => {
   for(const t of def.at){
     const p=ctx.trackPoint(t), tan=ctx.trackTangent(t);
@@ -3351,6 +3375,18 @@ B.stringLights = (ctx, def) => {
     [-1,1].forEach(s=>{
       const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.12,5.6,5), lambert(0x3a3a3a));
       pole.position.set(p.x+n.x*half*s, 2.8, p.z+n.z*half*s); g.add(pole);
+      if(def.globes){
+        [-0.45,0.45].forEach(o=>{
+          const arm=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.08,0.08), lambert(0x3a3a3a));
+          arm.position.set(p.x+n.x*half*s, 4.9, p.z+n.z*half*s);
+          arm.rotation.y=Math.atan2(tan.x,tan.z); g.add(arm);
+          const globe=new THREE.Mesh(new THREE.SphereGeometry(0.24,7,6),
+            lambert(0xfff2d0,{emissive:0x998844}));
+          globe.position.set(p.x+n.x*half*s+Math.sin(arm.rotation.y)*o,
+            4.9, p.z+n.z*half*s+Math.cos(arm.rotation.y)*o);
+          g.add(globe);
+        });
+      }
     });
     const N=11;
     for(let i=0;i<=N;i++){
@@ -3360,8 +3396,46 @@ B.stringLights = (ctx, def) => {
       bulb.position.set(p.x+n.x*half*(u*2-1), 5.5-sway*1.1, p.z+n.z*half*(u*2-1));
       g.add(bulb);
     }
+    if(def.flags){
+      const fm=new THREE.MeshLambertMaterial({map:coloradoFlagTex(), side:THREE.DoubleSide});
+      for(let i=1;i<=4;i++){
+        const u=i/5, sway=1-(2*u-1)**2;
+        const flag=new THREE.Mesh(new THREE.PlaneGeometry(1.15,1.7), fm);
+        flag.position.set(p.x+n.x*half*(u*2-1),
+          (5.5-sway*1.1)-1.05, p.z+n.z*half*(u*2-1));
+        /* face AGAINST travel so riders see the front (the back of a
+           DoubleSide plane mirrors the C) */
+        flag.rotation.y=Math.atan2(tan.x,tan.z)+Math.PI+(ctx.rng()-0.5)*0.2;
+        g.add(flag);
+      }
+    }
     ctx.scene.add(g);
   }
+};
+
+/* sidewalk patio: cafe umbrellas, little tables, planter barrels */
+B.patio = (ctx, def) => {
+  const g=new THREE.Group();
+  for(let i=0;i<(def.count||3);i++){
+    const ox=(i-(def.count-1)/2)*3.2;
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,2.3,4), lambert(0x8a8275));
+    pole.position.set(ox,1.15,0); g.add(pole);
+    const um=new THREE.Mesh(new THREE.ConeGeometry(1.5,0.75,6),
+      lambert([0xc75146,0xe8912d,0x3e6b5a][i%3]));
+    um.position.set(ox,2.45,0); g.add(um);
+    const table=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,0.08,8), lambert(0xd8d2c5));
+    table.position.set(ox,0.85,0); g.add(table);
+    if(ctx.rng()<0.7){
+      const sitter=makePerson(ctx.rng, [0xe84855,0x5db3c9,0xf25caf][i%3], 'sit');
+      sitter.scale.setScalar(0.85);
+      sitter.position.set(ox+0.8,0.35,0.3); sitter.rotation.y=-Math.PI/2; g.add(sitter);
+    }
+    const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.42,0.8,8), lambert(0x6e4b2a));
+    barrel.position.set(ox+1.6,0.4,-0.6); g.add(barrel);
+    const plant=new THREE.Mesh(new THREE.IcosahedronGeometry(0.45,0), lambert(0x5d8f4a));
+    plant.position.set(ox+1.6,0.95,-0.6); g.add(plant);
+  }
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
 };
 
 export const PROP_BUILDERS = B;

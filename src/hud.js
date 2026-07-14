@@ -2,7 +2,7 @@
    The only module (besides input) that touches the DOM. */
 import { ITEMS, PLACES } from './constants.js';
 import { progressOf } from './racers.js';
-import { medalFor } from './ghost.js';
+import { hasBoard, playerName, saveName, submitTime, rankOf, renderBoard } from './board.js';
 
 const $=id=>document.getElementById(id);
 
@@ -89,7 +89,10 @@ export function createHud(track, mpHooks){
         flash('#fff', 0.3);
       }
       else if(e.type==='finish'){
-        toast('FINISH! '+PLACES[e.place-1], 2500);
+        if(e.tt){
+          toast(e.newPB ? (race.pb ? 'YOU BEAT THE GHOST! 👻' : 'FINISHED!')
+                        : 'THE GHOST WINS 👻', 2500);
+        } else toast('FINISH! '+PLACES[e.place-1], 2500);
         flash('#fff', 0.5);
         setTimeout(()=>showResults(game, e), 1500);
       }
@@ -97,7 +100,7 @@ export function createHud(track, mpHooks){
 
     if(race.phase==='race'){
       checkCallouts(player.prog);
-      $('pos').textContent = PLACES[race.playerPlace-1] || '';
+      $('pos').textContent = game.tt ? '' : (PLACES[race.playerPlace-1] || '');
       $('speedo').innerHTML=Math.round(Math.abs(player.speed)*2.05)+'<small> MPH</small>';
       $('energyFill').style.width=(player.energy*100)+'%';
       $('energyWrap').className = player.bonkT>0 ? 'hud bonk'
@@ -127,25 +130,52 @@ export function createHud(track, mpHooks){
     const rest = racers.filter(r=>!race.finishOrder.includes(r.id))
       .sort((a,b)=>progressOf(track,b)-progressOf(track,a));
     if(game.tt){
-      const m = race.medals, ms = e.total;
-      const medal = medalFor(ms, m);
-      $('resTitle').textContent = e.newPB ? 'NEW PERSONAL BEST!' : 'TIME TRIAL';
-      const ladder = [['👑 AUTHOR',m.author],['🥇 GOLD',m.gold],
-                      ['🥈 SILVER',m.silver],['🥉 BRONZE',m.bronze]]
-        .map(([label,t])=>`<div style="opacity:${ms<=t?1:.45}">${label} · ${fmt(t)}</div>`)
-        .join('');
+      const ms = e.total;
+      $('resTitle').textContent = e.newPB ? 'NEW PERSONAL BEST!'
+        : (race.pb ? 'THE GHOST WINS 👻' : 'TIME TRIAL');
       const splits=(race.splitTimes||[]).map((sms,i2)=>{
         const pbS=race.pb&&race.pb.splits&&race.pb.splits[i2];
         return `<div>S${i2+1} · ${fmt(sms)}${pbS!=null
           ? ' ('+(sms<=pbS?'−':'+')+fmtS(Math.abs(sms-pbS))+')' : ''}</div>`;
       }).join('');
       $('resList').innerHTML =
-        `<div class="you" style="font-size:1.3em">⏱ ${fmt(ms)}${medal?' · '+medal:''}</div>`
+        `<div class="you" style="font-size:1.3em">⏱ ${fmt(ms)}</div>`
         + splits
         + (race.pb && !e.newPB ? `<div>PB · ${fmt(race.pb.ms)}</div>` : '')
-        + '<div>&nbsp;</div>' + ladder;
+        + (hasBoard ? '<div id="resSubmit"></div><div id="resBoard"></div>'
+           : '<div>&nbsp;</div>');
       $('againBtn').textContent='RETRY';
       $('results').style.display='flex';
+      if(hasBoard){
+        const trackId = track.data.id;
+        const showBoard = ()=> renderBoard($('resBoard'), trackId, fmt, playerName());
+        /* arcade rules: every finish, type your name, post THIS run.
+           The board keeps each name's best, so slow runs can't hurt you. */
+        const runMs = Math.round(ms);
+        const prefill = (playerName()||'').replace(/[^A-Za-z0-9 _.\-]/g,'');
+        $('resSubmit').innerHTML =
+          `<input id="nameIn" maxlength="12" placeholder="YOUR NAME" value="${prefill}">
+           <button id="nameGo">POST SCORE</button>`;
+        $('nameGo').addEventListener('click', async ()=>{
+          const n=$('nameIn').value.trim().slice(0,12).replace(/[^A-Za-z0-9 _.\-]/g,'');
+          if(!n) return;
+          saveName(n);                       // remembered only as next prefill
+          $('resSubmit').textContent='posting…';
+          const okPost = await submitTime({ track:trackId, name:n,
+            char:(game.racers[0]&&game.racers[0].id)||'you',
+            ms:runMs, ghost:e.frames||null });
+          if(!okPost){
+            $('resSubmit').innerHTML='<span style="opacity:.7">couldn\'t reach the board — try again next run</span>';
+            return;
+          }
+          const [dR, aR] = await Promise.all([
+            rankOf(trackId, runMs, true), rankOf(trackId, runMs, false)]);
+          $('resSubmit').innerHTML =
+            `<span class="you">POSTED ${fmt(runMs)} · ${dR?('#'+dR+' TODAY'):''}${dR&&aR?' · ':''}${aR?('#'+aR+' ALL-TIME'):''}</span>`;
+          showBoard();
+        });
+        showBoard();
+      }
       return;
     }
     const rows = [...done, ...rest].map((r,i)=>{

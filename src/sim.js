@@ -83,9 +83,10 @@ export function step(game, inputs, dt, now){
     }
   }
 
-  /* resident geese + their poop-slick gauntlet */
+  /* resident geese + their poop-slick gauntlet (poop timing is random,
+     so ranked time trials skip it — geese themselves are seeded) */
   updateGeese(game, dt, now);
-  updateGoosePoop(game, dt, now);
+  if(!game.tt) updateGoosePoop(game, dt, now);
 
   /* AI racers */
   for(const r of racers) if(r.driver==='ai') aiDriver(r, game, dt);

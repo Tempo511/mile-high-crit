@@ -17,7 +17,7 @@ import { createHud } from './hud.js';
 import { createAudio } from './audio.js';
 import { createCharacterSelect } from './select.js';
 import { createSession, snapshot, applyState, updateRemote, gridSlot, SEND_HZ } from './mp.js';
-import { loadPB, savePB, createRecorder, createPlayback, medalTimes } from './ghost.js';
+import { loadPB, savePB, createRecorder, createPlayback } from './ghost.js';
 import { hasInternet } from './net.js';
 import { remoteUseItem } from './items.js';
 import { step, progressOf } from './sim.js';
@@ -112,7 +112,6 @@ function beginRace(chosen){
   };
   if(ttMode){
     game.tt = true;
-    game.race.medals = medalTimes(track);
     game.race.pb = ttPB;
     /* no items in TT — the boxes go dark */
     for(const b of game.world.boxes){ b.cd=Infinity; b.m.visible=b.shadow.visible=false; }
@@ -167,7 +166,11 @@ function beginRace(chosen){
     if(earlyHold>0.25){
       player.bonkT=1.4; hud.toast('JUMPED THE GUN!',1000); audio.play('bonk');
     } else if(input.get().sprint){
-      player.boostT=1.3; hud.toast('PERFECT START!',1000); audio.play('boost');
+      /* a real rocket start: instant speed, not just a raised cap the
+         standing start could never reach before it expired */
+      player.boostT=1.2;
+      player.speed=Math.max(player.speed,12);
+      hud.toast('PERFECT START!',1000); audio.play('boost');
     } else {
       hud.toast('GO!',900);
     }
@@ -264,6 +267,19 @@ document.getElementById('startBtn').addEventListener('click', ()=>{
 });
 if(hasInternet)
   document.getElementById('btn2p').textContent = '👥 RACE A FRIEND — share a link (beta)';
+import('./board.js').then(({hasBoard, renderBoard, playerName})=>{
+  const btn=document.getElementById('boardBtn');
+  if(!hasBoard){ btn.style.display='none'; return; }
+  btn.addEventListener('click', ()=>{
+    document.getElementById('boardTitle').textContent = trackData.name+' — LEADERBOARD';
+    document.getElementById('boardOverlay').style.display='flex';
+    import('./hud.js').then(({fmt})=>
+      renderBoard(document.getElementById('boardBody'), trackData.id, fmt, playerName()));
+  });
+  document.getElementById('boardClose').addEventListener('click', ()=>{
+    document.getElementById('boardOverlay').style.display='none';
+  });
+});
 document.getElementById('ttBtn').addEventListener('click', ()=>{
   audio.unlock();
   ttMode = true;
@@ -369,6 +385,7 @@ function frame(now){
       /* a new PB saves the moment you cross the line */
       for(const e of game.events) if(e.type==='finish'){
         e.tt = true;
+        e.frames = ttRec.frames;            // this run's ghost, for the board
         if(!ttPB || e.total < ttPB.ms){
           e.newPB = true;
           savePB(trackData.id, { ms:e.total,

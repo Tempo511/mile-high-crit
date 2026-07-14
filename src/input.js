@@ -37,6 +37,7 @@ export function createInput(){
   /* normalize to lowercase so Caps Lock / Shift can't break WASD or
      leave a key stuck between mismatched down/up events */
   addEventListener('keydown', e=>{
+    if(e.target && e.target.tagName==='INPUT') return;   // typing a name, not driving
     const k=e.key.length===1 ? e.key.toLowerCase() : e.key;
     keys[k]=true;
     if(k===' '||k==='ArrowUp'||k==='w'){ keySprint=true; e.preventDefault(); }
@@ -44,6 +45,7 @@ export function createInput(){
     if(k==='e'||k==='Enter') useItemPressed=true;
   });
   addEventListener('keyup', e=>{
+    if(e.target && e.target.tagName==='INPUT') return;
     const k=e.key.length===1 ? e.key.toLowerCase() : e.key;
     keys[k]=false;
     if(k===' '||k==='ArrowUp'||k==='w') keySprint=false;
