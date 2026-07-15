@@ -53,6 +53,10 @@ let pendingAgain=null;                                 // deferred host rematch
 
 /* ---------- start a race with the chosen character ---------- */
 function beginRace(chosen){
+  /* play event: which track, which mode (anonymous — just a counter) */
+  if(window.goatcounter && window.goatcounter.count)
+    window.goatcounter.count({ path:(mp?'mp-':ttMode?'tt-':'race-')+trackData.id,
+                               event:true });
   const startN = { x: startTan.z, z: -startTan.x };    // road normal at the line
   const player = createRacer({ ...chosen, driver:'player' });
   player.x=startP.x; player.z=startP.z;
