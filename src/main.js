@@ -18,7 +18,6 @@ import { createAudio } from './audio.js';
 import { createCharacterSelect } from './select.js';
 import { createSession, snapshot, applyState, updateRemote, gridSlot, SEND_HZ } from './mp.js';
 import { loadPB, savePB, createRecorder, createPlayback } from './ghost.js';
-import { hasInternet } from './net.js';
 import { remoteUseItem } from './items.js';
 import { step, progressOf } from './sim.js';
 
@@ -35,7 +34,10 @@ document.querySelectorAll('#trackPick button').forEach(b=>{
     location.href = location.pathname + '?' + q + location.hash;
   });
 });
-document.querySelector('#title .badge').textContent = trackData.name;
+/* phones: recentre the skyline art's crop window on the buildings group
+   (capitol through cash register) — full-width slice zooms past them */
+if(matchMedia('(max-width:700px)').matches)
+  document.getElementById('skyline').setAttribute('viewBox','235 0 640 260');
 const view = createRenderer(trackData);
 const track = new Track(view.scene, trackData);
 const world = buildWorld(view.scene, track);          // park backdrop for the menus
@@ -265,8 +267,6 @@ document.getElementById('startBtn').addEventListener('click', ()=>{
   document.getElementById('title').style.display='none';
   select.open();
 });
-if(hasInternet)
-  document.getElementById('btn2p').textContent = '👥 RACE A FRIEND — share a link (beta)';
 import('./board.js').then(({hasBoard, renderBoard, playerName})=>{
   const btn=document.getElementById('boardBtn');
   if(!hasBoard){ btn.style.display='none'; return; }
