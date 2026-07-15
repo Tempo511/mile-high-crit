@@ -31,6 +31,33 @@ export function createHud(track, mpHooks){
   const mctx = mini.getContext('2d');
   const seen = new Set();
 
+  /* first-run coaching: each tip fires once EVER (localStorage), triggered
+     by play context so new riders learn the invisible mechanics mid-ride */
+  const isTouch = 'ontouchstart' in window;
+  const races = parseInt(localStorage.getItem('dash-races')||'0',10)+1;
+  localStorage.setItem('dash-races', races);
+  const tipSeen = k => localStorage.getItem('dash-tip-'+k);
+  const tipMark = k => localStorage.setItem('dash-tip-'+k,'1');
+  const tip = (k,msg)=>{ tipMark(k); toast(msg, 2800); };
+  let raceT0=null;
+
+  function coach(player, race, now){
+    /* launch timing: teach on race two — race one they just play */
+    if(race.phase==='count' && races>1 && !tipSeen('launch'))
+      tip('launch','TIP: SPRINT RIGHT ON GO! FOR A LAUNCH BOOST');
+    if(race.phase!=='race') return;
+    if(raceT0===null) raceT0=now;
+    if(player.drifting && !tipSeen('drift')) tipMark('drift');  // self-taught
+    if(!tipSeen('drift') && now-raceT0>6000 && player.speed>13)
+      tip('drift', isTouch ? 'TIP: HOLD DRIFT IN CORNERS - RELEASE FOR A BOOST'
+                           : 'TIP: HOLD SHIFT IN CORNERS - RELEASE FOR A BOOST');
+    if(!tipSeen('item') && player.item)
+      tip('item', isTouch ? 'TAP THE GIFT BUTTON TO USE YOUR ITEM'
+                          : 'PRESS E TO USE YOUR ITEM');
+    if(!tipSeen('legs') && player.energy<=0.02)
+      tip('legs','OUT OF LEGS - EASE OFF SPRINT AND THEY RECHARGE');
+  }
+
   function checkCallouts(prog){
     for(const c of track.data.callouts || []){
       if(!seen.has(c.label) && Math.abs(prog-c.t)<0.012){
@@ -72,6 +99,7 @@ export function createHud(track, mpHooks){
   function update(game, now){
     const { race, events } = game;
     const player = game.racers.find(r=>r.driver==='player');
+    if(player) coach(player, race, now);
 
     for(const e of events){
       if(e.type==='toast'){
