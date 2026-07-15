@@ -67,9 +67,10 @@ export function buildWorld(scene, track){
       if(kind==='surrey'){ m=makeSurrey(rng); speed=2.2+rng()*1.0; }
       else {
         m=makePerson(rng, shirts[i%shirts.length], 'stand');
-        if(kind==='walker'){ dog=makeDog(rng); scene.add(dog); speed=1.5+rng()*0.6; }
+        if(kind==='walker'){ dog=makeDog(rng); speed=1.5+rng()*0.6; }
         else if(kind==='blader'){ speed=5.0+rng()*1.6; }
-        else speed=3.2+rng()*1.8;
+        else { speed=3.2+rng()*1.8; if(i%2===0) dog=makeDog(rng); }  // runners bring dogs too
+        if(dog) scene.add(dog);
       }
       scene.add(m);
       const t0 = i/track.data.joggers;
@@ -159,6 +160,8 @@ export function buildWorld(scene, track){
   return {
     geese, feathers, sparkles, joggers, lakeGeese, peds, poops, poopT:2,
     brtBuses,
+    vballs: track.dynamic.vballs, slackers: track.dynamic.slackers,
+    tballs: track.dynamic.tballs,
     boats: track.dynamic.boats,
     clouds: track.dynamic.clouds,
     pads: track.dynamic.pads,
@@ -391,6 +394,24 @@ export function updateAmbient(game, dt, now){
   for(const gz of game.world.lakeGeese){
     gz.position.y = -0.25+Math.sin(now/1100+gz.userData.phase)*0.06;
     gz.rotation.y += Math.sin(now/1300+gz.userData.phase)*0.003;
+  }
+  for(const vb of game.world.vballs||[]){
+    /* the rally: back and forth over the net, parabola peaking mid-court */
+    const u=Math.sin(now/650+vb.phase);
+    vb.m.position.x = u*2.1;
+    vb.m.position.y = 1.3 + (1-u*u)*1.5;
+  }
+  for(const tb of game.world.tballs||[]){
+    /* tennis rally: longer, flatter arcs than volleyball, slight angle drift */
+    const u=Math.sin(now/700+tb.phase);
+    tb.m.position.x = u*5.2;
+    tb.m.position.y = 0.9 + (1-u*u)*1.7;
+    tb.m.position.z = Math.sin(now/1700+tb.phase)*1.5;
+  }
+  for(const sl of game.world.slackers||[]){
+    /* balance wobble + slowly pacing the line */
+    sl.m.rotation.z = Math.sin(now/380+sl.phase)*0.14;
+    sl.m.position.x = Math.sin(now/2300+sl.phase)*2.4;
   }
   for(const b of game.world.brtBuses||[]){
     b.dist += b.dir*b.speed*dt;

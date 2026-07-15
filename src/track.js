@@ -56,11 +56,13 @@ export class Track {
 
     this.solids = [];      // {x,z,r} — bump collisions
     this.exclusions = [];  // {x,z,r} — keep-out zones for tree placement
+    this.streets = [];     // sampled decorative-street ribbons (trees dodge)
     this.waters = data.waters || [];
     this.pads = [];        // boost pads {x,z,r}
     this.boxes = [];       // item boxes {m,x,z,cd}
     this.dynamic = { boats: [], clouds: [], paths: [], pads: [], cars: [], fans: [],
-                     strollers: [] };   // street traffic + sidewalk walkers
+                     strollers: [],     // street traffic + sidewalk walkers
+                     vballs: [], slackers: [], tballs: [] };   // park-life animations
 
     const rng = makeRng(data.seed || 1);
     const ctx = {
@@ -71,6 +73,23 @@ export class Track {
         this.samples.every(s => (s.x-p.x)**2 + (s.z-p.z)**2 > (this.roadHalf+margin)**2),
       clearOfExclusions: (p,margin)=>
         this.exclusions.every(e => (e.x-p.x)**2 + (e.z-p.z)**2 > (e.r+margin)**2),
+      street: (x,z,r)=>this.streets.push({x,z,r}),
+      clearOfStreets: (p,margin)=>
+        this.streets.every(e => (e.x-p.x)**2 + (e.z-p.z)**2 > (e.r+margin)**2),
+      pushOffStreets: (p,margin)=>{     // returns {x,z} nudged clear of asphalt
+        let x=p.x, z=p.z;
+        for(let pass=0; pass<4; pass++){
+          let moved=false;
+          for(const e of this.streets){
+            const dx=x-e.x, dz=z-e.z, need=e.r+margin, d2=dx*dx+dz*dz;
+            if(d2 >= need*need) continue;
+            const d=Math.sqrt(d2)||0.001;
+            x=e.x+dx/d*need; z=e.z+dz/d*need; moved=true;
+          }
+          if(!moved) break;
+        }
+        return {x,z};
+      },
       trackPoint: t=>this.curve.getPointAt(t),
       trackTangent: t=>this.curve.getTangentAt(t),
       roadHalf: this.roadHalf,

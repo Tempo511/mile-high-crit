@@ -41,7 +41,7 @@ export default {
     { t:0.26, label:'SMITH LAKE ESSES' },
     { t:0.36, label:'REC CENTER HAIRPIN' },
     { t:0.42, label:'THE BOATHOUSE' },
-    { t:0.48, label:'LILY POND' },
+    { t:0.30, label:'LILY POND' },
     { t:0.56, label:'MOUNT VERNON GARDENS' },
     { t:0.68, label:'GRASMERE WRAP' },
     { t:0.88, label:'THE GREAT MEADOW' },
@@ -56,21 +56,37 @@ export default {
   waters: [
     [-8, -102, 38, 26],         // Smith Lake
     [-8, 108, 19, 31],          // Grasmere Lake — large tall teardrop, west-of-center
-    [36,  -30,  7,  7]          // lily pond
+    [66, -162,  9, 12]          // Lily Pond (NE corner)
   ],
 
   props: [
     { type:'water',    x:-8,  z:-102, r:44, seg:16, scale:[0.86,0.60], exclude:40 },  // Smith Lake
     /* Grasmere — big tall teardrop tilted NW–SE, west-of-center; the
        southern racing loop wraps around its west and south shores */
-    { type:'water',    x:-8,  z:108,  r:38, seg:18, scale:[0.68,0.95], rot:0.22, exclude:40 },
+    /* Grasmere Lake — real shoreline traced from OpenStreetMap */
+    { type:'water',    x:-8,  z:108, exclude:40, points:[
+      [6.8,-15.5],[10.8,-18.1],[16.5,-24.0],[19.5,-27.0],[20.0,-33.8],
+      [18.9,-35.5],[10.6,-35.2],[2.2,-35.2],[-5.0,-31.7],[-10.3,-26.8],
+      [-18.3,-24.5],[-23.4,-18.3],[-23.5,-9.9],[-25.8,-1.9],[-25.8,6.5],
+      [-23.9,14.7],[-23.8,23.0],[-25.5,31.2],[-21.9,36.9],[-13.9,34.8],
+      [-7.6,29.4],[-1.7,23.3],[3.6,16.1],[4.2,7.7],[5.8,-0.5],[6.2,-8.7]
+    ]},
     /* keep trees out of the tall lake's tips (the circular exclude above
        doesn't reach the ends of the ellipse) */
     { type:'keepClear', x:-16, z:76,  r:16 },
     { type:'keepClear', x:0,   z:140, r:16 },
-    { type:'island',   x:-8,  z:128,  r:7,  trees:4 },                                // the iconic island
-    { type:'water',    x:36,  z:-30,  r:7,  seg:10 },                                 // lily pond
-    { type:'lilypads', x:36,  z:-30,  count:6, spread:9, exclude:10 },
+    { type:'island',   x:-12, z:123,  r:6,  trees:4 },                                // the iconic island
+    /* Lily Pond — the tiny pond tucked in the park's NE corner
+       (real outline traced from OSM, near Franklin & Virginia) */
+    { type:'water',    x:66, z:-162, exclude:14, points:[
+      [-10.1,8.9],[-6.6,13.0],[-1.4,13.0],[3.6,11.2],[7.8,7.6],[9.0,2.5],
+      [7.4,-2.8],[9.1,-7.9],[8.8,-13.0],[4.0,-12.6],[1.8,-7.6],[1.2,-2.0],
+      [-2.9,1.1],[-7.0,4.6]
+    ]},
+    { type:'lilypads', x:66, z:-162, count:8, spread:7, exclude:14 },
+    /* the pond's regulars — lines in the water */
+    { type:'fisherman', x:65.5, z:-160,   ry:Math.PI/2 },
+    { type:'fisherman', x:71,   z:-147.2, ry:Math.PI },
     /* the 1913 Benedict boathouse pavilion — SOUTH shore of Smith Lake,
        facing north across the water toward the bathhouse */
     { type:'boathouse', x:-8,  z:-73, ry: Math.PI },
@@ -86,11 +102,11 @@ export default {
       [-8,0,-132],[26,0,-122],[35,0,-100],[26,0,-78],[-8,0,-70],
       [-40,0,-77],[-47,0,-100],[-40,0,-123]
     ]},
-    /* Grasmere Lp — ring computed on the lake's actual tilted ellipse
-       (+~5u shore margin) so it hugs the water without dipping in */
+    /* Grasmere Loop — offset ~5.5u out from the real shoreline polygon */
     { type:'path', width:2.5, points:[
-      [23,0,101],[21,0,133],[1,0,150],[-23,0,143],
-      [-39,0,115],[-37,0,83],[-17,0,66],[7,0,73]
+      [3.7,0,121.1],[16.8,0,134.4],[9.2,0,148.9],[-9.7,0,147.3],
+      [-26.1,0,138.1],[-36.7,0,123.8],[-39.3,0,104.9],[-37.3,0,85.9],
+      [-33.5,0,68.6],[-16.7,0,70.5],[-3.4,0,84.2],[2.1,0,102.0]
     ]},
 
     /* City Ditch: inflow to Grasmere's south shore, then around to Smith
@@ -114,7 +130,7 @@ export default {
     { type:'parkSign', t:0.24, side:1,  text:'SMITH LAKE' },
     { type:'parkSign', t:0.34, side:1,  text:'REC CENTER' },
     { type:'parkSign', t:0.42, side:-1, text:'BOATHOUSE' },
-    { type:'parkSign', t:0.48, side:1,  text:'LILY POND' },
+    { type:'parkSign', t:0.295, side:1,  text:'LILY POND' },
     { type:'parkSign', t:0.55, side:1,  text:'MT VERNON GARDEN', w:6.6 },
     { type:'parkSign', t:0.66, side:1,  text:'GRASMERE LAKE', w:5.6 },
     { type:'parkSign', t:0.50, side:-1, text:'CITY DITCH' },
@@ -153,9 +169,9 @@ export default {
     { type:'tennis',    x:-72, z:104 },
     { type:'tennis',    x:-72, z:116 },
     { type:'tennis',    x:-72, z:128 },
-    { type:'tennis',    x:8,  z:176 },
-    { type:'tennis',    x:26, z:176 },
-    { type:'tennis',    x:44, z:176 },
+    { type:'tennis',    x:10, z:176, ry:Math.PI/2 },
+    { type:'tennis',    x:22, z:176, ry:Math.PI/2 },
+    { type:'tennis',    x:34, z:176, ry:Math.PI/2 },
     /* rec center south-central below the boathouse, parking toward Franklin */
     { type:'recCenter', x:34, z:-44, ry:Math.PI/2, parking:true },
     /* playground west-central by the boathouse (near Downing) */
@@ -182,40 +198,74 @@ export default {
     /* the neighborhood: mansions along Downing (west) & Franklin (east),
        modest bungalows on Louisiana (south), high-rise apartments up on
        the Virginia Ave edge (north) — each set back behind its street */
-    { type:'mansionRow', xEdge:103, zSpan:165, step:22 },
-    { type:'houseRow',   z:202, xSpan:80, step:30, ry:Math.PI },
-    { type:'apartments', z:-208, xSpan:85, count:6 },
-
-    /* perimeter streets: Downing (W), Franklin (E), Virginia (N), Louisiana (S) */
-    { type:'street', width:6, points:[
-      [-91,0,-160],[-60,0,-194],[  0,0,-194],[ 60,0,-194],[ 91,0,-160],
-      [ 91,0, -60],[ 91,0,  60],[ 91,0, 160],[ 60,0, 194],[  0,0, 194],
-      [-60,0, 194],[-91,0, 160],[-91,0,  60],[-91,0, -60]
-    ]},
-    /* the streets a block behind */
-    { type:'street', width:5, points:[
-      [-112,0,-200],[-70,0,-236],[  0,0,-236],[ 70,0,-236],[ 112,0,-200],
-      [ 112,0, -60],[ 112,0,  60],[ 112,0, 196],[ 70,0, 214],[  0,0, 214],
-      [ -70,0, 214],[-112,0, 196],[-112,0,  60],[-112,0, -60]
-    ]},
-    /* S Marion St Parkway — the curving parkway on the west edge */
-    { type:'street', width:5, closed:false, points:[
-      [-116,0,-150],[-128,0,-80],[-122,0,0],[-128,0,80],[-116,0,150]
+    /* perimeter streets — true grid: straight N-S / E-W, right-angle corners */
+    { type:'street', width:6, closed:false, points:[[-91,0,-372],[-91,0, 214]] },
+    { type:'street', width:6, closed:false, points:[[ 91,0,-236],[ 91,0, 214]] },
+    { type:'street', width:6, closed:false, points:[[-290,0,-194],[380,0,-194]] },
+    { type:'street', width:6, closed:false, points:[[-290,0, 194],[380,0, 194]] },
+    /* the streets a block behind — straight grid, no ring */
+    { type:'street', width:5, closed:false, points:[[ 112,0,-236],[ 112,0, 214]] },
+    { type:'street', width:5, closed:false, points:[[-112,0,-236],[-112,0, 214]] },
+    { type:'street', width:5, closed:false, points:[[-290,0,-236],[ 380,0,-236]] },
+    { type:'street', width:5, closed:false, points:[[-290,0, 214],[ 380,0, 214]] },
+    /* quiet neighborhood street a block west of Downing */
+    { type:'street', width:5, closed:false, points:[[-124,0,-194],[-124,0,194]] },
+    /* NW corner, like the real map: Downing continues north past the park,
+       Virginia crosses east-west, and Marion St Parkway angles NW off
+       Virginia — the Park Lane Towers sit in the Downing/Marion wedge */
+    { type:'street', width:5, y:0.0125, closed:false, points:[
+      [-68,0,-196],[-68,0,-250],[-68,0,-300],[-68,0,-340],[-91,0,-368]
     ]},
     /* cross streets between the rows of homes */
-    { type:'street', width:5, closed:false, points:[[ 91,0,-120],[ 113,0,-120]] },
-    { type:'street', width:5, closed:false, points:[[ 91,0, -40],[ 113,0, -40]] },
-    { type:'street', width:5, closed:false, points:[[ 91,0,  40],[ 113,0,  40]] },
-    { type:'street', width:5, closed:false, points:[[ 91,0, 120],[ 113,0, 120]] },
-    { type:'street', width:5, closed:false, points:[[-91,0,-120],[-113,0,-120]] },
-    { type:'street', width:5, closed:false, points:[[-91,0, -40],[-113,0, -40]] },
-    { type:'street', width:5, closed:false, points:[[-91,0,  40],[-113,0,  40]] },
-    { type:'street', width:5, closed:false, points:[[-91,0, 120],[-113,0, 120]] },
+    { type:'street', width:5, closed:false, points:[[ 91,0,-120],[ 127,0,-120]] },
+    { type:'street', width:5, closed:false, points:[[ 91,0, -40],[ 127,0, -40]] },
+    { type:'street', width:5, closed:false, points:[[ 91,0,  40],[ 127,0,  40]] },
+    { type:'street', width:5, closed:false, points:[[ 91,0, 120],[ 127,0, 120]] },
+    { type:'street', width:5, closed:false, points:[[-91,0,-120],[-127,0,-120]] },
+    { type:'street', width:5, closed:false, points:[[-91,0, -40],[-127,0, -40]] },
+    { type:'street', width:5, closed:false, points:[[-91,0,  40],[-127,0,  40]] },
+    { type:'street', width:5, closed:false, points:[[-91,0, 120],[-127,0, 120]] },
     { type:'street', width:5, closed:false, points:[[-28,0,-193],[-28,0,-238]] },
     { type:'street', width:5, closed:false, points:[[ 28,0,-193],[ 28,0,-238]] },
     { type:'street', width:5, closed:false, points:[[-45,0, 193],[-45,0, 216]] },
     { type:'street', width:5, closed:false, points:[[  0,0, 193],[  0,0, 216]] },
     { type:'street', width:5, closed:false, points:[[ 45,0, 193],[ 45,0, 216]] },
+
+    { type:'mansionRow', xEdge:103, zSpan:165, step:22 },
+    { type:'houseRow',   z:202, xSpan:80, step:30, ry:Math.PI },
+    /* Park Lane Towers: three matching 20-story condos stacked N-S along
+       Marion Pkwy at the NW corner (the real trio at 420-480 S Marion) */
+    { type:'parkLane', x:-45, z:-263, step:34, stagger:0 },
+
+    /* painted street names on the asphalt */
+    { type:'streetName', text:'S DOWNING ST',    x:-91,  z:-100, ry:Math.PI/2 },
+    { type:'streetName', text:'S DOWNING ST',    x:-91,  z:  90, ry:Math.PI/2 },
+    { type:'streetName', text:'S DOWNING ST',    x:-91,  z:-260, ry:Math.PI/2 },
+    { type:'streetName', text:'S FRANKLIN ST',   x: 91,  z:-100, ry:Math.PI/2 },
+    { type:'streetName', text:'S FRANKLIN ST',   x: 91,  z:  90, ry:Math.PI/2 },
+    { type:'streetName', text:'E VIRGINIA AVE',  x:   0, z:-194 },
+    { type:'streetName', text:'E VIRGINIA AVE',  x:-115, z:-194 },
+    { type:'streetName', text:'E VIRGINIA AVE',  x: 100, z:-194 },
+    { type:'streetName', text:'E LOUISIANA AVE', x:  10, z: 194 },
+    { type:'streetName', text:'S MARION ST PKWY',x: -68, z:-225, ry:Math.PI/2, len:20 },
+    { type:'streetName', text:'S MARION ST PKWY',x: -68, z:-310, ry:Math.PI/2, len:20 },
+    { type:'streetName', text:'S OGDEN ST',      x:-112, z: -60, ry:Math.PI/2 },
+    { type:'streetName', text:'S OGDEN ST',      x:-112, z: 100, ry:Math.PI/2 },
+    { type:'streetName', text:'S EMERSON ST',    x:-124, z:   0, ry:Math.PI/2 },
+    { type:'streetName', text:'S HIGH ST',       x: 112, z: -60, ry:Math.PI/2, len:12 },
+    { type:'streetName', text:'S HIGH ST',       x: 112, z: 100, ry:Math.PI/2, len:12 },
+    { type:'streetName', text:'E CEDAR AVE',     x: -40, z:-236 },
+    { type:'streetName', text:'E CEDAR AVE',     x: 150, z:-236 },
+    { type:'streetName', text:'E ARKANSAS AVE',  x:   0, z: 214 },
+    { type:'streetName', text:'E ARKANSAS AVE',  x: 150, z: 214 },
+    { type:'streetName', text:'E EXPOSITION AVE',x: 109, z:-120 },
+    { type:'streetName', text:'E OHIO AVE',      x: 109, z: -40, len:12 },
+    { type:'streetName', text:'E KENTUCKY AVE',  x: 109, z:  40 },
+    { type:'streetName', text:'E ARIZONA AVE',   x: 109, z: 120 },
+    { type:'streetName', text:'E EXPOSITION AVE',x:-109, z:-120 },
+    { type:'streetName', text:'E OHIO AVE',      x:-109, z: -40, len:12 },
+    { type:'streetName', text:'E KENTUCKY AVE',  x:-109, z:  40 },
+    { type:'streetName', text:'E ARIZONA AVE',   x:-109, z: 120 },
 
     /* the Great Meadow — keep the southern middle wide open */
     { type:'keepClear', x:8,  z:55, r:42 },
@@ -236,7 +286,8 @@ export default {
     { type:'bootcamp', x:18, z:14, ry:0.2 },
     /* the famous 2.6-mile gravel jogging loop */
     { type:'path', width:3, jog:true, points:[
-      [-82,0,-140],[-50,0,-180],[  0,0,-188],[ 50,0,-180],[ 82,0,-140],
+      [-82,0,-140],[-50,0,-180],[  0,0,-188],[ 50,0,-180],
+      [ 64,0,-181],[ 79,0,-166],[ 82,0,-140],
       [ 86,0, -60],[ 86,0,  60],[ 82,0, 140],[ 50,0, 182],[  0,0, 190],
       [-50,0, 182],[-82,0, 140],[-86,0,  60],[-86,0, -60]
     ]},
@@ -248,7 +299,7 @@ export default {
       clearX:126, clearZ:250,
       streetsX:[-290,-240,-195,-140, 140,195,240,290,340],
       streetsZ:[-360,-315,-280, 280,315,360,395],
-      crossZ:[-200,-120,-40,40,120,200],
+      crossZ:[-120,-40,40,120],
       gridX:17, gridZ:19, carsPerStreet:2 },
     { type:'mountains', x:-430, z:-300 },
     { type:'trees',     count:130, parkX:100, parkZ:300, outerX:220, outerZ:430,
@@ -256,7 +307,7 @@ export default {
   ],
 
   /* gravel-loop traffic: joggers, dog walkers, rollerbladers, surreys */
-  joggers: 10,
+  joggers: 20,
 
   /* Denver pedestrians in authored crossing zones (see PED_TYPES in world.js):
      playground/volleyball, the boathouse, and the Great Meadow crossing */
