@@ -35,5 +35,11 @@ function mpRelay(){
 export default defineConfig({
   base: '',            // relative asset paths: works at both the GitHub Pages
                        // subpath and a custom domain root
-  plugins: [mpRelay()]
+  plugins: [mpRelay()],
+  build: {
+    rollupOptions: {
+      /* flycam ships too — cinematic map viewer for capturing footage */
+      input: { main: 'index.html', flycam: 'flycam.html' }
+    }
+  }
 });

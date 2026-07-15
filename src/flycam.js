@@ -60,6 +60,59 @@ const keys={};
 window.addEventListener('keydown', e=>{ keys[e.code]=true; });
 window.addEventListener('keyup',   e=>{ keys[e.code]=false; });
 
+/* ---- touch: left half = fly stick, right half = look; ▲▼ = altitude ---- */
+const touch = { move:null, look:null, up:false, dn:false };
+if('ontouchstart' in window){
+  document.body.classList.add('touch');
+  document.getElementById('hud').innerHTML =
+    'FLYCAM · <span id="trackName2"></span><br>' +
+    '<b>left drag</b> fly · <b>right drag</b> look · <b>▲▼</b> altitude';
+  const tn=document.getElementById('trackName2');
+  if(tn) tn.textContent = trackData.name;
+}
+canvas.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    const slot = t.clientX < innerWidth/2 ? 'move' : 'look';
+    if(!touch[slot]) touch[slot]={id:t.identifier, sx:t.clientX, sy:t.clientY,
+                                  x:t.clientX, y:t.clientY};
+  }
+},{passive:false});
+canvas.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    for(const slot of ['move','look']){
+      const T=touch[slot];
+      if(T && T.id===t.identifier){
+        if(slot==='look'){
+          yaw   -= (t.clientX-T.x)*0.006;
+          pitch -= (t.clientY-T.y)*0.006;
+          pitch = Math.max(-1.5, Math.min(1.5, pitch));
+        }
+        T.x=t.clientX; T.y=t.clientY;
+      }
+    }
+  }
+},{passive:false});
+const endTouch = e=>{
+  for(const t of e.changedTouches)
+    for(const slot of ['move','look'])
+      if(touch[slot] && touch[slot].id===t.identifier) touch[slot]=null;
+};
+canvas.addEventListener('touchend', endTouch);
+canvas.addEventListener('touchcancel', endTouch);
+[['upBtn','up'],['dnBtn','dn']].forEach(([id,flag])=>{
+  const b=document.getElementById(id);
+  const on=e=>{ e.preventDefault(); touch[flag]=true; };
+  const off=e=>{ e.preventDefault(); touch[flag]=false; };
+  b.addEventListener('touchstart',on,{passive:false});
+  b.addEventListener('touchend',off); b.addEventListener('touchcancel',off);
+  b.addEventListener('mousedown',on); b.addEventListener('mouseup',off);
+});
+document.getElementById('uiToggle').addEventListener('click', ()=>{
+  document.body.classList.toggle('clean');
+});
+
 const $coord = document.getElementById('coord');
 const fwd = new THREE.Vector3(), right = new THREE.Vector3(), up = new THREE.Vector3(0,1,0);
 let prev = performance.now();
@@ -79,6 +132,16 @@ function frame(now){
   if(keys['KeyA']) camera.position.addScaledVector(right,-speed);
   if(keys['Space']) camera.position.y += speed;
   if(keys['KeyQ']||keys['ControlLeft']) camera.position.y -= speed;
+
+  /* touch stick: offset from touch origin = velocity (drone-style, follows look) */
+  if(touch.move){
+    const dx=Math.max(-1,Math.min(1,(touch.move.x-touch.move.sx)/70));
+    const dy=Math.max(-1,Math.min(1,(touch.move.y-touch.move.sy)/70));
+    camera.position.addScaledVector(fwd,  -dy*80*dt);
+    camera.position.addScaledVector(right, dx*80*dt);
+  }
+  if(touch.up) camera.position.y += 50*dt;
+  if(touch.dn) camera.position.y -= 50*dt;
 
   updateAmbient(gameStub, dt, now);   // cars, surreys, clouds, boost pads, boats, fans…
   renderer.render(scene, camera);
