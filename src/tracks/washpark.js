@@ -126,22 +126,22 @@ export default {
     ]},
     /* landmark placards — name what you're passing (recognition cues) */
     { type:'parkSign', t:0.04, side:1,  text:'PERENNIAL GARDEN', w:6.4 },
-    { type:'parkSign', t:0.17, side:-1, text:'DOS CHAPPELL', w:5.2 },
-    { type:'parkSign', t:0.24, side:1,  text:'SMITH LAKE' },
-    { type:'parkSign', t:0.34, side:1,  text:'REC CENTER' },
+    { type:'parkSign', t:0.225, side:-1, text:'DOS CHAPPELL BATHHOUSE', w:7.2 },
+    { type:'parkSign', t:0.25, side:-1,  text:'SMITH LAKE' },
+    { type:'parkSign', t:0.455, side:1,  text:'REC CENTER' },
     { type:'parkSign', t:0.42, side:-1, text:'BOATHOUSE' },
     { type:'parkSign', t:0.295, side:1,  text:'LILY POND' },
-    { type:'parkSign', t:0.55, side:1,  text:'MT VERNON GARDEN', w:6.6 },
-    { type:'parkSign', t:0.66, side:1,  text:'GRASMERE LAKE', w:5.6 },
-    { type:'parkSign', t:0.50, side:-1, text:'CITY DITCH' },
+    { type:'parkSign', t:0.60, side:-1,  text:'MT VERNON GARDEN', w:6.6 },
+    { type:'parkSign', t:0.66, side:-1,  text:'GRASMERE LAKE', w:5.6 },
+    { type:'parkSign', t:0.49, side:1, text:'CITY DITCH' },
     /* amber crossing signs ~0.025t BEFORE each ped zone (zones start at
        0.07 / 0.39 / 0.77) so the warning arrives before the hazard */
     { type:'parkSign', t:0.045, side:-1, text:'PED XING', w:4, bg:'#d9a520', fg:'#1a1423' },
     { type:'parkSign', t:0.365, side:1,  text:'PED XING', w:4, bg:'#d9a520', fg:'#1a1423' },
     { type:'parkSign', t:0.745, side:1,  text:'PED XING', w:4, bg:'#d9a520', fg:'#1a1423' },
     /* street-name blades at the park edges for orientation */
-    { type:'streetSign', x:-80, z:-30, text:'S DOWNING ST',   ry:Math.PI/2 },
-    { type:'streetSign', x: 64, z:  6, text:'S FRANKLIN ST',  ry:-Math.PI/2 },
+    { type:'streetSign', x:-95, z:-30, text:'S DOWNING ST',   ry:Math.PI/2 },
+    { type:'streetSign', x: 95, z:  6, text:'S FRANKLIN ST',  ry:-Math.PI/2 },
     { type:'streetSign', x: -6, z:-168, text:'E VIRGINIA AVE', ry:0 },
     { type:'streetSign', x: -6, z: 176, text:'E LOUISIANA AVE', ry:0 },
     /* east-edge cross streets (match the real N→S order off Franklin) */
