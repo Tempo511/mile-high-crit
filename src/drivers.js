@@ -108,6 +108,13 @@ export function playerDriver(r, inputs, game, dt){
   r.x = Math.max(-bounds.x,Math.min(bounds.x,r.x));
   r.z = Math.max(-bounds.z,Math.min(bounds.z,r.z));
 
+  /* stage cool-down: after the line, ease to a stop inside the chute
+     instead of coasting off the end of the world */
+  if(r.finished && track.data.format==='stage'){
+    const remain = track.length - (r.dist||0);
+    if(remain < 60) r.speed = Math.min(r.speed, Math.max(0, remain*0.5));
+  }
+
   r.hopY += r.hopV*dt; r.hopV -= 28*dt;
   if(r.hopY<0){ r.hopY=0; r.hopV=0; }
 

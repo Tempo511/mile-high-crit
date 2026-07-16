@@ -2891,6 +2891,31 @@ B.motelSign = (ctx, def) => {
   ctx.solid(def.x,def.z,0.6);
 };
 
+/* end-of-stage chute terminus: checkered barrier wall across the road,
+   flag poles, and a MILE HIGH CRIT header — an intentional full stop */
+B.endBarrier = (ctx, def) => {
+  const g=new THREE.Group();
+  const w=def.w||18, n=Math.round(w/1.2);
+  for(let i=0;i<n;i++){
+    const seg=new THREE.Mesh(new THREE.BoxGeometry(w/n-0.06,1.1,0.5),
+      lambert(i%2?0x1a1423:0xf5f0e6));
+    seg.position.set(-w/2+(i+0.5)*(w/n),0.55,0); g.add(seg);
+  }
+  const header=new THREE.Mesh(new THREE.PlaneGeometry(w*0.7,1.5),
+    new THREE.MeshBasicMaterial({map:bannerTex(def.text||'MILE HIGH CRIT','#4b2d5e','#ffd166'),
+      side:THREE.DoubleSide}));
+  header.position.y=3.4; g.add(header);
+  [-w/2,w/2].forEach(px=>{
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.12,4.2,6), lambert(0x2b2b33));
+    pole.position.set(px,2.1,0); g.add(pole);
+    const flag=new THREE.Mesh(new THREE.PlaneGeometry(1.3,0.8),
+      new THREE.MeshBasicMaterial({map:bannerTex('🏁','#f5f0e6','#1a1423'), side:THREE.DoubleSide}));
+    flag.position.set(px+0.7,3.9,0); g.add(flag);
+  });
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.solid(def.x,def.z,2);
+};
+
 B.colfaxWall = (ctx, def) => {
   /* Colfax palette: more faded stucco and dingy brick than boutique */
   const paints=[0xc9a06a,0x8a4a3a,0xa39a88,0x8f8878,0xb0402f,0x6a6a62,0x9b6b53,0x7a6a5a,
