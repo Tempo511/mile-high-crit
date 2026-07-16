@@ -84,6 +84,26 @@ export default {
 
     /* ---------- Union Station North: the apartment district that fills
        the Central Platte Valley behind the tracks ---------- */
+    /* painted names: the real grid, oriented like the real map — Wewatta/
+       Chestnut/Delgany behind the terminal, 17th-20th crossing toward Coors,
+       Platte & Central over the river, Boulder & 15th up in LoHi */
+    { type:'streetName', text:'WEWATTA ST',  x:32,   z:-71,  len:14 },
+    { type:'streetName', text:'CHESTNUT PL', x:51,   z:-94,  len:14 },
+    { type:'streetName', text:'DELGANY ST',  x:50,   z:-125, len:14 },
+    { type:'streetName', text:'17TH ST',     x:4,    z:-98,  ry:Math.PI/2, len:10 },
+    { type:'streetName', text:'18TH ST',     x:45,   z:-98,  ry:Math.PI/2, len:10 },
+    { type:'streetName', text:'19TH ST',     x:89,   z:-98,  ry:Math.PI/2, len:10 },
+    { type:'streetName', text:'20TH ST',     x:141,  z:-60,  ry:Math.PI/2, len:10 },
+    { type:'streetName', text:'PLATTE ST',   x:-126, z:-90,  ry:Math.PI/2, len:12 },
+    { type:'streetName', text:'CENTRAL ST',  x:-133, z:-62,  len:11 },
+    { type:'streetName', text:'BOULDER ST',  x:-115, z:120,  len:12 },
+    { type:'streetName', text:'15TH ST',     x:-106, z:138,  ry:Math.PI/2, len:10 },
+    { type:'streetName', text:'LAWRENCE ST', x:18,   z:156,  len:14 },
+    { type:'streetName', text:'CHAMPA ST',   x:117,  z:140,  len:12 },
+    { type:'streetName', text:'ARAPAHOE ST', x:97,   z:111,  ry:Math.PI/2, len:13 },
+    { type:'streetName', text:'CURTIS ST',   x:30,   z:194,  len:12 },
+    /* Larimer painted on the racing line itself, through the lights */
+    { type:'streetName', text:'LARIMER ST',  x:-40.5, z:106.7, ry:-1.88-Math.PI/2, len:14 },
     { type:'street', width:5, closed:false, cars:2, peds:2, points:[[0,0,-70],[64,0,-72]] },
     { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-2,0,-92],[104,0,-96]] },
     { type:'street', width:5, closed:false, cars:2, points:[[0,0,-124],[100,0,-126]] },
@@ -136,15 +156,15 @@ export default {
     /* riverfront lofts between the district and the Platte */
     { type:'brickBlock', x:-18, z:-112, w:15, d:11, h:9, ry:0.3 },
     { type:'brickBlock', x:-32, z:-96,  w:12, d:10, h:7, ry:0.15 },
-    { type:'parkSign', t:0.985, side:-1, text:'UNION STATION', w:6.8, bg:'#241d1a', fg:'#ff8c3a' },
+    { type:'parkSign', t:0.985, side:1, text:'UNION STATION', w:6.8, bg:'#241d1a', fg:'#ff8c3a' },
     /* deck runs perpendicular ACROSS the road at the hook; the leaning
        mast stands on the river side */
     { type:'millenniumBridge', x:-28, z:-46, ry:-0.32, span:32 },
-    { type:'parkSign', t:0.86, side:1, text:'MILLENNIUM BRIDGE', w:7.2 },
+    { type:'parkSign', t:0.878, side:1, text:'MILLENNIUM BRIDGE', w:7.2 },
 
     /* ---------- Coors Field at 20th & Blake ---------- */
     { type:'coorsField', x:124, z:52, ry:-Math.PI/2 },
-    { type:'parkSign', t:0.165, side:1, text:'COORS FIELD', w:6, bg:'#1f3d2b', fg:'#f5f0e6' },
+    { type:'parkSign', t:0.182, side:1, text:'COORS FIELD', w:6, bg:'#1f3d2b', fg:'#f5f0e6' },
 
     /* ---------- infill: the city runs right up to the racing line ---------- */
     /* inside the loop, west blocks (Wynkoop→Wazee→Blake bands) */
