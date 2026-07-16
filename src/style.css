@@ -42,6 +42,11 @@
     image-rendering:pixelated;}
   #toast{left:50%;top:36%;transform:translateX(-50%);font-size:28px;
     color:var(--goldenrod);opacity:0;transition:opacity .25s;text-align:center;white-space:nowrap;}
+  /* narrow portrait screens: long coaching tips wrap instead of overflowing */
+  @media (max-width:600px){
+    #toast{white-space:normal;width:max-content;max-width:92vw;
+      font-size:22px;line-height:1.35;}
+  }
   #landmark{left:50%;bottom:30px;transform:translateX(-50%);font-size:15px;
     color:var(--paper);opacity:0;transition:opacity .4s;letter-spacing:2px;}
   .pad{position:fixed;bottom:0;top:0;width:45%;z-index:4;opacity:0;}
