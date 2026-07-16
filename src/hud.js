@@ -46,8 +46,8 @@ export function createHud(track, mpHooks){
     const fb=document.createElement('div');
     fb.id='fbAsk';
     fb.style.cssText='margin-top:14px;font-size:11px;line-height:1.7;'+
-      'color:#8a7ab0;letter-spacing:1px;text-align:center;max-width:34ch;';
-    fb.innerHTML='MISSING A DENVER LANDMARK? FOUND A BUG?<br>'+
+      'color:#f5e9d0;letter-spacing:1px;text-align:center;max-width:36ch;';
+    fb.innerHTML='IS THERE A DENVER LANDMARK YOU\'D LIKE TO SEE? FOUND A BUG?<br>'+
       '<a href="mailto:hi@denverdashthegame.com" style="color:#ffd166;">'+
       'hi@denverdashthegame.com</a>';
     document.getElementById('results').appendChild(fb);
