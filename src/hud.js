@@ -52,7 +52,7 @@ export function createHud(track, mpHooks){
       tip('drift', isTouch ? 'TIP: HOLD DRIFT IN CORNERS - RELEASE FOR A BOOST'
                            : 'TIP: HOLD SHIFT IN CORNERS - RELEASE FOR A BOOST');
     if(!tipSeen('item') && player.item)
-      tip('item', isTouch ? 'TAP THE GIFT BUTTON TO USE YOUR ITEM'
+      tip('item', isTouch ? 'TAP THE GOLD BUTTON AT THE BOTTOM TO USE IT'
                           : 'PRESS E TO USE YOUR ITEM');
     if(!tipSeen('legs') && player.energy<=0.02)
       tip('legs','OUT OF LEGS - EASE OFF SPRINT AND THEY RECHARGE');
