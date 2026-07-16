@@ -78,6 +78,7 @@ export default {
     { type:'diner', x:-145, z:16, ry:Math.PI-0.28, sign:"TOM'S DINER", signBg:'#3e5a34', googie:true },
     { type:'brickBlock', x:-95, z:23, ry:Math.PI, w:20, d:10, h:6, sign:'ARGONAUT WINE - LIQUOR', signBg:'#a83232' },
     { type:'cathedral', x:-295, z:-22 },
+    { type:'parkSign', t:0.655, side:-1, text:'CATHEDRAL BASILICA', w:7.4 },
 
     /* ---------- East High + the City Park Esplanade ---------- */
     { type:'eastHigh', x:215, z:-70 },
@@ -133,6 +134,27 @@ export default {
     { type:'devLabel', x:-548, z:106, y:14, text:'GREEK AMPHITHEATER', w:24 },
 
     /* ---------- signalized intersections ---------- */
+    /* real cross streets through the signals — Colfax is a grid, not a
+       canyon. Drawn just under the race road so intersections read as
+       asphalt meeting asphalt; registered so wall shops gap around them */
+    { type:'street', width:6, y:0.008, closed:false, points:[[ 325,0,-60],[ 325,0,60]] },
+    { type:'street', width:6, y:0.008, closed:false, points:[[  26,0,-60],[  26,0,60]] },
+    { type:'street', width:6, y:0.008, closed:false, points:[[-118,0,-60],[-118,0,60]] },
+    { type:'street', width:6, y:0.008, closed:false, points:[[-300,0,-60],[-300,0,60]] },
+    { type:'street', width:8, y:0.008, closed:false, points:[[-402,0,-70],[-402,0,50]] },
+    /* painted names on the cross-street asphalt */
+    { type:'streetName', text:'YORK ST',    x: 325, z:-26, ry:Math.PI/2, len:12 },
+    { type:'streetName', text:'YORK ST',    x: 325, z: 26, ry:Math.PI/2, len:12 },
+    { type:'streetName', text:'DOWNING ST', x:  26, z:-26, ry:Math.PI/2, len:14 },
+    { type:'streetName', text:'DOWNING ST', x:  26, z: 26, ry:Math.PI/2, len:14 },
+    { type:'streetName', text:'PEARL ST',   x:-118, z:-26, ry:Math.PI/2, len:12 },
+    { type:'streetName', text:'PEARL ST',   x:-118, z: 26, ry:Math.PI/2, len:12 },
+    { type:'streetName', text:'LOGAN ST',   x:-300, z:-26, ry:Math.PI/2, len:12 },
+    { type:'streetName', text:'LOGAN ST',   x:-300, z: 26, ry:Math.PI/2, len:12 },
+    { type:'streetName', text:'BROADWAY',   x:-402, z:-32, ry:Math.PI/2, len:14 },
+    { type:'streetName', text:'E COLFAX AVE', x:370, z:-4.6, len:20 },
+    { type:'streetName', text:'E COLFAX AVE', x:-70, z:-4.6, len:20 },
+    { type:'streetName', text:'E COLFAX AVE', x:-268, z:-4.6, len:20 },
     { type:'trafficSignal', t:0.106, side:1 },
     { type:'crosswalk', t:0.106 },
     { type:'trafficSignal', t:0.39, side:-1 },
@@ -172,6 +194,11 @@ export default {
     { type:'storefrontRow', x:285, z:-22, len:38, signs:['LIQUOR','COIN-OP LAUNDRY','TAQUERIA'] },
     { type:'storefrontRow', x:170, z:16, ry:Math.PI, len:44, signs:['PAWN','CHECKS CASHED','DONUTS','VINYL'] },
     { type:'storefrontRow', x:65, z:16, ry:Math.PI, len:40, signs:['DIVE BAR','SMOKES','THRIFT'] },
+    /* the icons every Denverite expects on this stretch */
+    { type:'voodoo',   x:70,   z:-18 },
+    { type:'argonaut', x:-242, z:18, ry:Math.PI },
+    { type:'motelSign', x:440, z:-16 },
+    { type:'motelSign', x:-80, z:17, ry:Math.PI, no:true },
     { type:'storefrontRow', x:-30, z:-16, len:36, signs:['RAMEN','BOOKS','BODEGA'] },
     { type:'storefrontRow', x:-145, z:-20, len:40, signs:['MUTINY COMICS','COFFEE','GYROS'] },
     { type:'storefrontRow', x:-210, z:16, ry:Math.PI, len:42, signs:['DISPENSARY','WINGS','KARAOKE'] },
@@ -203,13 +230,13 @@ export default {
     /* ---------- cross-street blades (real order, heading west) ---------- */
     { type:'streetSign', x:452, z:12,  text:'COOK ST',       ry:Math.PI/2 },
     { type:'streetSign', x:420, z:14,  text:'ADAMS ST',      ry:Math.PI/2 },
-    { type:'streetSign', x:340, z:-9,  text:'YORK ST',       ry:Math.PI/2 },
+    { type:'streetSign', x:325, z:-9,  text:'YORK ST',       ry:Math.PI/2 },
     { type:'streetSign', x:260, z:14,  text:'JOSEPHINE ST',  ry:Math.PI/2 },
     { type:'streetSign', x:180, z:-14, text:'RACE ST',       ry:Math.PI/2 },
     { type:'streetSign', x:100, z:14,  text:'FRANKLIN ST',   ry:Math.PI/2 },
     { type:'streetSign', x:20,  z:-14, text:'DOWNING ST',    ry:Math.PI/2 },
     { type:'streetSign', x:-60, z:14,  text:'CLARKSON ST',   ry:Math.PI/2 },
-    { type:'streetSign', x:-140,z:-13, text:'PEARL ST',      ry:Math.PI/2 },
+    { type:'streetSign', x:-118,z:-13, text:'PEARL ST',      ry:Math.PI/2 },
     { type:'streetSign', x:-220,z:14,  text:'WASHINGTON ST', ry:Math.PI/2 },
     { type:'streetSign', x:-300,z:-13, text:'LOGAN ST',      ry:Math.PI/2 },
     { type:'streetSign', x:-380,z:14,  text:'GRANT ST',      ry:Math.PI/2 },

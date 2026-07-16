@@ -2800,6 +2800,97 @@ B.constructionZone = (ctx, def) => {
    prop holds an exclusion (venues, gateway, diners keep their room) and
    leaving occasional parking-lot gaps. Place LAST among the curb props so
    every landmark's exclusion is already registered. */
+/* Voodoo Doughnut — the pink one. Giant doughnut on a pole outside. */
+B.voodoo = (ctx, def) => {
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(14,6.5,10), lambert(0xd94f8a));
+  body.position.y=3.25; g.add(body);
+  const band=new THREE.Mesh(new THREE.BoxGeometry(14.2,1.1,10.2), lambert(0x3a2340));
+  band.position.y=6.0; g.add(band);
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(11,1.6),
+    new THREE.MeshBasicMaterial({map:bannerTex('VOODOO DOUGHNUT','#3a2340','#ff9ac4')}));
+  sign.position.set(0,6.0,5.15); g.add(sign);
+  const sub=new THREE.Mesh(new THREE.PlaneGeometry(8.5,0.9),
+    new THREE.MeshBasicMaterial({map:bannerTex('GOOD THINGS COME IN PINK','#d94f8a','#f5f0e6')}));
+  sub.position.set(0,4.6,5.05); g.add(sub);
+  /* the pole doughnut: tan cake, pink frosting, sprinkles */
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.18,7,6), lambert(0x2b2b33));
+  pole.position.set(8.4,3.5,3.5); g.add(pole);
+  const donut=new THREE.Group();
+  const cake=new THREE.Mesh(new THREE.TorusGeometry(1.7,0.62,8,14), lambert(0xc9995c));
+  donut.add(cake);
+  const frost=new THREE.Mesh(new THREE.TorusGeometry(1.7,0.5,8,14), lambert(0xff6fa8));
+  frost.position.z=0.22; donut.add(frost);
+  const sprinkleC=[0xffd166,0x2e86ab,0x7fd18a,0xf5e9d0];
+  for(let i=0;i<10;i++){
+    const a=i/10*Math.PI*2;
+    const sp=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.34,0.1), lambert(sprinkleC[i%4]));
+    sp.position.set(Math.cos(a)*1.7, Math.sin(a)*1.7, 0.74);
+    sp.rotation.z=a+0.7; donut.add(sp);
+  }
+  donut.position.set(8.4,8.2,3.5); g.add(donut);
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.solid(def.x,def.z,8); ctx.exclude(def.x,def.z,10);
+};
+
+/* Argonaut Wine & Liquor — the long low landmark with the huge red letters */
+B.argonaut = (ctx, def) => {
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(26,5.5,12), lambert(0xefe8da));
+  body.position.y=2.75; g.add(body);
+  const parapet=new THREE.Mesh(new THREE.BoxGeometry(26.4,0.7,12.4), lambert(0xdcd2c0));
+  parapet.position.y=5.6; g.add(parapet);
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(20,2.4),
+    new THREE.MeshBasicMaterial({map:bannerTex('ARGONAUT','#f5f0e6','#c23b22')}));
+  sign.position.set(0,7.0,0); g.add(sign);
+  const back=sign.clone(); back.rotation.y=Math.PI; back.position.z=-0.05; g.add(back);
+  const sub=new THREE.Mesh(new THREE.PlaneGeometry(12,1.0),
+    new THREE.MeshBasicMaterial({map:bannerTex('WINE & LIQUOR','#c23b22','#f5f0e6')}));
+  sub.position.set(0,4.4,6.05); g.add(sub);
+  const canopy=new THREE.Mesh(new THREE.BoxGeometry(24,0.25,2.4), lambert(0xc23b22));
+  canopy.position.set(0,3.6,7.0); g.add(canopy);
+  /* the famous parking lot out front */
+  const apron=new THREE.Mesh(new THREE.PlaneGeometry(24,7), lambert(0x39393f));
+  apron.rotation.x=-Math.PI/2; apron.position.set(0,0.012,10.2); g.add(apron);
+  [-7,0,7].forEach((cx,i)=>{
+    const car=makeCar(ctx.rng);
+    car.position.set(cx,0,10.2); car.rotation.y=Math.PI/2+(ctx.rng()-0.5)*0.1;
+    g.add(car);
+  });
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.solid(def.x,def.z,10); ctx.exclude(def.x,def.z,14);
+};
+
+/* vintage Colfax motor-court neon: vertical MOTEL blade + bulb arrow */
+B.motelSign = (ctx, def) => {
+  const g=new THREE.Group();
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.2,9,6), lambert(0x2b2b33));
+  pole.position.y=4.5; g.add(pole);
+  const c=document.createElement('canvas'); c.width=48; c.height=160;
+  const cg=c.getContext('2d');
+  cg.fillStyle='#1e2b4a'; cg.fillRect(0,0,48,160);
+  cg.strokeStyle='#7fd7e8'; cg.lineWidth=2; cg.strokeRect(2,2,44,156);
+  cg.fillStyle='#7fd7e8'; cg.font='bold 26px monospace';
+  cg.textAlign='center';
+  'MOTEL'.split('').forEach((ch,i)=> cg.fillText(ch,24,30+i*30));
+  const tex=new THREE.CanvasTexture(c); tex.magFilter=THREE.NearestFilter;
+  const blade=new THREE.Mesh(new THREE.PlaneGeometry(1.9,6.2),
+    new THREE.MeshBasicMaterial({map:tex, side:THREE.DoubleSide}));
+  blade.position.set(0,6.2,0); blade.rotation.y=Math.PI/2; g.add(blade);
+  const vac=new THREE.Mesh(new THREE.PlaneGeometry(2.6,0.7),
+    new THREE.MeshBasicMaterial({map:bannerTex(def.no?'NO VACANCY':'VACANCY','#1e2b4a','#e84855'),
+      side:THREE.DoubleSide}));
+  vac.position.set(0,2.6,0); vac.rotation.y=Math.PI/2; g.add(vac);
+  /* bulb arrow pointing in at the office */
+  for(let i=0;i<5;i++){
+    const b=new THREE.Mesh(new THREE.IcosahedronGeometry(0.09,0),
+      new THREE.MeshBasicMaterial({color:0xffd166}));
+    b.position.set(0, 9.6-i*0.55, 0.6+i*0.32); g.add(b);
+  }
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.solid(def.x,def.z,0.6);
+};
+
 B.colfaxWall = (ctx, def) => {
   /* Colfax palette: more faded stucco and dingy brick than boutique */
   const paints=[0xc9a06a,0x8a4a3a,0xa39a88,0x8f8878,0xb0402f,0x6a6a62,0x9b6b53,0x7a6a5a,
@@ -2831,7 +2922,8 @@ B.colfaxWall = (ctx, def) => {
         ctx.scene.add(ap);
       }
       else if(ctx.clearOfExclusions(new THREE.Vector3(px,0,pz), 3) &&
-              ctx.clearOfRoad(new THREE.Vector3(px,0,pz), 4)){
+              ctx.clearOfRoad(new THREE.Vector3(px,0,pz), 4) &&
+              ctx.clearOfStreets(new THREE.Vector3(px,0,pz), 5)){
         const g=new THREE.Group();
         const shallow=ctx.rng()<0.25;                 // squat one-story sheds
         const h=shallow ? 2.6+ctx.rng() : 3.5+ctx.rng()*3;
