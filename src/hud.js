@@ -39,17 +39,12 @@ export function createHud(track, mpHooks){
   const tipSeen = k => localStorage.getItem('dash-tip-'+k);
   const tipMark = k => localStorage.setItem('dash-tip-'+k,'1');
   const tip = (k,msg)=>{ tipMark(k); toast(msg, 2800); };
-  let raceT0=null;
+  let raceT0=null, legsAt=0;
 
   function coach(player, race, now){
-    /* countdown tips: one per countdown — launch on race two, then the
-       draft nudge on a later race if they never found it themselves */
-    if(race.phase==='count' && races>1){
-      if(!tipSeen('launch'))
-        tip('launch','TIP: SPRINT RIGHT ON GO! FOR A LAUNCH BOOST');
-      else if(races>2 && !tipSeen('draft2'))
-        tip('draft2','TIP: RIDE CLOSE BEHIND RACERS TO DRAFT — FREE SPEED, FASTER LEGS');
-    }
+    /* launch timing: teach on race two — race one they just play */
+    if(race.phase==='count' && races>1 && !tipSeen('launch'))
+      tip('launch','TIP: SPRINT RIGHT ON GO! FOR A LAUNCH BOOST');
     if(race.phase!=='race') return;
     if(raceT0===null) raceT0=now;
     if(player.drifting && !tipSeen('drift')) tipMark('drift');  // self-taught
@@ -61,10 +56,15 @@ export function createHud(track, mpHooks){
                           : 'PRESS E TO USE YOUR ITEM');
     if(!tipSeen('sprint') && player.sprinting && player.energy<0.55)
       tip('sprint','SPRINT BURNS YOUR LEGS — WATCH THE METER');
-    if(!tipSeen('legs') && player.energy<=0.02)
+    if(!tipSeen('legs') && player.energy<=0.02){
       tip('legs','OUT OF LEGS - EASE OFF SPRINT AND THEY RECHARGE');
-    if(!tipSeen('draft2') && player.drafting)
-      tip('draft2','DRAFTING! TUCK IN BEHIND RIDERS — LEGS REFILL FASTER');
+      legsAt=now;
+    }
+    /* drafting is the ANSWER to empty legs — teach it the next time they
+       bottom out, not while they're accidentally drafting off the grid */
+    if(!tipSeen('draft2') && tipSeen('legs') && player.energy<=0.02
+       && now-legsAt>6000)
+      tip('draft2','OUT OF LEGS? DRAFT CLOSE BEHIND RIDERS — THEY REFILL FASTER');
   }
 
   function checkCallouts(prog){
