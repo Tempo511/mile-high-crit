@@ -39,6 +39,19 @@ export function createHud(track, mpHooks){
   const tipSeen = k => localStorage.getItem('dash-tip-'+k);
   const tipMark = k => localStorage.setItem('dash-tip-'+k,'1');
   const tip = (k,msg)=>{ tipMark(k); toast(msg, 2800); };
+
+  /* feedback ask, injected once into the results screen (all modes) */
+  (()=>{
+    if(document.getElementById('fbAsk')) return;
+    const fb=document.createElement('div');
+    fb.id='fbAsk';
+    fb.style.cssText='margin-top:14px;font-size:11px;line-height:1.7;'+
+      'color:#8a7ab0;letter-spacing:1px;text-align:center;max-width:34ch;';
+    fb.innerHTML='MISSING A DENVER LANDMARK? FOUND A BUG?<br>'+
+      '<a href="mailto:hi@denverdashthegame.com" style="color:#ffd166;">'+
+      'hi@denverdashthegame.com</a>';
+    document.getElementById('results').appendChild(fb);
+  })();
   let raceT0=null, legsAt=0;
 
   function coach(player, race, now){
