@@ -42,9 +42,14 @@ export function createHud(track, mpHooks){
   let raceT0=null;
 
   function coach(player, race, now){
-    /* launch timing: teach on race two — race one they just play */
-    if(race.phase==='count' && races>1 && !tipSeen('launch'))
-      tip('launch','TIP: SPRINT RIGHT ON GO! FOR A LAUNCH BOOST');
+    /* countdown tips: one per countdown — launch on race two, then the
+       draft nudge on a later race if they never found it themselves */
+    if(race.phase==='count' && races>1){
+      if(!tipSeen('launch'))
+        tip('launch','TIP: SPRINT RIGHT ON GO! FOR A LAUNCH BOOST');
+      else if(races>2 && !tipSeen('draft2'))
+        tip('draft2','TIP: RIDE CLOSE BEHIND RACERS TO DRAFT — FREE SPEED, FASTER LEGS');
+    }
     if(race.phase!=='race') return;
     if(raceT0===null) raceT0=now;
     if(player.drifting && !tipSeen('drift')) tipMark('drift');  // self-taught
@@ -54,8 +59,12 @@ export function createHud(track, mpHooks){
     if(!tipSeen('item') && player.item)
       tip('item', isTouch ? 'TAP THE GOLD BUTTON AT THE BOTTOM TO USE IT'
                           : 'PRESS E TO USE YOUR ITEM');
+    if(!tipSeen('sprint') && player.sprinting && player.energy<0.55)
+      tip('sprint','SPRINT BURNS YOUR LEGS — WATCH THE METER');
     if(!tipSeen('legs') && player.energy<=0.02)
       tip('legs','OUT OF LEGS - EASE OFF SPRINT AND THEY RECHARGE');
+    if(!tipSeen('draft2') && player.drafting)
+      tip('draft2','DRAFTING! TUCK IN BEHIND RIDERS — LEGS REFILL FASTER');
   }
 
   function checkCallouts(prog){
