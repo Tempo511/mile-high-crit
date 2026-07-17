@@ -3267,6 +3267,56 @@ B.coorsField = (ctx, def) => {
       lambert(0xf5f0e6, {emissive:0x555544}));
     bank.position.set(lx,29,-5.6); g.add(bank);
   });
+  /* dark green steel canopy along the brick rim */
+  const canopy=new THREE.Mesh(new THREE.BoxGeometry(70,0.9,3), lambert(0x2c4a38));
+  canopy.position.set(0,15.4,0.4); g.add(canopy);
+
+  /* the 20th & Blake corner rotunda: round brick entry, clock, flags */
+  const rot=new THREE.Mesh(new THREE.CylinderGeometry(6,6.4,17,10),
+    new THREE.MeshLambertMaterial({map:brickTex}));
+  rot.position.set(-32,8.5,2); g.add(rot);
+  const rotCap=new THREE.Mesh(new THREE.CylinderGeometry(6.6,6.6,1,10), lambert(0x2c4a38));
+  rotCap.position.set(-32,17.5,2); g.add(rotCap);
+  const rotSign=new THREE.Mesh(new THREE.PlaneGeometry(9,1.6),
+    new THREE.MeshBasicMaterial({map:bannerTex('COORS FIELD','#2c4a38','#f5f0e6')}));
+  rotSign.position.set(-32,14.6,8.6); g.add(rotSign);
+  const rotClock=new THREE.Mesh(new THREE.CircleGeometry(1.5,16), lambert(0xf7f3e8));
+  rotClock.position.set(-32,11.6,8.5); g.add(rotClock);
+  const rch=new THREE.Mesh(new THREE.PlaneGeometry(0.2,1.9), lambert(0x1a1423));
+  rch.rotation.z=1.1; rch.position.set(-32,11.6,8.55); g.add(rch);
+  [-2.4,0,2.4].forEach((fx,i)=>{
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.09,4,4), lambert(0xc9c4b8));
+    pole.position.set(-32+fx,20,2); g.add(pole);
+    const flag=new THREE.Mesh(new THREE.PlaneGeometry(1.4,0.9),
+      new THREE.MeshLambertMaterial({map: i===1? coloradoFlagTex()
+        : bannerTex('CR','#4b2d5e','#f5f0e6'), side:THREE.DoubleSide}));
+    flag.position.set(-32+fx+0.75,21.3,2); g.add(flag);
+  });
+
+  /* the left-field scoreboard tower: purple ROCKIES board over the rim */
+  const boardTex=(()=>{
+    const c=document.createElement('canvas'); c.width=128; c.height=64;
+    const gg=c.getContext('2d');
+    gg.fillStyle='#4b2d5e'; gg.fillRect(0,0,128,64);
+    gg.fillStyle='#f5f0e6';                       // snowy mountain silhouette
+    gg.beginPath(); gg.moveTo(6,46); gg.lineTo(30,18); gg.lineTo(46,34);
+    gg.lineTo(64,10); gg.lineTo(84,32); gg.lineTo(104,16); gg.lineTo(122,46);
+    gg.closePath(); gg.fill();
+    gg.fillStyle='#2c1a38'; gg.fillRect(0,46,128,18);
+    gg.fillStyle='#f5f0e6'; gg.font='bold 15px monospace'; gg.textAlign='center';
+    gg.fillText('ROCKIES',64,60);
+    const tex=new THREE.CanvasTexture(c); tex.magFilter=THREE.NearestFilter; return tex;
+  })();
+  [-3.5,3.5].forEach(mx=>{
+    const mast=new THREE.Mesh(new THREE.BoxGeometry(0.8,16,0.8), lambert(0x3a4a42));
+    mast.position.set(22+mx,24,-14); g.add(mast);
+  });
+  const board=new THREE.Mesh(new THREE.PlaneGeometry(13,6.5),
+    new THREE.MeshBasicMaterial({map:boardTex, side:THREE.DoubleSide}));
+  board.position.set(22,30,-13.5); g.add(board);
+  const boardTop=new THREE.Mesh(new THREE.BoxGeometry(14,0.6,1), lambert(0x3a4a42));
+  boardTop.position.set(22,33.6,-14); g.add(boardTop);
+
   g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
   ctx.exclude(def.x,def.z,34); ctx.solid(def.x,def.z,22);
 };
