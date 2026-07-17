@@ -3375,7 +3375,7 @@ B.dfTower = (ctx, def) => {
 B.blueBear = (ctx, def) => {
   const g=new THREE.Group();
   /* the glass hall it peers into */
-  const hallW=def.hallW||22, hallH=9, hallD=8;
+  const hallW=def.hallW||22, hallH=16, hallD=8;
   const glassTex=pixTex(32,(gg,px)=>{
     gg.fillStyle='#9cc4d8'; gg.fillRect(0,0,px,px);
     gg.strokeStyle='#5a7a8a'; gg.lineWidth=1;
@@ -3389,47 +3389,42 @@ B.blueBear = (ctx, def) => {
     lambert(0xf2f0ea));
   fascia.position.set(0,hallH+0.5,6.5); g.add(fascia);
 
-  /* the bear (photo ref): one continuous leaning wedge — straight back
-     line from heels to shoulders, tilted into the glass; paws HIGH on the
-     window with the head tucked below them, nose down. Periwinkle blue,
-     few chunky faceted masses. lean(y) shifts each mass toward the glass. */
+  /* the bear (photo ref): steep lean into a MUCH taller glass hall.
+     Glass plane sits at local z=2.5; paws and nose land exactly on it,
+     paws at EYE level beside the head — peering in, not king-kong-ing. */
   const blue=lambert(0x5a6fd8);
   const bear=new THREE.Group();
-  const lean = y => y*0.20;                  // the diagonal
-  /* butt + thick legs + feet (heels back, weight into the lean) */
+  const L=0.28, bz=-2.3;                      // lean slope, stand-back
+  const lz=(y,fw=0)=> y*L+fw+bz;
   const butt=new THREE.Mesh(new THREE.IcosahedronGeometry(2.2,0), blue);
-  butt.scale.set(1.05,1.1,1); butt.position.set(0,4.2,lean(4.2)-0.5); bear.add(butt);
+  butt.scale.set(1.05,1.1,1); butt.position.set(0,4.2,lz(4.2,-0.4)); bear.add(butt);
   [[-1.05],[1.05]].forEach(([lx])=>{
     const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.85,1.0,3.6,5), blue);
-    leg.position.set(lx,1.8,lean(1.8)-0.4); leg.rotation.x=-0.14; bear.add(leg);
+    leg.position.set(lx,1.8,lz(1.8,-0.3)); leg.rotation.x=-0.2; bear.add(leg);
     const foot=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.7,2.1), blue);
-    foot.position.set(lx,0.35,0.4); bear.add(foot);
+    foot.position.set(lx,0.35,lz(0.35,0.6)); bear.add(foot);
   });
-  /* the single big torso wedge, hips to shoulders along the lean */
   const torso=new THREE.Mesh(new THREE.IcosahedronGeometry(2.6,0), blue);
   torso.scale.set(1.05,1.9,1.0);
-  torso.position.set(0,7.8,lean(7.8)); torso.rotation.x=0.2; bear.add(torso);
-  /* arms hug the torso front, paws HIGH on the glass */
-  [[-1.55],[1.55]].forEach(([ax])=>{
-    const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.85,4.6,5), blue);
-    arm.position.set(ax,10.4,lean(10.4)+0.75); arm.rotation.x=0.32; bear.add(arm);
+  torso.position.set(0,7.4,lz(7.4)); torso.rotation.x=0.28; bear.add(torso);
+  /* short arms: paws press the glass at eye level, beside the head */
+  [[-1.5],[1.5]].forEach(([ax])=>{
+    const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.85,3.4,5), blue);
+    arm.position.set(ax,9.9,lz(9.9,0.9)); arm.rotation.x=0.5; bear.add(arm);
     const paw=new THREE.Mesh(new THREE.IcosahedronGeometry(0.85,0), blue);
-    paw.scale.set(1,1.2,0.55);
-    paw.position.set(ax,12.9,lean(12.9)+1.15); bear.add(paw);
+    paw.scale.set(1,1.2,0.5);
+    paw.position.set(ax,11.4,lz(11.4,1.5)); bear.add(paw);
   });
-  /* head tucked BELOW the paws, nose down to the glass */
   const head=new THREE.Mesh(new THREE.IcosahedronGeometry(1.5,0), blue);
-  head.scale.set(1,1.05,1);
-  head.position.set(0,11.6,lean(11.6)+0.9); head.rotation.x=0.5; bear.add(head);
+  head.position.set(0,11.3,lz(11.3,0.8)); head.rotation.x=0.5; bear.add(head);
   const muzzle=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.7,1.3,5), blue);
-  muzzle.position.set(0,10.9,lean(11.6)+1.75); muzzle.rotation.x=0.75; bear.add(muzzle);
+  muzzle.position.set(0,10.6,lz(10.6,1.7)); muzzle.rotation.x=0.8; bear.add(muzzle);
   [[-0.7],[0.7]].forEach(([ex])=>{
     const ear=new THREE.Mesh(new THREE.IcosahedronGeometry(0.4,0), blue);
-    ear.scale.set(1,1,0.6); ear.position.set(ex,12.9,lean(12.9)+0.4); bear.add(ear);
+    ear.scale.set(1,1,0.6); ear.position.set(ex,12.5,lz(12.5,0.35)); bear.add(ear);
   });
   const tail=new THREE.Mesh(new THREE.IcosahedronGeometry(0.5,0), blue);
-  tail.position.set(0,4.6,lean(4.6)-2.4); bear.add(tail);
-  bear.position.z=0.2;
+  tail.position.set(0,4.6,lz(4.6,-2.2)); bear.add(tail);
   g.add(bear);
 
   g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
