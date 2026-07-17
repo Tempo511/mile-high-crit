@@ -424,7 +424,33 @@ export function updateAmbient(game, dt, now){
     b.m.rotation.y = Math.atan2(tan.x*b.dir, tan.z*b.dir);
   }
   for(const j of game.world.joggers){
-    j.t = ((j.t + j.speed*dt/j.len) % 1 + 1) % 1;
+    /* open streets end at intersections (often the racing line): pull up,
+       wait a beat like you're yielding to the race, U-turn, head back.
+       Closed loops keep wrapping like always. */
+    if(!j.curve.closed){
+      if(j.state==='wait'){
+        j.waitT-=dt;
+        if(j.waitT<=0){ j.state='turn'; j.turnT=0; j.turn0=j.m.rotation.y; }
+        continue;
+      }
+      if(j.state==='turn'){
+        j.turnT+=dt;
+        j.m.rotation.y = j.turn0 + Math.PI*Math.min(1, j.turnT/0.6);
+        if(j.dog) j.dog.rotation.y = j.m.rotation.y;
+        if(j.turnT>=0.6){ j.state=null; j.speed=-j.speed; }
+        continue;
+      }
+      const nt = j.t + j.speed*dt/j.len;
+      if(nt>=1 || nt<=0){
+        j.t = Math.max(0.001, Math.min(0.999, nt));
+        j.state='wait';
+        j.waitT = 0.5 + ((j.phase*997)%1)*1.4;   // deterministic per follower
+        continue;
+      }
+      j.t = nt;
+    } else {
+      j.t = ((j.t + j.speed*dt/j.len) % 1 + 1) % 1;
+    }
     const p = j.curve.getPointAt(j.t), tan = j.curve.getTangentAt(j.t);
     const dir = Math.sign(j.speed);
     const bob = j.kind==='surrey' ? 0 : Math.abs(Math.sin(now/95+j.phase))*0.12;
