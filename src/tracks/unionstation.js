@@ -126,7 +126,7 @@ export default {
     { type:'tower',      x:24, z:-108, w:14, h:16, style:'glass' },
     { type:'brickBlock', x:60, z:-110, w:15, d:12, h:10, waterTower:true },
     { type:'tower',      x:94, z:-112, w:13, h:12, style:'tan' },
-    { type:'brickBlock', x:16, z:-140, w:14, d:11, h:8 },
+    { type:'brickBlock', x:12, z:-114, w:14, d:11, h:8 },
     { type:'tower',      x:52, z:-142, w:14, h:14, style:'blue' },
     { type:'brickBlock', x:88, z:-140, w:14, d:11, h:9, color:'#7a4034' },
     /* the Highland Bridge arches over the Platte to the neighborhood */
@@ -148,7 +148,7 @@ export default {
     { type:'brickBlock', x:-134, z:-90,  w:12, d:10, h:7, waterTower:true },
     { type:'brickBlock', x:-136, z:-116, w:14, d:11, h:8, color:'#9a5a44' },
     { type:'brickBlock', x:-114, z:-122, w:11, d:9,  h:6 },
-    { type:'brickBlock', x:-112, z:-88,  w:12, d:9,  h:7, color:'#7a4034' },
+    { type:'brickBlock', x:-120, z:-84,  w:12, d:9,  h:7, color:'#7a4034' },
     /* riverfront tree strip on the west bank */
     { type:'grove', x:-118, z:-64, spreadX:12, spreadZ:34, count:5, margin:7 },
     { type:'devLabel', x:-130, z:-84, y:22, text:'JEFFERSON PARK', w:22 },
@@ -170,7 +170,7 @@ export default {
     /* inside the loop, west blocks (Wynkoop→Wazee→Blake bands) */
     { type:'brickBlock', x:-91, z:30, w:9,  d:9, h:7, color:'#9a5a44' },
     { type:'brickBlock', x:-88, z:4,  w:10, d:8, h:6 },
-    { type:'brickBlock', x:-74, z:24, w:9,  d:8, h:7, color:'#7a4034' },
+    { type:'brickBlock', x:-80, z:20, w:9,  d:8, h:7, color:'#7a4034' },
     { type:'grove', x:-97, z:20, spreadX:8, spreadZ:20, count:3, margin:7 },
     { type:'brickBlock', x:-36, z:28, w:13, d:10, h:8 },
     { type:'brickBlock', x:-64, z:30, w:12, d:10, h:7, color:'#9a5a44' },
@@ -202,7 +202,7 @@ export default {
        the road, exactly the view everyone knows */
     { type:'blueBear', x:22, z:118.5 },
     { type:'landmarkTower', kind:'republic', x:-20, z:138, h:62 },   // Republic Plaza (the tallest)
-    { type:'tower', x:-50, z:126, w:14, h:30, style:'glass' },
+    { type:'tower', x:-58, z:132, w:14, h:30, style:'glass' },
     { type:'tower', x:26, z:171, w:17, h:46, style:'blue' },
     { type:'dfTower', x:2, z:126 },
     { type:'parkSign', t:0.375, side:1, text:'D&F TOWER', w:5 },
@@ -223,12 +223,12 @@ export default {
     /* the flag canopy: five cable spans, Colorado flags hanging in rows,
        twin globe lamps on the poles — straight from the real block */
     { type:'stringLights', at:[0.425, 0.44, 0.455, 0.47, 0.485], flags:true, globes:true },
-    { type:'patio', x:-48, z:114, ry:0.5, count:3 },
-    { type:'patio', x:-68, z:101, ry:0.5, count:2 },
+    { type:'patio', x:-42, z:115, ry:0.5, count:3 },
+    { type:'patio', x:-70, z:100.5, ry:0.5, count:2 },
     { type:'flowerBed', x:-38, z:100, w:7, d:3, ry:0.45 },
-    { type:'flowerBed', x:-60, z:110, w:7, d:3, ry:0.5 },
+    { type:'flowerBed', x:-33, z:96, w:7, d:3, ry:0.2 },
     { type:'parkSign', t:0.43, side:-1, text:'LARIMER SQUARE', w:6.6, bg:'#4b2d5e' },
-    { type:'brickBlock', x:-52, z:120, w:15, d:11, h:7, sign:'LARIMER SQ', signBg:'#4b2d5e' },
+    { type:'brickBlock', x:-44, z:127, w:15, d:11, h:7, sign:'LARIMER SQ', signBg:'#4b2d5e' },
     { type:'brickBlock', x:-76, z:110, w:14, d:11, h:6, color:'#9a5a44' },
     { type:'brickBlock', x:-44, z:86,  w:14, d:10, h:6 },
 
