@@ -104,7 +104,7 @@ export default {
     { type:'streetName', text:'CURTIS ST',   x:30,   z:194,  len:12 },
     /* Larimer painted on the racing line itself, through the lights */
     { type:'streetName', text:'LARIMER ST',  x:-40.5, z:106.7, ry:-1.88-Math.PI/2, len:14 },
-    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[0,0,-70],[64,0,-72]] },
+    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-12,0,-70],[0,0,-70],[64,0,-72]] },
     { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-2,0,-92],[104,0,-96]] },
     { type:'street', width:5, closed:false, cars:2, points:[[0,0,-124],[100,0,-126]] },
     { type:'street', width:5, y:0.008, closed:false, cars:2, points:[[6,0,-5],[6,0,-66],[2,0,-130]] },
@@ -287,8 +287,8 @@ export default {
     { type:'sakuraSquare', x:83, z:111, ry:Math.PI },
     { type:'brickBlock', x:122, z:100, w:11, d:9, h:7 },
     { type:'street', width:5, closed:false, cars:2, points:[[-70,0,192],[130,0,196]] },         // Curtis
-    { type:'street', width:5, closed:false, cars:2, points:[[52,0,116],[56,0,190]] },           // 19th uptown
-    { type:'street', width:5, closed:false, cars:1, points:[[-33,0,116],[-31,0,190]] },         // 16th uptown
+    { type:'street', width:5, closed:false, cars:2, points:[[52,0,107],[52,0,116],[56,0,190]] },           // 19th uptown
+    { type:'street', width:5, closed:false, cars:1, points:[[-33,0,113],[-33,0,116],[-31,0,190]] },         // 16th uptown
     /* retail pads between the tower bases */
     { type:'brickBlock', x:8,   z:166, w:9,  d:7, h:6 },
     { type:'brickBlock', x:-58, z:186, w:10, d:8, h:7, color:'#9a5a44' },
@@ -314,28 +314,28 @@ export default {
        Numbered streets cross them at even spacing; every segment ends at
        another street, the race road, or fades into the sprawl. */
     /* Wazee St — west of 20th, then resuming east of it */
-    { type:'street', width:6, closed:false, cars:3, peds:4, points:[[-84,0,46],[84,0,52]] },
-    { type:'street', width:6, closed:false, cars:2, points:[[108,0,54],[150,0,57]] },
+    { type:'street', width:6, closed:false, cars:3, peds:4, points:[[-94,0,46],[-84,0,46],[84,0,52],[91,0,52]] },
+    { type:'street', width:6, closed:false, cars:2, points:[[101,0,53],[108,0,54],[150,0,57]] },
     /* Blake St — likewise */
-    { type:'street', width:6, closed:false, cars:3, peds:4, points:[[-80,0,70],[66,0,74]] },
-    { type:'street', width:6, closed:false, cars:2, points:[[102,0,76],[150,0,79]] },
+    { type:'street', width:6, closed:false, cars:3, peds:4, points:[[-83,0,70],[-80,0,70],[66,0,74],[84,0,74]] },
+    { type:'street', width:6, closed:false, cars:2, points:[[95,0,76],[102,0,76],[150,0,79]] },
     /* numbered cross streets, Wynkoop up to Blake (16th is the race hook,
        20th is the race road at the Blake bend) */
     { type:'street', width:5, closed:false, cars:1, points:[[-83,0,12],[-79,0,72]] },          // 14th
-    { type:'street', width:5, closed:false, cars:1, points:[[-94,0,12],[-56,0,16]] },          // Wewatta
-    { type:'street', width:5, closed:false, cars:2, peds:3, points:[[-58,0,14],[-54,0,76]] },   // 15th
-    { type:'street', width:5, closed:false, cars:2, peds:3, points:[[-16,0,14],[-14,0,76]] },   // 17th
-    { type:'street', width:5, closed:false, cars:2, points:[[18,0,36],[20,0,76]] },             // 18th
-    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[41,0,16],[41,0,76]] },     // 19th
-    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[75,0,16],[75,0,78]] },     // 19th½ frontage
+    { type:'street', width:5, closed:false, cars:1, points:[[-100,0,11],[-94,0,12],[-56,0,16]] },          // Wewatta
+    { type:'street', width:5, closed:false, cars:2, peds:3, points:[[-58,0,14],[-54,0,76],[-53,0,97]] },   // 15th
+    { type:'street', width:5, closed:false, cars:2, peds:3, points:[[-16,0,5],[-16,0,14],[-14,0,76],[-13,0,107]] },   // 17th
+    { type:'street', width:5, closed:false, cars:2, points:[[16,0,5],[18,0,36],[20,0,76],[21,0,104]] },             // 18th
+    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[41,0,7],[41,0,16],[41,0,76],[41,0,100]] },     // 19th
+    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[75,0,16],[75,0,78],[75,0,86]] },     // 19th½ frontage
     /* the ballpark district east of 20th */
-    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[104,0,-32],[106,0,30]] },  // 21st
+    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[104,0,-32],[106,0,30],[99,0,42]] },  // 21st
     { type:'street', width:5, closed:false, cars:2, points:[[128,0,-33],[130,0,16]] },
     { type:'street', width:5, closed:false, cars:2, points:[[104,0,-32],[148,0,-35]] },          // Walnut: ties 21st/22nd/23rd          // 22nd
-    { type:'street', width:5, closed:false, cars:2, points:[[104,0,32],[148,0,36]] },           // Larimer east
+    { type:'street', width:5, closed:false, cars:2, points:[[98,0,31],[104,0,32],[148,0,36]] },           // Larimer east
     { type:'street', width:5, closed:false, cars:2, points:[[106,0,-8],[150,0,-4]] },           // Market east
     /* Delgany service road along the rail yard */
-    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-8,0,-58],[58,0,-62]] },
+    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-17,0,-57],[-8,0,-58],[58,0,-62]] },
     /* mid-block buildings so the grid reads as full city blocks */
     { type:'tower',      x:-44, z:60, w:13, h:18, style:'tan' },
     { type:'brickBlock', x:-26, z:58, w:14, d:11, h:8 },
