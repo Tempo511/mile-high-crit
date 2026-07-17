@@ -1590,28 +1590,30 @@ B.mountains = (ctx, def) => {
     ctx.scene.add(cap);
   };
 
-  /* far ridge — tall, hazy, near the fog line (atmospheric backdrop) */
+  /* far ridge — hazy, LOW AND WIDE: the range reads as a wall, not spikes
+     (peaks 2.5-3x wider than tall, heavy overlap into a continuous ridge) */
   for(let i=0;i<9;i++){
-    const h=90+ctx.rng()*60, w=85+ctx.rng()*60;
+    const h=55+ctx.rng()*35, w=170+ctx.rng()*70;
     const m=peak(def.x-70-ctx.rng()*40, def.z-40+i*86+ctx.rng()*24, w, h, 0x9188b8, 4);
-    if(h>115) snowcap(m, w, h, false);
+    if(h>72) snowcap(m, w, h, false);
   }
   /* main range — the classic purple wall with a snowline */
   for(let i=0;i<11;i++){
-    const h=62+ctx.rng()*68, w=60+ctx.rng()*55;
+    const h=45+ctx.rng()*45, w=140+ctx.rng()*70;
     const m=peak(def.x-ctx.rng()*50, def.z-20+i*68+ctx.rng()*20, w, h,
       i%3 ? 0x6f5b8f : 0x655082, 4+(i%2));
-    if(h>85) snowcap(m, w, h, false);
+    if(h>62) snowcap(m, w, h, false);
     if(ctx.rng()<0.25){                        // occasional shoulder fused to the ridge
-      peak(m.position.x+(ctx.rng()-0.5)*24, m.position.z+34+ctx.rng()*12, w*0.7, h*0.6,
+      peak(m.position.x+(ctx.rng()-0.5)*24, m.position.z+34+ctx.rng()*12, w*0.8, h*0.6,
         0x6f5b8f, 4);
     }
   }
-  /* Mount Blue Sky — the giant snowy massif Denver actually sees WSW */
-  const big = peak(def.x-60, def.z+330, 130, 165, 0x60508a, 5);
-  snowcap(big, 130, 165, true);
-  const shoulder = peak(def.x-30, def.z+390, 90, 110, 0x6f5b8f, 4);
-  snowcap(shoulder, 90, 110, false);
+  /* Mount Blue Sky — the giant snowy massif Denver actually sees WSW:
+     a broad hump that rises above the wall, not a spire */
+  const big = peak(def.x-60, def.z+330, 280, 110, 0x60508a, 5);
+  snowcap(big, 280, 110, true);
+  const shoulder = peak(def.x-30, def.z+390, 190, 75, 0x6f5b8f, 4);
+  snowcap(shoulder, 190, 75, false);
   /* sage foothills rolling in front of it all — sized/placed so their
      bases stop where the neighborhood grid ends (no houses in the hills) */
   for(let i=0;i<15;i++){
