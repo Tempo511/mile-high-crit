@@ -88,12 +88,12 @@ export default {
        Chestnut/Delgany behind the terminal, 17th-20th crossing toward Coors,
        Platte & Central over the river, Boulder & 15th up in LoHi */
     { type:'streetName', text:'WEWATTA ST',  x:32,   z:-71,  len:14 },
-    { type:'streetName', text:'CHESTNUT PL', x:51,   z:-94,  len:14 },
-    { type:'streetName', text:'DELGANY ST',  x:50,   z:-125, len:14 },
-    { type:'streetName', text:'17TH ST',     x:4,    z:-98,  ry:Math.PI/2, len:10 },
+    { type:'streetName', text:'CHESTNUT PL', x:51,   z:-95,  len:14 },
+    { type:'streetName', text:'DELGANY ST',  x:50,   z:-126, len:14 },
+    { type:'streetName', text:'17TH ST',     x:6,    z:-98,  ry:Math.PI/2, len:10 },
     { type:'streetName', text:'18TH ST',     x:45,   z:-98,  ry:Math.PI/2, len:10 },
-    { type:'streetName', text:'19TH ST',     x:89,   z:-98,  ry:Math.PI/2, len:10 },
-    { type:'streetName', text:'20TH ST',     x:141,  z:-60,  ry:Math.PI/2, len:10 },
+    { type:'streetName', text:'19TH ST',     x:88,   z:-98,  ry:Math.PI/2, len:10 },
+    { type:'streetName', text:'20TH ST',     x:140,  z:-60,  ry:Math.PI/2, len:10 },
     { type:'streetName', text:'PLATTE ST',   x:-126, z:-90,  ry:Math.PI/2, len:12 },
     { type:'streetName', text:'CENTRAL ST',  x:-133, z:-62,  len:11 },
     { type:'streetName', text:'BOULDER ST',  x:-115, z:120,  len:12 },
@@ -104,18 +104,16 @@ export default {
     { type:'streetName', text:'CURTIS ST',   x:30,   z:194,  len:12 },
     /* Larimer painted on the racing line itself, through the lights */
     { type:'streetName', text:'LARIMER ST',  x:-40.5, z:106.7, ry:-1.88-Math.PI/2, len:14 },
-    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-12,0,-70],[0,0,-70],[64,0,-72]] },
-    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-2,0,-92],[104,0,-96]] },
-    { type:'street', width:5, closed:false, cars:2, points:[[0,0,-124],[100,0,-126]] },
-    { type:'street', width:5, y:0.008, closed:false, cars:2, points:[[6,0,-5],[6,0,-66],[2,0,-130]] },
-    { type:'street', width:5, y:0.008, closed:false, cars:2, points:[[45,0,-2],[44,0,-66],[46,0,-130]] },
-    { type:'street', width:5, y:0.008, closed:false, points:[[88,0,14],[88,0,-66],[90,0,-130]] },
+    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-12,0,-71],[140,0,-71]] },
+    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[6,0,-95],[148,0,-95]] },
+    { type:'street', width:5, closed:false, cars:2, points:[[6,0,-126],[146,0,-126]] },
+    { type:'street', width:5, y:0.008, closed:false, cars:2, points:[[6,0,-5],[6,0,-130]] },
+    { type:'street', width:5, y:0.008, closed:false, cars:2, points:[[45,0,-2],[45,0,-130]] },
+    { type:'street', width:5, y:0.008, closed:false, points:[[88,0,14],[88,0,-130]] },
     /* RiNo-side blocks east of the district: 21st continues past the rail
        yard tip, 23rd runs the east edge, cross streets tie the grid shut */
-    { type:'street', width:5, closed:false, cars:2, points:[[106,0,-32],[112,0,-66]] },
-    { type:'street', width:5, closed:false, cars:2, points:[[140,0,-6],[144,0,-128]] },
-    { type:'street', width:5, closed:false, cars:2, points:[[106,0,-96],[148,0,-99]] },
-    { type:'street', width:5, closed:false, points:[[102,0,-126],[146,0,-129]] },
+    { type:'street', width:5, closed:false, cars:2, points:[[108,0,-71],[108,0,-126]] },
+    { type:'street', width:5, closed:false, cars:2, points:[[140,0,-6],[140,0,-128]] },
     { type:'brickBlock', x:118, z:-76,  w:16, d:11, h:8, color:'#9a5a44' },
     { type:'brickBlock', x:120, z:-110, w:14, d:11, h:9, waterTower:true },
     { type:'brickBlock', x:132, z:-90,  w:11, d:9,  h:7 },
@@ -139,10 +137,10 @@ export default {
     { type:'devLabel', x:60,  z:-158, y:14, text:'SOUTH PLATTE', w:20 },
     /* ---------- LoHi / Jefferson Park: the west bank of the Platte ---------- */
     /* Zuni St runs the length of the bank; cross streets reach the sprawl */
-    { type:'street', width:5, closed:false, cars:2, points:[[-128,0,-40],[-124,0,-140]] },
-    { type:'street', width:5, closed:false, cars:2, points:[[-150,0,-60],[-116,0,-63]] },
-    { type:'street', width:5, closed:false, cars:2, points:[[-150,0,-100],[-100,0,-104]] },
-    { type:'street', width:5, closed:false, points:[[-150,0,-36],[-128,0,-38]] },
+    { type:'street', width:5, closed:false, cars:2, points:[[-126,0,-40],[-126,0,-140]] },
+    { type:'street', width:5, closed:false, cars:2, points:[[-150,0,-61],[-116,0,-61]] },
+    { type:'street', width:5, closed:false, cars:2, points:[[-150,0,-102],[-100,0,-102]] },
+    { type:'street', width:5, closed:false, points:[[-150,0,-37],[-128,0,-37]] },
     { type:'brickBlock', x:-136, z:-52,  w:13, d:10, h:8 },
     { type:'tower',      x:-138, z:-76,  w:12, h:12, style:'tan' },
     { type:'brickBlock', x:-134, z:-90,  w:12, d:10, h:7, waterTower:true },
@@ -335,7 +333,7 @@ export default {
     { type:'street', width:5, closed:false, cars:2, points:[[98,0,31],[104,0,32],[148,0,36]] },           // Larimer east
     { type:'street', width:5, closed:false, cars:2, points:[[106,0,-8],[150,0,-4]] },           // Market east
     /* Delgany service road along the rail yard */
-    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-17,0,-57],[-8,0,-58],[58,0,-62]] },
+    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-17,0,-57],[-8,0,-58],[58,0,-62],[58,0,-71]] },
     /* mid-block buildings so the grid reads as full city blocks */
     { type:'tower',      x:-44, z:60, w:13, h:18, style:'tan' },
     { type:'brickBlock', x:-26, z:58, w:14, d:11, h:8 },
