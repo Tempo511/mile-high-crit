@@ -107,9 +107,9 @@ export default {
     { type:'street', width:5, closed:false, cars:2, peds:2, points:[[0,0,-70],[64,0,-72]] },
     { type:'street', width:5, closed:false, cars:2, peds:2, points:[[-2,0,-92],[104,0,-96]] },
     { type:'street', width:5, closed:false, cars:2, points:[[0,0,-124],[100,0,-126]] },
-    { type:'street', width:5, closed:false, cars:2, points:[[6,0,-66],[2,0,-130]] },
-    { type:'street', width:5, closed:false, cars:2, points:[[44,0,-66],[46,0,-130]] },
-    { type:'street', width:5, closed:false, points:[[88,0,-66],[90,0,-130]] },
+    { type:'street', width:5, y:0.008, closed:false, cars:2, points:[[6,0,-5],[6,0,-66],[2,0,-130]] },
+    { type:'street', width:5, y:0.008, closed:false, cars:2, points:[[45,0,-2],[44,0,-66],[46,0,-130]] },
+    { type:'street', width:5, y:0.008, closed:false, points:[[88,0,14],[88,0,-66],[90,0,-130]] },
     /* RiNo-side blocks east of the district: 21st continues past the rail
        yard tip, 23rd runs the east edge, cross streets tie the grid shut */
     { type:'street', width:5, closed:false, cars:2, points:[[106,0,-32],[112,0,-66]] },
@@ -204,6 +204,11 @@ export default {
     /* Wynkoop Plaza fills the strip between the start straight and the
        terminal — fountain, umbrellas, bosque, flags, travelers */
     { type:'wynkoopPlaza', x:24, z:-10 },
+    /* T-intersections where the LoDo grid meets the racing line */
+    { type:'crosswalk', t:0.009 },
+    { type:'crosswalk', t:0.068 },
+    { type:'crosswalk', t:0.138 },
+    { type:'crosswalk', t:0.228 },
     { type:'landmarkTower', kind:'republic', x:-20, z:138, h:62 },   // Republic Plaza (the tallest)
     { type:'tower', x:-58, z:132, w:14, h:30, style:'glass' },
     { type:'tower', x:26, z:171, w:17, h:46, style:'blue' },
@@ -277,7 +282,7 @@ export default {
     { type:'street', width:5, closed:false, cars:3, peds:3, points:[[-108,0,150],[144,0,162]] }, // Lawrence
     /* Champa + Arapahoe close the blocks northeast of the canyon exit */
     { type:'street', width:5, closed:false, cars:2, points:[[84,0,138],[150,0,142]] },          // Champa
-    { type:'street', width:5, closed:false, cars:2, peds:2, points:[[96,0,84],[98,0,138]] },    // Arapahoe
+    { type:'street', width:5, y:0.008, closed:false, cars:2, peds:2, points:[[92,0,79],[96,0,84],[98,0,138]] },    // Arapahoe
     { type:'tower',      x:108, z:100, w:12, h:18, style:'glass' },
     { type:'sakuraSquare', x:83, z:111, ry:Math.PI },
     { type:'brickBlock', x:122, z:100, w:11, d:9, h:7 },
