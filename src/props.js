@@ -1801,19 +1801,37 @@ B.landmarkTower = (ctx, def) => {
     cap.position.y=h+0.5; g.add(cap);
   }
   else if(kind==='california'){
-    const w=def.w||16, d=def.d||12, h=def.h||56;
-    const m = new THREE.MeshLambertMaterial({map:windowTex('#3a3f4a','#6a7684','#ffd166',w,h)});
-    const t=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), m); t.position.y=h/2; g.add(t);
-    /* stepped shoulders at the crown */
-    const s1=new THREE.Mesh(new THREE.BoxGeometry(w*0.72,h*0.06,d), m);
-    s1.position.y=h+h*0.03; g.add(s1);
-    const s2=new THREE.Mesh(new THREE.BoxGeometry(w*0.45,h*0.05,d), m);
-    s2.position.y=h+h*0.085; g.add(s2);
-    /* the huge lattice antenna */
-    const ant=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.4,h*0.3,5), lambert(0xd8d2c5));
-    ant.position.y=h*1.11+h*0.15; g.add(ant);
-    const bar=new THREE.Mesh(new THREE.BoxGeometry(2.6,0.2,0.2), lambert(0xd8d2c5));
-    bar.position.y=h*1.11+h*0.2; g.add(bar);
+    /* 1801 California (the Qwest building): warm oxide-red granite, dense
+       punched square windows, chamfered corners, stepped tiers descending
+       on one flank, flat top with thin broadcast masts (per photo ref) */
+    const w=def.w||16, d=def.d||12, h=def.h||56, c=2.2;
+    const tex = pixTex(32,(gg,px)=>{
+      gg.fillStyle='#6e4038'; gg.fillRect(0,0,px,px);
+      for(let y=1;y<px-1;y+=4)
+        for(let x=1;x<px-1;x+=4){
+          gg.fillStyle = Math.random()<0.10 ? '#ffd166' : '#241d20';
+          gg.fillRect(x,y,2,2);
+        }
+    }, 2, Math.max(3,Math.round(h/11)));
+    const m = new THREE.MeshLambertMaterial({map:tex});
+    /* chamfered plan via crossed boxes — corners read as angled facets */
+    const tA=new THREE.Mesh(new THREE.BoxGeometry(w,h,d-c*2), m);
+    tA.position.y=h/2; g.add(tA);
+    const tB=new THREE.Mesh(new THREE.BoxGeometry(w-c*2,h,d), m);
+    tB.position.y=h/2; g.add(tB);
+    /* the stepped annex tiers hugging the +x flank */
+    [[0.66,3.2],[0.5,3.0],[0.36,2.8]].forEach(([f,tw],i)=>{
+      const tier=new THREE.Mesh(new THREE.BoxGeometry(tw,h*f,d*0.86), m);
+      tier.position.set(w/2 + tw/2 + i*tw, h*f/2, 0); g.add(tier);
+    });
+    const cap=new THREE.Mesh(new THREE.BoxGeometry(w-c,0.7,d-c), lambert(0x51322c));
+    cap.position.y=h+0.35; g.add(cap);
+    /* two thin broadcast masts */
+    [[-w*0.24,h*0.24],[w*0.18,h*0.19]].forEach(([mx,mh])=>{
+      const mast=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.14,mh,5),
+        lambert(0xc9c4b8));
+      mast.position.set(mx,h+mh/2,0); g.add(mast);
+    });
   }
   else if(kind==='capitol'){
     const s=def.s||1.6;   // distant, so oversized to survive the haze
