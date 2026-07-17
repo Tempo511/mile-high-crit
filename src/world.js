@@ -441,8 +441,11 @@ export function updateAmbient(game, dt, now){
         continue;
       }
       const nt = j.t + j.speed*dt/j.len;
-      if(nt>=1 || nt<=0){
-        j.t = Math.max(0.001, Math.min(0.999, nt));
+      /* stop a car-length short of the street end so the nose (and the
+         U-turn swing) never pokes onto the racing surface */
+      const edge = Math.min(0.45, 3.2/j.len);
+      if(nt >= 1-edge || nt <= edge){
+        j.t = Math.max(edge, Math.min(1-edge, nt));
         j.state='wait';
         j.waitT = 0.5 + ((j.phase*997)%1)*1.4;   // deterministic per follower
         continue;
