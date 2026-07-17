@@ -198,6 +198,9 @@ export default {
     { type:'tower', x: 66, z:128, w:15, h:34, style:'glass' },
     { type:'landmarkTower', kind:'cashRegister', x:38, z:136, h:52, ry:0.55 },
     { type:'landmarkTower', kind:'california', x:10, z:144, h:58 },
+    /* the Big Blue Bear, peering into the convention hall glass — back to
+       the road, exactly the view everyone knows */
+    { type:'blueBear', x:22, z:118.5 },
     { type:'landmarkTower', kind:'republic', x:-20, z:138, h:62 },   // Republic Plaza (the tallest)
     { type:'tower', x:-50, z:126, w:14, h:30, style:'glass' },
     { type:'tower', x:26, z:171, w:17, h:46, style:'blue' },

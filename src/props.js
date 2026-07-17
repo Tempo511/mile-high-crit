@@ -3370,6 +3370,61 @@ B.dfTower = (ctx, def) => {
 
 /* the Millennium Bridge: tilted white mast + cable stays over a deck that
    crosses above the road. Deck runs along local x. */
+/* "I See What You Mean" — the Big Blue Bear, peering into the glass of
+   the convention hall. Faceted low-poly parts = the sculpture's triangles. */
+B.blueBear = (ctx, def) => {
+  const g=new THREE.Group();
+  /* the glass hall it peers into */
+  const hallW=def.hallW||22, hallH=9, hallD=8;
+  const glassTex=pixTex(32,(gg,px)=>{
+    gg.fillStyle='#9cc4d8'; gg.fillRect(0,0,px,px);
+    gg.strokeStyle='#5a7a8a'; gg.lineWidth=1;
+    for(let x=0;x<=px;x+=4){ gg.beginPath(); gg.moveTo(x,0); gg.lineTo(x,px); gg.stroke(); }
+    for(let y=0;y<=px;y+=6){ gg.beginPath(); gg.moveTo(0,y); gg.lineTo(px,y); gg.stroke(); }
+  }, Math.max(1,Math.round(hallW/8)), 1);
+  const hall=new THREE.Mesh(new THREE.BoxGeometry(hallW,hallH,hallD),
+    new THREE.MeshLambertMaterial({map:glassTex}));
+  hall.position.set(0,hallH/2,6.5); g.add(hall);
+  const fascia=new THREE.Mesh(new THREE.BoxGeometry(hallW+0.6,1.0,hallD+0.6),
+    lambert(0xf2f0ea));
+  fascia.position.set(0,hallH+0.5,6.5); g.add(fascia);
+
+  /* the bear: cobalt, faceted, forepaws up on the glass */
+  const blue=lambert(0x2f52d4);
+  const bear=new THREE.Group();
+  [[-0.9],[0.9]].forEach(([lx])=>{
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.85,3.6,5), blue);
+    leg.position.set(lx,1.8,0); bear.add(leg);
+  });
+  const hips=new THREE.Mesh(new THREE.IcosahedronGeometry(1.9,0), blue);
+  hips.scale.set(1.15,0.9,1); hips.position.y=4.0; bear.add(hips);
+  const body=new THREE.Mesh(new THREE.IcosahedronGeometry(2.3,0), blue);
+  body.scale.set(1.1,1.6,0.95); body.position.set(0,7.0,0.25); bear.add(body);
+  [[-1.7],[1.7]].forEach(([ax])=>{
+    const arm=new THREE.Mesh(new THREE.BoxGeometry(0.9,3.6,0.9), blue);
+    arm.position.set(ax,9.3,1.1); arm.rotation.x=-0.35; bear.add(arm);
+    const paw=new THREE.Mesh(new THREE.IcosahedronGeometry(0.62,0), blue);
+    paw.position.set(ax,11.1,1.8); bear.add(paw);
+  });
+  const head=new THREE.Mesh(new THREE.IcosahedronGeometry(1.45,0), blue);
+  head.scale.set(1,1.05,0.95); head.position.set(0,11.5,0.7); bear.add(head);
+  const snout=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.7,1.0), blue);
+  snout.position.set(0,11.2,1.85); snout.rotation.x=0.35; bear.add(snout);
+  [[-0.75],[0.75]].forEach(([ex])=>{
+    const ear=new THREE.Mesh(new THREE.IcosahedronGeometry(0.42,0), blue);
+    ear.position.set(ex,12.7,0.5); bear.add(ear);
+  });
+  const tail=new THREE.Mesh(new THREE.IcosahedronGeometry(0.5,0), blue);
+  tail.position.set(0,4.3,-1.7); bear.add(tail);
+  bear.rotation.x=0.06;                      // the lean-in, nose to the glass
+  bear.position.z=0.6;
+  g.add(bear);
+
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.solid(def.x,def.z,2.4);
+  ctx.exclude(def.x,def.z,Math.max(hallW,14)/2+3);
+};
+
 B.millenniumBridge = (ctx, def) => {
   const g = new THREE.Group();
   const white = lambert(0xf2f0ea);
