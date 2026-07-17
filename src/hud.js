@@ -38,7 +38,26 @@ export function createHud(track, mpHooks){
   localStorage.setItem('dash-races', races);
   const tipSeen = k => localStorage.getItem('dash-tip-'+k);
   const tipMark = k => localStorage.setItem('dash-tip-'+k,'1');
-  const tip = (k,msg)=>{ tipMark(k); toast(msg, 2800); };
+  /* tips get their OWN slot below the race toast — a BONK! or lap split
+     must never vaporize the tip that explains it */
+  let tipEl=null, tipHide=0;
+  const showTip = (msg)=>{
+    if(!tipEl){
+      tipEl=document.createElement('div');
+      tipEl.style.cssText='position:fixed;left:50%;top:47%;'+
+        'transform:translateX(-50%);z-index:8;pointer-events:none;'+
+        'font-family:inherit;font-size:20px;letter-spacing:1px;'+
+        'color:#ffd166;text-shadow:2px 2px 0 #1a1423;text-align:center;'+
+        'white-space:normal;width:max-content;max-width:92vw;line-height:1.35;'+
+        'opacity:0;transition:opacity .3s;';
+      document.body.appendChild(tipEl);
+    }
+    tipEl.textContent=msg;
+    tipEl.style.opacity=1;
+    clearTimeout(tipHide);
+    tipHide=setTimeout(()=>{ tipEl.style.opacity=0; }, 3400);
+  };
+  const tip = (k,msg)=>{ tipMark(k); showTip(msg); };
 
   /* feedback ask, injected once into the results screen (all modes) */
   (()=>{
