@@ -313,10 +313,10 @@ export default {
        another street, the race road, or fades into the sprawl. */
     /* Wazee St — west of 20th, then resuming east of it */
     { type:'street', width:6, closed:false, cars:3, peds:4, points:[[-94,0,46],[-84,0,46],[84,0,52],[91,0,52]] },
-    { type:'street', width:6, closed:false, cars:2, points:[[101,0,53],[108,0,54],[150,0,57]] },
+    { type:'street', width:6, closed:false, cars:2, points:[[98,0,26],[150,0,26]] },
     /* Blake St — likewise */
     { type:'street', width:6, closed:false, cars:3, peds:4, points:[[-83,0,70],[-80,0,70],[66,0,74],[84,0,74]] },
-    { type:'street', width:6, closed:false, cars:2, points:[[95,0,76],[102,0,76],[150,0,79]] },
+    { type:'street', width:6, closed:false, cars:2, points:[[95,0,82],[150,0,82]] },
     /* numbered cross streets, Wynkoop up to Blake (16th is the race hook,
        20th is the race road at the Blake bend) */
     { type:'street', width:5, closed:false, cars:1, points:[[-83,0,12],[-79,0,72]] },          // 14th
