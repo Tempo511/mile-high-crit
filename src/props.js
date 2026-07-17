@@ -3278,7 +3278,7 @@ B.coorsField = (ctx, def) => {
   const rotCap=new THREE.Mesh(new THREE.CylinderGeometry(6.6,6.6,1,10), lambert(0x2c4a38));
   rotCap.position.set(-32,17.5,2); g.add(rotCap);
   const rotSign=new THREE.Mesh(new THREE.PlaneGeometry(9,1.6),
-    new THREE.MeshBasicMaterial({map:bannerTex('COORS FIELD','#2c4a38','#f5f0e6')}));
+    new THREE.MeshBasicMaterial({map:bannerTex('GATE E','#2c4a38','#f5f0e6')}));
   rotSign.position.set(-32,14.6,8.6); g.add(rotSign);
   const rotClock=new THREE.Mesh(new THREE.CircleGeometry(1.5,16), lambert(0xf7f3e8));
   rotClock.position.set(-32,11.6,8.5); g.add(rotClock);

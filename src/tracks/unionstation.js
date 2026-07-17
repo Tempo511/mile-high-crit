@@ -162,7 +162,7 @@ export default {
 
     /* ---------- Coors Field at 20th & Blake ---------- */
     { type:'coorsField', x:124, z:52, ry:-Math.PI/2 },
-    { type:'parkSign', t:0.182, side:1, text:'COORS FIELD', w:6, bg:'#1f3d2b', fg:'#f5f0e6' },
+    { type:'parkSign', t:0.182, side:1, text:'ROCKIES GAME TODAY', w:7, bg:'#4b2d5e', fg:'#f5f0e6' },
 
     /* ---------- infill: the city runs right up to the racing line ---------- */
     /* inside the loop, west blocks (Wynkoop→Wazee→Blake bands) */
