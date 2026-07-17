@@ -3408,20 +3408,20 @@ B.blueBear = (ctx, def) => {
   torso.scale.set(1.05,1.9,1.0);
   torso.position.set(0,7.4,lz(7.4)); torso.rotation.x=0.28; bear.add(torso);
   /* short arms: paws press the glass at eye level, beside the head */
-  [[-1.5],[1.5]].forEach(([ax])=>{
-    const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.85,3.4,5), blue);
-    arm.position.set(ax,9.9,lz(9.9,0.9)); arm.rotation.x=0.5; bear.add(arm);
+  [[-1.7],[1.7]].forEach(([ax])=>{
+    const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.85,3.2,5), blue);
+    arm.position.set(ax,9.5,lz(9.5,0.9)); arm.rotation.x=0.5; bear.add(arm);
     const paw=new THREE.Mesh(new THREE.IcosahedronGeometry(0.85,0), blue);
     paw.scale.set(1,1.2,0.5);
-    paw.position.set(ax,11.4,lz(11.4,1.5)); bear.add(paw);
+    paw.position.set(ax,10.9,lz(10.9,1.5)); bear.add(paw);
   });
   const head=new THREE.Mesh(new THREE.IcosahedronGeometry(1.5,0), blue);
-  head.position.set(0,11.3,lz(11.3,0.8)); head.rotation.x=0.5; bear.add(head);
+  head.position.set(0,12.3,lz(12.3,0.7)); head.rotation.x=0.5; bear.add(head);
   const muzzle=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.7,1.3,5), blue);
-  muzzle.position.set(0,10.6,lz(10.6,1.7)); muzzle.rotation.x=0.8; bear.add(muzzle);
+  muzzle.position.set(0,11.6,lz(11.6,1.6)); muzzle.rotation.x=0.8; bear.add(muzzle);
   [[-0.7],[0.7]].forEach(([ex])=>{
     const ear=new THREE.Mesh(new THREE.IcosahedronGeometry(0.4,0), blue);
-    ear.scale.set(1,1,0.6); ear.position.set(ex,12.5,lz(12.5,0.35)); bear.add(ear);
+    ear.scale.set(1,1,0.6); ear.position.set(ex,13.5,lz(13.5,0.3)); bear.add(ear);
   });
   const tail=new THREE.Mesh(new THREE.IcosahedronGeometry(0.5,0), blue);
   tail.position.set(0,4.6,lz(4.6,-2.2)); bear.add(tail);
