@@ -201,6 +201,9 @@ export default {
     /* the Big Blue Bear, peering into the convention hall glass — back to
        the road, exactly the view everyone knows */
     { type:'blueBear', x:22, z:118.5 },
+    /* Wynkoop Plaza fills the strip between the start straight and the
+       terminal — fountain, umbrellas, bosque, flags, travelers */
+    { type:'wynkoopPlaza', x:24, z:-10 },
     { type:'landmarkTower', kind:'republic', x:-20, z:138, h:62 },   // Republic Plaza (the tallest)
     { type:'tower', x:-58, z:132, w:14, h:30, style:'glass' },
     { type:'tower', x:26, z:171, w:17, h:46, style:'blue' },

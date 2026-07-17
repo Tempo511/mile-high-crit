@@ -3434,6 +3434,102 @@ B.blueBear = (ctx, def) => {
   ctx.exclude(def.x,def.z,Math.max(hallW,14)/2+3);
 };
 
+/* Wynkoop Plaza — the real scene in front of the terminal: splash
+   fountain, Terminal Bar umbrellas, tree bosque in planters, flags,
+   travelers with roller bags. Local +z faces the road. */
+B.wynkoopPlaza = (ctx, def) => {
+  const g=new THREE.Group();
+  const paverTex=pixTex(32,(gg,px)=>{
+    gg.fillStyle='#b8ad9c'; gg.fillRect(0,0,px,px);
+    gg.strokeStyle='#a2977f'; gg.lineWidth=1;
+    for(let x=0;x<=px;x+=4){ gg.beginPath(); gg.moveTo(x,0); gg.lineTo(x,px); gg.stroke(); }
+    for(let y=0;y<=px;y+=4){ gg.beginPath(); gg.moveTo(0,y); gg.lineTo(px,y); gg.stroke(); }
+  }, 6, 2);
+  const pavers=new THREE.Mesh(new THREE.PlaneGeometry(44,11),
+    new THREE.MeshLambertMaterial({map:paverTex}));
+  pavers.rotation.x=-Math.PI/2; pavers.position.y=0.015; g.add(pavers);
+
+  /* the splash fountain: wet circle + pop-up jets kids run through */
+  const wet=new THREE.Mesh(new THREE.CircleGeometry(4.5,14), lambert(0x8fa8ae));
+  wet.rotation.x=-Math.PI/2; wet.position.set(-11,0.03,1.2); g.add(wet);
+  const jetM=new THREE.MeshLambertMaterial({color:0xdff2f6, transparent:true, opacity:0.7});
+  for(let i=0;i<8;i++){
+    const a=i/8*Math.PI*2, r=i%2? 2.6 : 1.2;
+    const h=0.8+ctx.rng()*1.6;
+    const jet=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.13,h,5), jetM);
+    jet.position.set(-11+Math.cos(a)*r, h/2, 1.2+Math.sin(a)*r); g.add(jet);
+    const splash=new THREE.Mesh(new THREE.IcosahedronGeometry(0.22,0), jetM);
+    splash.position.set(-11+Math.cos(a)*r, h+0.1, 1.2+Math.sin(a)*r); g.add(splash);
+  }
+
+  /* Terminal Bar patio: orange umbrellas, tables, stools */
+  for(let i=0;i<3;i++){
+    const ux=9+i*5, uz=-1.5+(i%2)*2;
+    const table=new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.9,0.08,8), lambert(0xf5f0e6));
+    table.position.set(ux,0.9,uz); g.add(table);
+    const tleg=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,0.9,5), lambert(0x2b2b33));
+    tleg.position.set(ux,0.45,uz); g.add(tleg);
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,2.6,5), lambert(0x8a8275));
+    pole.position.set(ux,2.2,uz); g.add(pole);
+    const um=new THREE.Mesh(new THREE.ConeGeometry(1.7,0.8,7), lambert(0xe8622d));
+    um.position.set(ux,3.3,uz); g.add(um);
+    [[-1.2,0.4],[1.1,-0.5]].forEach(([sx,sz])=>{
+      const stool=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,0.55,6), lambert(0x4a5a6a));
+      stool.position.set(ux+sx,0.28,uz+sz); g.add(stool);
+    });
+    ctx.solid(def.x+ux, def.z+uz, 1.2);
+  }
+
+  /* tree bosque in square planters, flanking the center walk */
+  [[-20,-3],[-20,3],[20,-3],[20,3]].forEach(([tx,tz])=>{
+    const planter=new THREE.Mesh(new THREE.BoxGeometry(1.8,0.7,1.8), lambert(0x5a4030));
+    planter.position.set(tx,0.35,tz); g.add(planter);
+    const t=roundTree(ctx.rng, 0x4c7a3d);
+    t.scale.setScalar(0.75); t.position.set(tx,0.5,tz); g.add(t);
+    ctx.solid(def.x+tx, def.z+tz, 1.2);
+  });
+
+  /* twin flags: Colorado + the stars-and-stripes */
+  const usTex=(()=>{
+    const c=document.createElement('canvas'); c.width=24; c.height=16;
+    const gg=c.getContext('2d');
+    for(let i=0;i<8;i++){ gg.fillStyle=i%2?'#f5f0e6':'#c23b3b'; gg.fillRect(0,i*2,24,2); }
+    gg.fillStyle='#2e4a8f'; gg.fillRect(0,0,10,8);
+    gg.fillStyle='#f5f0e6';
+    for(let y=1;y<8;y+=2) for(let x=1;x<10;x+=3) gg.fillRect(x,y,1,1);
+    const tex=new THREE.CanvasTexture(c); tex.magFilter=THREE.NearestFilter; return tex;
+  })();
+  [[-16,3,'co'],[16,3,'us']].forEach(([fx,fz,kind])=>{
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.11,9,5), lambert(0xc9c4b8));
+    pole.position.set(fx,4.5,fz); g.add(pole);
+    const flag=new THREE.Mesh(new THREE.PlaneGeometry(2.4,1.6),
+      new THREE.MeshLambertMaterial({map: kind==='co'? coloradoFlagTex() : usTex,
+        side:THREE.DoubleSide}));
+    flag.position.set(fx+1.3,8.0,fz); g.add(flag);
+  });
+
+  /* travelers rolling bags toward the doors */
+  const shirts=[0xe84855,0x2e86ab,0xffd166];
+  [[-4,-3,0.6],[1,-2,2.6],[5,1,-1.9]].forEach(([px,pz,ry],i)=>{
+    const p=makePerson(ctx.rng, shirts[i], 'stand');
+    p.position.set(px,0,pz); p.rotation.y=ry; g.add(p);
+    const bag=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.75,0.35),
+      lambert([0x4a5a6a,0x8a4a3a,0x2b2b33][i]));
+    bag.position.set(px+Math.cos(ry)*0.7, 0.38, pz-Math.sin(ry)*0.7); g.add(bag);
+    const handle=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.5,0.06), lambert(0x8a8275));
+    handle.position.set(px+Math.cos(ry)*0.7, 0.95, pz-Math.sin(ry)*0.7); g.add(handle);
+  });
+
+  /* bike rack hoops by the east end */
+  for(let i=0;i<3;i++){
+    const hoop=new THREE.Mesh(new THREE.TorusGeometry(0.5,0.06,5,10,Math.PI), lambert(0x2b2b33));
+    hoop.position.set(19-i*1.2,0.55,-4.2); g.add(hoop);
+  }
+
+  g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
+  ctx.exclude(def.x,def.z,16);
+};
+
 B.millenniumBridge = (ctx, def) => {
   const g = new THREE.Group();
   const white = lambert(0xf2f0ea);
