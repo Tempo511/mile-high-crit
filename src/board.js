@@ -21,7 +21,11 @@ export function cleanName(n){
 }
 export function saveName(n){ localStorage.setItem('dash-name', cleanName(n)); }
 
+const ping = p => { if(window.goatcounter && window.goatcounter.count)
+  window.goatcounter.count({path:p, event:true}); };
+
 export async function submitTime(row){   // {track, name, char, ms, ghost}
+  ping('board-post-'+row.track);
   try{
     const r = await fetch(`${URL}/rest/v1/dash_times`, {
       method:'POST', headers:H,

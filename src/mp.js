@@ -20,6 +20,8 @@ export function createSession(role, room='local'){
   };
   tp.onMessage(m => {
     if(m.type==='hello' && role==='host'){
+      if(window.goatcounter && window.goatcounter.count)
+        window.goatcounter.count({path:'room-join', event:true});
       const i = s.roster.findIndex(p => p.uid===m.uid);
       if(i>=0) s.roster[i].char = m.char;
       else if(s.roster.length < MAX_PLAYERS) s.roster.push({uid:m.uid, char:m.char});

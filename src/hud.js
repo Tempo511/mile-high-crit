@@ -26,6 +26,9 @@ export function fmt(ms){ const s=ms/1000,m=Math.floor(s/60);
   return m+':'+(s-m*60).toFixed(1).padStart(4,'0'); }
 export function fmtS(ms){ return (ms/1000).toFixed(1); }
 
+const ping = p => { if(window.goatcounter && window.goatcounter.count)
+  window.goatcounter.count({path:p, event:true}); };
+
 export function createHud(track, mpHooks){
   const mini = $('mini');
   const mctx = mini.getContext('2d');
@@ -143,6 +146,7 @@ export function createHud(track, mpHooks){
     if(player) coach(player, race, now);
 
     for(const e of events){
+      if(e.type==='finish') ping('finish-'+track.data.id);
       if(e.type==='toast'){
         toast(e.msg, e.ms);
         if(e.msg==='BOOST!'||e.msg==='SUPER BOOST!'||e.msg==='ULTRA BOOST!')
@@ -280,7 +284,10 @@ export function createHud(track, mpHooks){
     }
     $('results').style.display='flex';
   }
-  $('againBtn').addEventListener('click', ()=>location.reload());
+  $('againBtn').addEventListener('click', ()=>{
+    ping('retry-'+track.data.id);
+    location.reload();
+  });
   /* home: drop any mode hash (#tt / #host / #join) and land on the title */
   $('homeBtn').addEventListener('click', ()=>{
     location.href = location.pathname + location.search;
