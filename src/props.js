@@ -3272,35 +3272,101 @@ B.coorsField = (ctx, def) => {
 /* the Daniels & Fisher clocktower: slender tan shaft, four clock faces,
    arched belfry, pyramid cap */
 B.dfTower = (ctx, def) => {
+  /* Daniels & Fisher Tower — the Venetian campanile (photo ref):
+     slender buff shaft with arched window strips, triple-arch loggia,
+     clock section, steep pyramid roof, open lantern + gold ball + flag */
   const g = new THREE.Group();
   const tan = lambert(0xd8c8a8);
-  const shaft = new THREE.Mesh(new THREE.BoxGeometry(6,30,6), tan);
-  shaft.position.y=15; g.add(shaft);
-  /* window slits up the shaft */
-  for(let y=5;y<26;y+=5){
-    const win=new THREE.Mesh(new THREE.BoxGeometry(1.4,2.4,6.1), lambert(0x3a3a44));
-    win.position.y=y; g.add(win);
+  const tanDk = lambert(0xc4b28e);
+
+  /* shaft: slender, with two columns of arch-top windows per face */
+  const shaftTex = pixTex(32,(gg,px)=>{
+    gg.fillStyle='#d8c8a8'; gg.fillRect(0,0,px,px);
+    for(let col=0; col<2; col++){
+      const x = 7+col*14;
+      for(let row=0; row<8; row++){
+        const y = 2+row*4;
+        gg.fillStyle='#3a3a44';
+        gg.fillRect(x,y+1,4,2);
+        gg.fillRect(x+1,y,2,1);       // arched head, one pixel proud
+      }
+    }
+  }, 1, 3);
+  const shaft = new THREE.Mesh(new THREE.BoxGeometry(5.4,27,5.4),
+    new THREE.MeshLambertMaterial({map:shaftTex}));
+  shaft.position.y=13.5+2; g.add(shaft);
+
+  /* arched entrance base */
+  const base = new THREE.Mesh(new THREE.BoxGeometry(6.6,2.4,6.6), tan);
+  base.position.y=1.2; g.add(base);
+  const door = new THREE.Mesh(new THREE.BoxGeometry(1.6,1.9,0.2), lambert(0x3a3a44));
+  door.position.set(0,0.95,3.3); g.add(door);
+
+  /* cornice, then the triple-arch loggia (the pink-lit arcade) */
+  const cor1 = new THREE.Mesh(new THREE.BoxGeometry(6.4,0.7,6.4), tanDk);
+  cor1.position.y=29.9; g.add(cor1);
+  const loggiaCore = new THREE.Mesh(new THREE.BoxGeometry(4.6,3.6,4.6), lambert(0x2c2330));
+  loggiaCore.position.y=32.1; g.add(loggiaCore);
+  for(let i=0;i<4;i++){
+    const a=i*Math.PI/2, ca=Math.cos(a), sa=Math.sin(a);
+    for(const off of [-1.9,-0.63,0.63,1.9]){        // 4 columns = 3 bays
+      const colM=new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.16,3.4,5), tan);
+      colM.position.set(sa*2.85+ca*off, 32.1, ca*2.85-sa*off);
+      g.add(colM);
+    }
   }
-  const clockBox = new THREE.Mesh(new THREE.BoxGeometry(6.8,5,6.8), tan);
-  clockBox.position.y=32.5; g.add(clockBox);
-  for(let i=0;i<4;i++){                          // a face on all four sides
-    const face=new THREE.Mesh(new THREE.CircleGeometry(2.1,16), lambert(0xf7f3e8));
-    const a=i*Math.PI/2;
-    face.position.set(Math.sin(a)*3.45,32.5,Math.cos(a)*3.45);
-    face.rotation.y=a; g.add(face);
-    const hand=new THREE.Mesh(new THREE.PlaneGeometry(0.22,2.6), lambert(0x1a1423));
-    hand.position.set(Math.sin(a)*3.5,32.5,Math.cos(a)*3.5);
-    hand.rotation.y=a; hand.rotation.z=0.9; g.add(hand);
+  const cor2 = new THREE.Mesh(new THREE.BoxGeometry(6.6,0.6,6.6), tanDk);
+  cor2.position.y=34.2; g.add(cor2);
+
+  /* clock section: framed faces with a little pediment on each side */
+  const clockBox = new THREE.Mesh(new THREE.BoxGeometry(6.0,4.6,6.0), tan);
+  clockBox.position.y=36.8; g.add(clockBox);
+  for(let i=0;i<4;i++){
+    const a=i*Math.PI/2, sa=Math.sin(a), ca=Math.cos(a);
+    const panel=new THREE.Mesh(new THREE.PlaneGeometry(4.2,4.0), tanDk.clone());
+    panel.position.set(sa*3.02,36.8,ca*3.02); panel.rotation.y=a; g.add(panel);
+    const face=new THREE.Mesh(new THREE.CircleGeometry(1.7,16), lambert(0xf7f3e8));
+    face.position.set(sa*3.06,36.8,ca*3.06); face.rotation.y=a; g.add(face);
+    const rim=new THREE.Mesh(new THREE.RingGeometry(1.55,1.8,16), lambert(0xb08d3e));
+    rim.position.set(sa*3.07,36.8,ca*3.07); rim.rotation.y=a; g.add(rim);
+    const hand=new THREE.Mesh(new THREE.PlaneGeometry(0.2,2.1), lambert(0x1a1423));
+    hand.position.set(sa*3.1,36.9,ca*3.1); hand.rotation.y=a; hand.rotation.z=0.9;
+    g.add(hand);
+    const ped=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.5,0.3), tanDk);
+    ped.position.set(sa*3.02+ca*0,39.3,ca*3.02); ped.rotation.y=a; g.add(ped);
   }
-  const belfry = new THREE.Mesh(new THREE.BoxGeometry(5.6,3,5.6), tan);
-  belfry.position.y=36.5; g.add(belfry);
-  const cap = new THREE.Mesh(new THREE.ConeGeometry(4.4,4.5,4), lambert(0x8a7a5a));
-  cap.rotation.y=Math.PI/4; cap.position.y=40.2; g.add(cap);
-  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.5,6,5), lambert(0xffd166));
-  tip.position.y=42.8; g.add(tip);
+  const cor3 = new THREE.Mesh(new THREE.BoxGeometry(6.8,0.6,6.8), tanDk);
+  cor3.position.y=39.4; g.add(cor3);
+
+  /* steep pyramid roof with a tiny dormer on each face */
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(4.6,7.4,4), tanDk);
+  roof.rotation.y=Math.PI/4; roof.position.y=43.4; g.add(roof);
+  for(let i=0;i<4;i++){
+    const a=i*Math.PI/2, sa=Math.sin(a), ca=Math.cos(a);
+    const dorm=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.9,0.2), tan);
+    dorm.position.set(sa*2.2,42.0,ca*2.2); dorm.rotation.y=a; g.add(dorm);
+  }
+
+  /* open lantern, gold ball, and the flag */
+  [[-0.9,-0.9],[0.9,-0.9],[-0.9,0.9],[0.9,0.9]].forEach(([lx,lz])=>{
+    const c=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,1.5,5), tan);
+    c.position.set(lx,47.7,lz); g.add(c);
+  });
+  const lanternCap=new THREE.Mesh(new THREE.ConeGeometry(1.5,0.9,4), tanDk);
+  lanternCap.rotation.y=Math.PI/4; lanternCap.position.y=48.9; g.add(lanternCap);
+  const ball=new THREE.Mesh(new THREE.SphereGeometry(0.62,8,6),
+    lambert(0xf0b429, {emissive:0x5a3d0e}));
+  ball.position.y=49.9; g.add(ball);
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,2.4,4), lambert(0x8a8275));
+  pole.position.y=51.4; g.add(pole);
+  const flag=new THREE.Mesh(new THREE.PlaneGeometry(1.5,1.0),
+    new THREE.MeshLambertMaterial({map:coloradoFlagTex(), side:THREE.DoubleSide}));
+  flag.position.set(0.8,52.1,0); g.add(flag);
+
   g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
   ctx.exclude(def.x,def.z,8); ctx.solid(def.x,def.z,5);
 };
+
 
 /* the Millennium Bridge: tilted white mast + cable stays over a deck that
    crosses above the road. Deck runs along local x. */
