@@ -3389,35 +3389,52 @@ B.blueBear = (ctx, def) => {
     lambert(0xf2f0ea));
   fascia.position.set(0,hallH+0.5,6.5); g.add(fascia);
 
-  /* the bear: cobalt, faceted, forepaws up on the glass */
+  /* the bear: cobalt, faceted, forepaws up on the glass — bottom-heavy
+     bear silhouette: big haunches, belly, no neck, muzzle, ears on top */
   const blue=lambert(0x2f52d4);
   const bear=new THREE.Group();
-  [[-0.9],[0.9]].forEach(([lx])=>{
-    const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.85,3.6,5), blue);
-    leg.position.set(lx,1.8,0); bear.add(leg);
+  /* haunches + thick legs + big feet */
+  [[-1.15],[1.15]].forEach(([lx])=>{
+    const haunch=new THREE.Mesh(new THREE.IcosahedronGeometry(1.45,0), blue);
+    haunch.scale.set(1,1.25,1.15); haunch.position.set(lx,3.4,-0.2); bear.add(haunch);
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.95,3.0,5), blue);
+    leg.position.set(lx,1.5,0); bear.add(leg);
+    const foot=new THREE.Mesh(new THREE.BoxGeometry(1.3,0.7,2.0), blue);
+    foot.position.set(lx,0.35,0.55); bear.add(foot);
   });
-  const hips=new THREE.Mesh(new THREE.IcosahedronGeometry(1.9,0), blue);
-  hips.scale.set(1.15,0.9,1); hips.position.y=4.0; bear.add(hips);
-  const body=new THREE.Mesh(new THREE.IcosahedronGeometry(2.3,0), blue);
-  body.scale.set(1.1,1.6,0.95); body.position.set(0,7.0,0.25); bear.add(body);
-  [[-1.7],[1.7]].forEach(([ax])=>{
-    const arm=new THREE.Mesh(new THREE.BoxGeometry(0.9,3.6,0.9), blue);
-    arm.position.set(ax,9.3,1.1); arm.rotation.x=-0.35; bear.add(arm);
-    const paw=new THREE.Mesh(new THREE.IcosahedronGeometry(0.62,0), blue);
-    paw.position.set(ax,11.1,1.8); bear.add(paw);
+  /* belly big, chest tapering — the pear of a standing bear */
+  const belly=new THREE.Mesh(new THREE.IcosahedronGeometry(2.5,0), blue);
+  belly.scale.set(1.05,1.15,0.95); belly.position.set(0,5.9,0.15); bear.add(belly);
+  const chest=new THREE.Mesh(new THREE.IcosahedronGeometry(2.0,0), blue);
+  chest.scale.set(1,1.2,0.9); chest.position.set(0,8.6,0.35); bear.add(chest);
+  const hump=new THREE.Mesh(new THREE.IcosahedronGeometry(1.15,0), blue);
+  hump.position.set(0,10.0,-0.5); bear.add(hump);
+  /* arms: thick upper arm out from the shoulder, forearm flat on the glass */
+  [[-1.9],[1.9]].forEach(([ax])=>{
+    const upper=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.7,2.6,5), blue);
+    upper.position.set(ax,10.0,0.9); upper.rotation.x=-0.55;
+    upper.rotation.z=ax>0?-0.18:0.18; bear.add(upper);
+    const fore=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.55,2.2,5), blue);
+    fore.position.set(ax*1.06,11.9,1.75); fore.rotation.x=-0.12; bear.add(fore);
+    const paw=new THREE.Mesh(new THREE.IcosahedronGeometry(0.7,0), blue);
+    paw.scale.set(1,1.15,0.6); paw.position.set(ax*1.06,13.1,1.95); bear.add(paw);
   });
-  const head=new THREE.Mesh(new THREE.IcosahedronGeometry(1.45,0), blue);
-  head.scale.set(1,1.05,0.95); head.position.set(0,11.5,0.7); bear.add(head);
-  const snout=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.7,1.0), blue);
-  snout.position.set(0,11.2,1.85); snout.rotation.x=0.35; bear.add(snout);
-  [[-0.75],[0.75]].forEach(([ex])=>{
-    const ear=new THREE.Mesh(new THREE.IcosahedronGeometry(0.42,0), blue);
-    ear.position.set(ex,12.7,0.5); bear.add(ear);
+  /* head: low on the shoulders, muzzle to the glass, round ears on top */
+  const head=new THREE.Mesh(new THREE.IcosahedronGeometry(1.35,0), blue);
+  head.scale.set(1.05,0.95,0.95); head.position.set(0,11.5,0.55);
+  head.rotation.x=-0.2; bear.add(head);
+  const muzzle=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.62,1.1,5), blue);
+  muzzle.position.set(0,11.35,1.75); muzzle.rotation.x=1.35; bear.add(muzzle);
+  const nose=new THREE.Mesh(new THREE.IcosahedronGeometry(0.3,0), blue);
+  nose.position.set(0,11.45,2.3); bear.add(nose);
+  [[-0.72],[0.72]].forEach(([ex])=>{
+    const ear=new THREE.Mesh(new THREE.IcosahedronGeometry(0.38,0), blue);
+    ear.scale.set(1,1,0.55); ear.position.set(ex,12.75,0.2); bear.add(ear);
   });
-  const tail=new THREE.Mesh(new THREE.IcosahedronGeometry(0.5,0), blue);
-  tail.position.set(0,4.3,-1.7); bear.add(tail);
-  bear.rotation.x=0.06;                      // the lean-in, nose to the glass
-  bear.position.z=0.6;
+  const tail=new THREE.Mesh(new THREE.IcosahedronGeometry(0.42,0), blue);
+  tail.position.set(0,4.6,-1.85); bear.add(tail);
+  bear.rotation.x=0.05;                      // the lean-in, nose to the glass
+  bear.position.z=0.4;
   g.add(bear);
 
   g.position.set(def.x,0,def.z); g.rotation.y=def.ry||0; ctx.scene.add(g);
